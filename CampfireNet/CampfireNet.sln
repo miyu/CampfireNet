@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26020.0
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "scratchpad-android", "scratchpad-android\scratchpad-android.csproj", "{5B7F0B2B-685D-43A5-8608-D5E8FA455498}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CampfireNet.Simulator.Windows", "CampfireNet.Simulator.Windows\CampfireNet.Simulator.Windows.csproj", "{82A75F3E-EFAD-4237-AE27-3D54D7183028}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{5B7F0B2B-685D-43A5-8608-D5E8FA455498}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5B7F0B2B-685D-43A5-8608-D5E8FA455498}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5B7F0B2B-685D-43A5-8608-D5E8FA455498}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5B7F0B2B-685D-43A5-8608-D5E8FA455498}.Release|Any CPU.Build.0 = Release|Any CPU
+		{82A75F3E-EFAD-4237-AE27-3D54D7183028}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{82A75F3E-EFAD-4237-AE27-3D54D7183028}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{82A75F3E-EFAD-4237-AE27-3D54D7183028}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{82A75F3E-EFAD-4237-AE27-3D54D7183028}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
