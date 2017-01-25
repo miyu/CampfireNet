@@ -12,8 +12,6 @@ namespace scratchpad_android
          if (!bluetoothAdapter.IsEnabled) {
             bluetoothAdapter.Enable();
          }
-         BluetoothDevice.disco
-         bluetoothAdapter.StartDiscovery()
          bluetoothAdapter.StartDiscovery();
          bluetoothAdapter.NotifyAll();
       }
