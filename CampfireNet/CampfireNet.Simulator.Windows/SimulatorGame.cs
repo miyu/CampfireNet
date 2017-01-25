@@ -10,37 +10,38 @@ using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
 namespace CampfireNet.Simulator {
    public struct SimulationBluetoothConnectionState {
-      public float Quality { get; set; }
-      public float Connectedness { get; set; }
+      public float Quality;
+      public float Connectedness;
    }
 
    public class SimulationBluetoothState {
       public SimulationBluetoothConnectionState[] ConnectionStates { get; set; }
    }
 
-   public class DeviceAgent {
-      public Vector2 Position { get; set; }
-      public Vector2 Velocity { get; set; }
-      public float Value { get; set; }
-      public SimulationBluetoothState BluetoothState { get; set; }
+   public struct DeviceAgent {
+      public Vector2 Position;
+      public Vector2 Velocity;
+      public float Value;
+      public SimulationBluetoothState BluetoothState;
    }
 
    public class SimulatorGame : Game {
+      private const int FIELD_WIDTH = 1280;
+      private const int FIELD_HEIGHT = 720;
       private const int AGENT_RADIUS = 10;
       private const int BLUETOOTH_RANGE = 100;
       private const int BLUETOOTH_RANGE_SQUARED = BLUETOOTH_RANGE * BLUETOOTH_RANGE;
       private const float MAX_VALUE = 1.0f;
-      private readonly Size fieldDimensions = new Size(1280, 720); 
       private readonly GraphicsDeviceManager graphicsDeviceManager;
-      private readonly List<DeviceAgent> agents = new List<DeviceAgent>();
+      private DeviceAgent[] agents;
       private SpriteBatch spriteBatch;
       private Texture2D whiteTexture;
       private Texture2D whiteCircleTexture;
 
       public SimulatorGame() {
          graphicsDeviceManager = new GraphicsDeviceManager(this) {
-            PreferredBackBufferWidth = fieldDimensions.Width,
-            PreferredBackBufferHeight = fieldDimensions.Height
+            PreferredBackBufferWidth = FIELD_WIDTH,
+            PreferredBackBufferHeight = FIELD_HEIGHT
          };
       }
 
@@ -54,94 +55,90 @@ namespace CampfireNet.Simulator {
          whiteCircleTexture = CreateSolidCircleTexture(Color.White, 256);
 
          var random = new Random(2);
-         const int numAgents = 112;
+         const int numAgents = 1120 * 2;
+         agents = new DeviceAgent[numAgents];
          for (int i = 0 ; i < numAgents; i++) {
-            agents.Add(new DeviceAgent {
+            agents[i] = new DeviceAgent {
                Position = new Vector2(
-                  random.Next(AGENT_RADIUS, fieldDimensions.Width - AGENT_RADIUS),
-                  random.Next(AGENT_RADIUS, fieldDimensions.Height - AGENT_RADIUS)
+                  random.Next(AGENT_RADIUS, FIELD_WIDTH - AGENT_RADIUS),
+                  random.Next(AGENT_RADIUS, FIELD_HEIGHT - AGENT_RADIUS)
                ),
                Velocity = Vector2.Transform(new Vector2(100, 0), Matrix.CreateRotationZ((float)(random.NextDouble() * Math.PI * 2))),
                BluetoothState = new SimulationBluetoothState {
                   ConnectionStates = Enumerable.Range(0, numAgents).Select(x => new SimulationBluetoothConnectionState()).ToArray()
                }
-            });
+            };
          }
-         //agents[0].Value = MAX_VALUE;
-         for (int i = 0; i < agents.Count; i++) {
-            agents[i].Position = new Vector2(320 + 50 * (i % 14), 80 + 70 * i / 14);
-            agents[i].Velocity *= 0.01f;
-         }
-         agents[36].Value = MAX_VALUE;
+         agents[0].Value = MAX_VALUE;
+         //for (int i = 0; i < agents.Count; i++) {
+         //   agents[i].Position = new Vector2(320 + 50 * (i % 14), 80 + 70 * i / 14);
+         //   agents[i].Velocity *= 0.05f;
+         //}
+         //agents[36].Value = MAX_VALUE;
       }
 
       protected override void Update(GameTime gameTime) {
          base.Update(gameTime);
 
-         foreach (var agent in agents) {
-            agent.Position += agent.Velocity * (float)gameTime.ElapsedGameTime.TotalSeconds;
+         var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+         for (var i = 0; i < agents.Length; i++) {
+            ref DeviceAgent agent = ref agents[i];
+            agent.Position += agent.Velocity * dt;
             if (agent.Position.X < AGENT_RADIUS)
-               agent.Velocity = new Vector2(Math.Abs(agent.Velocity.X), agent.Velocity.Y);
-            if (agent.Position.X > fieldDimensions.Width - AGENT_RADIUS)
-               agent.Velocity = new Vector2(-Math.Abs(agent.Velocity.X), agent.Velocity.Y);
+               agent.Velocity.X = Math.Abs(agent.Velocity.X);
+            if (agent.Position.X > FIELD_WIDTH - AGENT_RADIUS)
+               agent.Velocity.X = -Math.Abs(agent.Velocity.X);
             if (agent.Position.Y < AGENT_RADIUS)
-               agent.Velocity = new Vector2(agent.Velocity.X, Math.Abs(agent.Velocity.Y));
-            if (agent.Position.Y > fieldDimensions.Height - AGENT_RADIUS)
-               agent.Velocity = new Vector2(agent.Velocity.X, -Math.Abs(agent.Velocity.Y));
+               agent.Velocity.Y = Math.Abs(agent.Velocity.Y);
+            if (agent.Position.Y > FIELD_HEIGHT - AGENT_RADIUS)
+               agent.Velocity.Y = -Math.Abs(agent.Velocity.Y);
          }
 
-         for (var i = 0; i < agents.Count - 1; i++) {
-            var a = agents[i];
-            for (var j = i + 1; j < agents.Count; j++) {
-               var b = agents[j];
+         Console.WriteLine(gameTime.TotalGameTime.TotalSeconds);
+         var dConnectnessInRangeBase = dt * 5.0f;
+         var dConnectnessOutOfRangeBase = -dt * 50.0f;
+         for (var i = 0; i < agents.Length - 1; i++) {
+            ref var a = ref agents[i];
+            for (var j = i + 1; j < agents.Length; j++) {
+               ref var b = ref agents[j];
                var distanceSquared = (a.Position - b.Position).LengthSquared();
-               var quality = 1.0f - distanceSquared / BLUETOOTH_RANGE_SQUARED;
+               var quality = Math.Max(0.0f, 1.0f - distanceSquared / (float)BLUETOOTH_RANGE_SQUARED);
                var inRange = distanceSquared < BLUETOOTH_RANGE_SQUARED;
                float connectedness = a.BluetoothState.ConnectionStates[j].Connectedness;
-               if (inRange) {
-                  a.BluetoothState.ConnectionStates[j].Quality = quality;
-                  b.BluetoothState.ConnectionStates[i].Quality = quality;
+               a.BluetoothState.ConnectionStates[j].Quality = quality;
+               var dConnectedness = quality * (inRange ? dConnectnessInRangeBase : dConnectnessOutOfRangeBase);
+               a.BluetoothState.ConnectionStates[j].Connectedness = Math.Min(1.0f, connectedness + dConnectedness);
 
-                  connectedness = Math.Min(1.0f, connectedness + quality * (float)gameTime.ElapsedGameTime.TotalSeconds * 5.0f);
-                  a.BluetoothState.ConnectionStates[j].Connectedness = connectedness;
-                  b.BluetoothState.ConnectionStates[i].Connectedness = connectedness;
-               } else {
-                  a.BluetoothState.ConnectionStates[j].Quality = 0;
-                  b.BluetoothState.ConnectionStates[i].Quality = 0;
-
-                  connectedness = Math.Max(0.0f, connectedness - (float)gameTime.ElapsedGameTime.TotalSeconds * 50.0f);
-                  a.BluetoothState.ConnectionStates[j].Connectedness = connectedness;
-                  b.BluetoothState.ConnectionStates[i].Connectedness = connectedness;
-               }
-               if (Math.Abs(connectedness - 1.0f) < float.Epsilon) {
+               if (connectedness == 1.0f) {
                   if (a.Value < MAX_VALUE && b.Value >= MAX_VALUE) {
-                     a.Value += quality * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                     a.Value += quality * dt;
                   } else if (b.Value < MAX_VALUE && a.Value >= MAX_VALUE) {
-                     b.Value += quality * (float)gameTime.ElapsedGameTime.TotalSeconds;
+                     b.Value += quality * dt;
                   }
                }
             }
          }
-         if (Keyboard.GetState().IsKeyDown(Keys.A)) {
-            foreach (var agent in agents) {
-               agent.Value = 0;
-            }
-            agents[(int)(DateTime.Now.ToFileTime() % agents.Count)].Value = 50;
-         }
+//         if (Keyboard.GetState().IsKeyDown(Keys.A)) {
+//            foreach (var agent in agents) {
+//               agent.Value = 0;
+//            }
+//            agents[(int)(DateTime.Now.ToFileTime() % agents.Count)].Value = 50;
+//         }
       }
 
       protected override void Draw(GameTime gameTime) {
          base.Draw(gameTime);
 
+         return;
          GraphicsDevice.Clear(Color.White);
          spriteBatch.Begin();
 
-         for (var i = 0; i < agents.Count - 1; i++) {
+         for (var i = 0; i < agents.Length - 1; i++) {
             var a = agents[i];
-            for (var j = i + 1; j < agents.Count; j++) {
+            for (var j = i + 1; j < agents.Length; j++) {
                var b = agents[j];
                if (Math.Abs(a.BluetoothState.ConnectionStates[j].Connectedness - 1.0f) < float.Epsilon) {
-                  Console.WriteLine("!");
                   spriteBatch.DrawLine(a.Position, b.Position, Color.Gray);
                }
             }
