@@ -104,8 +104,8 @@ namespace CampfireNet.Simulator {
 
          var dConnectnessInRangeBase = dt * 5.0f;
          var dConnectnessOutOfRangeBase = -dt * 50.0f;
-//         for (var i = 0; i < agents.Length - 1; i++) {
-         Parallel.For(0, agents.Length - 1, i => {
+         for (var i = 0; i < agents.Length - 1; i++) {
+//         Parallel.For(0, agents.Length - 1, new ParallelOptions { MaxDegreeOfParallelism = 8 }, i => {
             ref var a = ref agents[i];
             var aConnectionStates = a.BluetoothState.ConnectionStates;
             for (var j = i + 1; j < agents.Length; j++) {
@@ -128,8 +128,9 @@ namespace CampfireNet.Simulator {
                   }
                }
             }
-         });
-//         }
+//         });
+         }
+
          if (Keyboard.GetState().IsKeyDown(Keys.A)) {
             for (var i = 0; i < agents.Length; i++) {
                agents[i].Value = 0;
@@ -147,10 +148,10 @@ namespace CampfireNet.Simulator {
          spriteBatch.Begin(SpriteSortMode.Deferred, null, transformMatrix: Matrix.CreateScale((float)DISPLAY_WIDTH / FIELD_WIDTH));
 
          for (var i = 0; i < agents.Length - 1; i++) {
-            var a = agents[i];
+            ref var a = ref agents[i];
             for (var j = i + 1; j < agents.Length; j++) {
-               var b = agents[j];
-               if (Math.Abs(a.BluetoothState.ConnectionStates[j].Connectedness - 1.0f) < float.Epsilon) {
+               ref var b = ref agents[j];
+               if (a.BluetoothState.ConnectionStates[j].Connectedness == 1.0f) {
                   spriteBatch.DrawLine(a.Position, b.Position, Color.Gray);
                }
             }
