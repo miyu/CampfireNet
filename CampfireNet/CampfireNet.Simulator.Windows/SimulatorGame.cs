@@ -70,7 +70,7 @@ namespace CampfireNet.Simulator {
          //agents[0].Value = MAX_VALUE;
          for (int i = 0; i < agents.Count; i++) {
             agents[i].Position = new Vector2(320 + 50 * (i % 14), 80 + 70 * i / 14);
-            agents[i].Velocity *= 0.02f;
+            agents[i].Velocity *= 0.01f;
          }
          agents[36].Value = MAX_VALUE;
       }
@@ -141,6 +141,7 @@ namespace CampfireNet.Simulator {
             for (var j = i + 1; j < agents.Count; j++) {
                var b = agents[j];
                if (Math.Abs(a.BluetoothState.ConnectionStates[j].Connectedness - 1.0f) < float.Epsilon) {
+                  Console.WriteLine("!");
                   spriteBatch.DrawLine(a.Position, b.Position, Color.Gray);
                }
             }
