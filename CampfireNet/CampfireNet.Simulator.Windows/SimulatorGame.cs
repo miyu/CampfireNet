@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -41,11 +42,13 @@ namespace CampfireNet.Simulator {
       private SpriteBatch spriteBatch;
       private Texture2D whiteTexture;
       private Texture2D whiteCircleTexture;
+      private RasterizerState rasterizerState;
 
       public SimulatorGame() {
          graphicsDeviceManager = new GraphicsDeviceManager(this) {
             PreferredBackBufferWidth = DISPLAY_WIDTH,
-            PreferredBackBufferHeight = DISPLAY_HEIGHT
+            PreferredBackBufferHeight = DISPLAY_HEIGHT,
+            PreferMultiSampling = true
          };
       }
 
@@ -57,6 +60,8 @@ namespace CampfireNet.Simulator {
 
          whiteTexture = CreateSolidTexture(Color.White);
          whiteCircleTexture = CreateSolidCircleTexture(Color.White, 256);
+
+         rasterizerState = GraphicsDevice.RasterizerState = new RasterizerState { MultiSampleAntiAlias = true };
 
          var random = new Random(2);
          agents = new DeviceAgent[NUM_AGENTS];
@@ -82,7 +87,6 @@ namespace CampfireNet.Simulator {
 
       protected override void Update(GameTime gameTime) {
          base.Update(gameTime);
-
          var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
          for (var i = 0; i < agents.Length; i++) {
@@ -98,22 +102,23 @@ namespace CampfireNet.Simulator {
                agent.Velocity.Y = -Math.Abs(agent.Velocity.Y);
          }
 
-         Console.WriteLine(gameTime.TotalGameTime.TotalSeconds);
          var dConnectnessInRangeBase = dt * 5.0f;
          var dConnectnessOutOfRangeBase = -dt * 50.0f;
-         for (var i = 0; i < agents.Length - 1; i++) {
+//         for (var i = 0; i < agents.Length - 1; i++) {
+         Parallel.For(0, agents.Length - 1, i => {
             ref var a = ref agents[i];
+            var aConnectionStates = a.BluetoothState.ConnectionStates;
             for (var j = i + 1; j < agents.Length; j++) {
                ref var b = ref agents[j];
                var distanceSquared = (a.Position - b.Position).LengthSquared();
-               var quality = Math.Max(0.0f, 1.0f - distanceSquared / (float)BLUETOOTH_RANGE_SQUARED);
+               var quality = 1.0f - distanceSquared / (float)BLUETOOTH_RANGE_SQUARED; // Math.Max(0.0f, 1.0f - distanceSquared / (float)BLUETOOTH_RANGE_SQUARED);
                var inRange = distanceSquared < BLUETOOTH_RANGE_SQUARED;
-               float connectedness = a.BluetoothState.ConnectionStates[j].Connectedness;
+               float connectedness = aConnectionStates[j].Connectedness;
                var dConnectedness = (inRange ? quality * dConnectnessInRangeBase : dConnectnessOutOfRangeBase);
                connectedness = Math.Max(0.0f, Math.Min(1.0f, connectedness + dConnectedness));
 
-               a.BluetoothState.ConnectionStates[j].Quality = quality;
-               a.BluetoothState.ConnectionStates[j].Connectedness = connectedness;
+               aConnectionStates[j].Quality = quality;
+               aConnectionStates[j].Connectedness = connectedness;
                
                if (connectedness == 1.0f) {
                   if (a.Value < MAX_VALUE && b.Value >= MAX_VALUE) {
@@ -123,7 +128,8 @@ namespace CampfireNet.Simulator {
                   }
                }
             }
-         }
+         });
+//         }
          if (Keyboard.GetState().IsKeyDown(Keys.A)) {
             for (var i = 0; i < agents.Length; i++) {
                agents[i].Value = 0;
@@ -135,8 +141,10 @@ namespace CampfireNet.Simulator {
       protected override void Draw(GameTime gameTime) {
          base.Draw(gameTime);
 
+         Console.WriteLine(gameTime.ElapsedGameTime.TotalSeconds);
+
          GraphicsDevice.Clear(Color.White);
-         spriteBatch.Begin(transformMatrix: Matrix.CreateScale((float)DISPLAY_WIDTH / FIELD_WIDTH));
+         spriteBatch.Begin(SpriteSortMode.Deferred, null, transformMatrix: Matrix.CreateScale((float)DISPLAY_WIDTH / FIELD_WIDTH));
 
          for (var i = 0; i < agents.Length - 1; i++) {
             var a = agents[i];
@@ -148,8 +156,8 @@ namespace CampfireNet.Simulator {
             }
          }
 
-         foreach (var agent in agents) {
-            DrawCenteredCircleWorld(agent.Position, AGENT_RADIUS, agent.Value < MAX_VALUE ? Color.Gray : Color.Red);
+         for (var i = 0; i < agents.Length; i++) {
+            DrawCenteredCircleWorld(agents[i].Position, AGENT_RADIUS, agents[i].Value < MAX_VALUE ? Color.Gray : Color.Red);
          }
          //spriteBatch.DrawLine(new Vector2(0, 50), new Vector2(100, 50), Color.Red);
          spriteBatch.End();
