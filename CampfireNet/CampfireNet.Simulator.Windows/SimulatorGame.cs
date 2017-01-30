@@ -48,7 +48,7 @@ namespace CampfireNet.Simulator {
       private float rateLimitTokenGrantingCounter = 0.0f;
       private readonly Dictionary<Guid, IBluetoothNeighbor> neighborsByAdapterId;
 
-      public unsafe SimulationBluetoothAdapter(DeviceAgent[] agents, int agentIndex) {
+      public SimulationBluetoothAdapter(DeviceAgent[] agents, int agentIndex) {
          this.agents = agents;
          this.agentIndex = agentIndex;
          this.bluetoothState = agents[agentIndex].BluetoothState;
@@ -107,8 +107,8 @@ namespace CampfireNet.Simulator {
    public class SimulatorGame : Game {
       private const int SCALE = 2;
       private const int NUM_AGENTS = 112 * SCALE * SCALE;
-      private const int DISPLAY_WIDTH = 1920;
-      private const int DISPLAY_HEIGHT = 1080;
+      private const int DISPLAY_WIDTH = 1280;
+      private const int DISPLAY_HEIGHT = 720;
       private const int FIELD_WIDTH = 1280 * SCALE;
       private const int FIELD_HEIGHT = 720 * SCALE;
       private const int AGENT_RADIUS = 10;
