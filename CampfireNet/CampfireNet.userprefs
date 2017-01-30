@@ -1,0 +1,29 @@
+﻿<Properties StartupConfiguration="{82A75F3E-EFAD-4237-AE27-3D54D7183028}|Default">
+  <MonoDevelop.Ide.ItemProperties.CampfireNet.Simulator.Windows PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="CampfireNet.Simulator.Windows/Program.cs">
+    <Files>
+      <File FileName="packages/MonoGame.Framework.MacOS.3.5.1.1679/readme.txt" Line="8" Column="1" />
+      <File FileName="CampfireNet.Simulator.Windows/Program.cs" Line="2" Column="26" />
+      <File FileName="CampfireNet.Simulator.Windows/SimulatorGame.cs" Line="125" Column="1" />
+    </Files>
+    <Pads>
+      <Pad Id="ProjectPad">
+        <State name="__root__">
+          <Node name="CampfireNet" expanded="True">
+            <Node name="CampfireNet.Simulator.Windows" expanded="True">
+              <Node name="Program.cs" selected="True" />
+            </Node>
+            <Node name="scratchpad-android" expanded="True" />
+          </Node>
+        </State>
+      </Pad>
+    </Pads>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.ItemProperties.scratchpad-android PreferredExecutionTarget="Android.Android_Accelerated_x86" />
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+  <MultiItemStartupConfigurations />
+</Properties>
