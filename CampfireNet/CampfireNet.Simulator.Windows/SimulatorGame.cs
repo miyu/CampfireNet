@@ -2,10 +2,13 @@
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using Nito.AsyncEx;
 using Color = Microsoft.Xna.Framework.Color;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
 
@@ -19,15 +22,90 @@ namespace CampfireNet.Simulator {
       public SimulationBluetoothConnectionState[] ConnectionStates { get; set; }
    }
 
-   public struct DeviceAgent {
+   public class DeviceAgent {
+      public Guid BluetoothAdapterId;
       public Vector2 Position;
       public Vector2 Velocity;
       public float Value;
       public SimulationBluetoothState BluetoothState;
+      public SimulationBluetoothAdapter BluetoothAdapter;
+   }
+
+   public interface IBluetoothNeighbor {
+      
+   }
+
+   public interface IBluetoothAdapter {
+      Task<IReadOnlyList<IBluetoothNeighbor>> DiscoverAsync();
+   }
+
+   public class SimulationBluetoothAdapter : IBluetoothAdapter {
+      private readonly AsyncSemaphore requestRateLimitSemaphore = new AsyncSemaphore(0);
+      private readonly DeviceAgent[] agents;
+      private readonly int agentIndex;
+      private readonly SimulationBluetoothState bluetoothState;
+      private const int MAX_RATE_LIMIT_TOKENS = 3;
+      private float rateLimitTokenGrantingCounter = 0.0f;
+      private readonly Dictionary<Guid, IBluetoothNeighbor> neighborsByAdapterId;
+
+      public unsafe SimulationBluetoothAdapter(DeviceAgent[] agents, int agentIndex) {
+         this.agents = agents;
+         this.agentIndex = agentIndex;
+         this.bluetoothState = agents[agentIndex].BluetoothState;
+//         this.neighborsByAdapterId = agents.ToDictionary(
+//            agent => agent.BluetoothAdapterId,
+//            agent => new SimulationBluetoothNeighbor())
+      }
+
+      public void Permit(float dt) {
+         rateLimitTokenGrantingCounter += dt;
+
+         if (rateLimitTokenGrantingCounter > 0.100f) {
+            rateLimitTokenGrantingCounter -= 1.0f;
+
+            if (requestRateLimitSemaphore.CurrentCount < MAX_RATE_LIMIT_TOKENS) {
+               requestRateLimitSemaphore.Release();
+            }
+         }
+      }
+
+      public async Task<IReadOnlyList<IBluetoothNeighbor>> DiscoverAsync() {
+         await requestRateLimitSemaphore.WaitAsync();
+         var neighbors = new List<IBluetoothNeighbor>();
+         for (int i = 0; i < agents.Length; i++) {
+            if (bluetoothState.ConnectionStates[i].Connectedness == 1.0f) {
+//               neighbors.Add(neighborsByAdapterId[agents[i].BluetoothAdapterId]);
+//               while (true) Console.WriteLine(neighbors.Count);
+            }
+         }
+         return neighbors;
+      }
+
+      public class SimulationBluetoothNeighbor : IBluetoothNeighbor {
+
+      }
+   }
+
+   public class CampfireNetClient {
+      private readonly IBluetoothAdapter bluetoothAdapter;
+
+      public CampfireNetClient(IBluetoothAdapter bluetoothAdapter) {
+         this.bluetoothAdapter = bluetoothAdapter;
+      }
+
+      public async Task RunAsync() {
+         while (true) {
+            var neighbors = await bluetoothAdapter.DiscoverAsync();
+            foreach (var neighbor in neighbors) {
+               Console.WriteLine("!");
+               Console.WriteLine(neighbor);
+            }
+         }
+      }
    }
 
    public class SimulatorGame : Game {
-      private const int SCALE = 3;
+      private const int SCALE = 2;
       private const int NUM_AGENTS = 112 * SCALE * SCALE;
       private const int DISPLAY_WIDTH = 1920;
       private const int DISPLAY_HEIGHT = 1080;
@@ -67,6 +145,7 @@ namespace CampfireNet.Simulator {
          agents = new DeviceAgent[NUM_AGENTS];
          for (int i = 0 ; i < NUM_AGENTS; i++) {
             agents[i] = new DeviceAgent {
+               BluetoothAdapterId = Guid.NewGuid(),
                Position = new Vector2(
                   random.Next(AGENT_RADIUS, FIELD_WIDTH - AGENT_RADIUS),
                   random.Next(AGENT_RADIUS, FIELD_HEIGHT - AGENT_RADIUS)
@@ -77,6 +156,13 @@ namespace CampfireNet.Simulator {
                }
             };
          }
+
+         for (int i = 0; i < agents.Length; i++) {
+            var bluetoothAdapter = agents[i].BluetoothAdapter = new SimulationBluetoothAdapter(agents, i);
+            var client = new CampfireNetClient(bluetoothAdapter);
+            var forget = client.RunAsync();
+         }
+
          agents[0].Value = MAX_VALUE;
          //for (int i = 0; i < agents.Count; i++) {
          //   agents[i].Position = new Vector2(320 + 50 * (i % 14), 80 + 70 * i / 14);
@@ -89,8 +175,12 @@ namespace CampfireNet.Simulator {
          base.Update(gameTime);
          var dt = (float)gameTime.ElapsedGameTime.TotalSeconds;
 
+         if (Keyboard.GetState().IsKeyDown(Keys.S)) {
+            dt *= 10;
+         }
+
          for (var i = 0; i < agents.Length; i++) {
-            ref DeviceAgent agent = ref agents[i];
+            var agent = agents[i];
             agent.Position += agent.Velocity * dt;
             if (agent.Position.X < AGENT_RADIUS)
                agent.Velocity.X = Math.Abs(agent.Velocity.X);
@@ -100,16 +190,18 @@ namespace CampfireNet.Simulator {
                agent.Velocity.Y = Math.Abs(agent.Velocity.Y);
             if (agent.Position.Y > FIELD_HEIGHT - AGENT_RADIUS)
                agent.Velocity.Y = -Math.Abs(agent.Velocity.Y);
+            agent.BluetoothAdapter.Permit(dt);
          }
 
          var dConnectnessInRangeBase = dt * 5.0f;
          var dConnectnessOutOfRangeBase = -dt * 50.0f;
          for (var i = 0; i < agents.Length - 1; i++) {
 //         Parallel.For(0, agents.Length - 1, new ParallelOptions { MaxDegreeOfParallelism = 8 }, i => {
-            ref var a = ref agents[i];
+            var a = agents[i];
             var aConnectionStates = a.BluetoothState.ConnectionStates;
             for (var j = i + 1; j < agents.Length; j++) {
-               ref var b = ref agents[j];
+               var b = agents[j];
+               var bConnectionStates = b.BluetoothState.ConnectionStates;
                var distanceSquared = (a.Position - b.Position).LengthSquared();
                var quality = 1.0f - distanceSquared / (float)BLUETOOTH_RANGE_SQUARED; // Math.Max(0.0f, 1.0f - distanceSquared / (float)BLUETOOTH_RANGE_SQUARED);
                var inRange = distanceSquared < BLUETOOTH_RANGE_SQUARED;
@@ -117,8 +209,8 @@ namespace CampfireNet.Simulator {
                var dConnectedness = (inRange ? quality * dConnectnessInRangeBase : dConnectnessOutOfRangeBase);
                connectedness = Math.Max(0.0f, Math.Min(1.0f, connectedness + dConnectedness));
 
-               aConnectionStates[j].Quality = quality;
-               aConnectionStates[j].Connectedness = connectedness;
+               aConnectionStates[j].Quality = bConnectionStates[i].Quality = quality;
+               aConnectionStates[j].Connectedness = bConnectionStates[i].Connectedness = connectedness;
                
                if (connectedness == 1.0f) {
                   if (a.Value < MAX_VALUE && b.Value >= MAX_VALUE) {
@@ -148,9 +240,9 @@ namespace CampfireNet.Simulator {
          spriteBatch.Begin(SpriteSortMode.Deferred, null, transformMatrix: Matrix.CreateScale((float)DISPLAY_WIDTH / FIELD_WIDTH));
 
          for (var i = 0; i < agents.Length - 1; i++) {
-            ref var a = ref agents[i];
+            var a = agents[i];
             for (var j = i + 1; j < agents.Length; j++) {
-               ref var b = ref agents[j];
+               var b = agents[j];
                if (a.BluetoothState.ConnectionStates[j].Connectedness == 1.0f) {
                   spriteBatch.DrawLine(a.Position, b.Position, Color.Gray);
                }
