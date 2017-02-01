@@ -1,23 +1,13 @@
-﻿<Properties StartupConfiguration="{82A75F3E-EFAD-4237-AE27-3D54D7183028}|Default">
+﻿<Properties StartupConfiguration="{25F45252-8991-4985-A7F9-4866BA8E09F2}|Default">
   <MonoDevelop.Ide.ItemProperties.CampfireNet.Simulator.Windows PreferredExecutionTarget="MonoDevelop.Default" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="CampfireNet.Simulator.Windows/Program.cs">
+  <MonoDevelop.Ide.ItemProperties.IdentityService PreferredExecutionTarget="MonoDevelop.Default" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Droid/MainActivity.cs">
     <Files>
-      <File FileName="packages/MonoGame.Framework.MacOS.3.5.1.1679/readme.txt" Line="8" Column="1" />
-      <File FileName="CampfireNet.Simulator.Windows/Program.cs" Line="2" Column="26" />
-      <File FileName="CampfireNet.Simulator.Windows/SimulatorGame.cs" Line="125" Column="1" />
+      <File FileName="Droid/MainActivity.cs" Line="78" Column="3" />
+      <File FileName="AndroidTest/MyClass.cs" Line="8" Column="4" />
+      <File FileName="Droid/BluetoothTest.cs" Line="12" Column="31" />
+      <File FileName="Droid/Properties/AndroidManifest.xml" Line="10" Column="12" />
     </Files>
-    <Pads>
-      <Pad Id="ProjectPad">
-        <State name="__root__">
-          <Node name="CampfireNet" expanded="True">
-            <Node name="CampfireNet.Simulator.Windows" expanded="True">
-              <Node name="Program.cs" selected="True" />
-            </Node>
-            <Node name="scratchpad-android" expanded="True" />
-          </Node>
-        </State>
-      </Pad>
-    </Pads>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.ItemProperties.scratchpad-android PreferredExecutionTarget="Android.Android_Accelerated_x86" />
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" />
@@ -26,4 +16,5 @@
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MultiItemStartupConfigurations />
+  <MonoDevelop.Ide.ItemProperties.AndroidTest.Droid AndroidDesignerPreferredDevice="Nexus 4" PreferredExecutionTarget="Android.Android_Accelerated_x86" />
 </Properties>
