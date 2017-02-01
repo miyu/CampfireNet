@@ -21,17 +21,26 @@ namespace CampfireNet.Simulator
                 byte[] encryptedData;
                 byte[] decryptedData;
 
-                encryptedData = RSAEncrypt(dataToEncrypt, RSA.ExportParameters(false), false);
+				Console.WriteLine("Encrypt");
 
-                //Pass the data to DECRYPT, the private key information 
-                //(using RSACryptoServiceProvider.ExportParameters(true),
-                //and a boolean flag specifying no OAEP padding.
-                decryptedData = RSADecrypt(encryptedData, RSA.ExportParameters(true), false);
+				RSA.ExportParameters(false);
+				RSA.ExportParameters(true);
 
-                //Display the decrypted plaintext to the console. 
-                Console.WriteLine("Decrypted plaintext: {0}", ByteConverter.GetString(decryptedData));
+
+				Console.WriteLine("Export");
+
+				encryptedData = RSAEncrypt(dataToEncrypt, RSA.ExportParameters(false), false);
+
+				//Pass the data to DECRYPT, the private key information 
+				//(using RSACryptoServiceProvider.ExportParameters(true),
+				//and a boolean flag specifying no OAEP padding.
+				decryptedData = RSADecrypt(encryptedData, RSA.ExportParameters(true), false);
+
+				//Display the decrypted plaintext to the console. 
+				Console.WriteLine("Decrypted plaintext: {0}", ByteConverter.GetString(decryptedData));
 
                 byte[] signature = RSASign(dataToEncrypt, RSA.ExportParameters(true));
+				signature[0] = 0;
 
                 if(RSAVerify(dataToEncrypt, signature, RSA.ExportParameters(false)))
                 {
