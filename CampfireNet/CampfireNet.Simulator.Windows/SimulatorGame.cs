@@ -3,12 +3,16 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CampfireNet.Utilities;
 using CampfireNet.Utilities.AsyncPrimatives;
+using CampfireNet.Utilities.ChannelsExtensions;
+using CampfireNet.Utilities.Collections;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
+using static CampfireNet.Utilities.ChannelsExtensions.ChannelsExtensions;
 
 namespace CampfireNet.Simulator {
    public struct SimulationBluetoothConnectionState {
@@ -24,12 +28,16 @@ namespace CampfireNet.Simulator {
       public Guid BluetoothAdapterId;
       public Vector2 Position;
       public Vector2 Velocity;
-      public float Value;
       public SimulationBluetoothState BluetoothState;
       public SimulationBluetoothAdapter BluetoothAdapter;
+      public CampfireNetClient Client;
    }
 
    public interface IBluetoothNeighbor {
+      bool IsConnected { get; }
+      ReadableChannel<byte[]> InboundChannel { get; }
+      WritableChannel<byte[]> OutboundChannel { get; }
+      Task<bool> TryHandshakeAsync();
       Task HandshakeAsync();
    }
 
@@ -81,15 +89,30 @@ namespace CampfireNet.Simulator {
       }
 
       public class SimulationBluetoothNeighbor : IBluetoothNeighbor {
+         private readonly DeviceAgent self;
          private readonly SimulationConnectionContext connectionContext;
 
-         public SimulationBluetoothNeighbor(SimulationConnectionContext connectionContext) {
+         public SimulationBluetoothNeighbor(DeviceAgent self, SimulationConnectionContext connectionContext) {
+            this.self = self;
             this.connectionContext = connectionContext;
+         }
+
+         public async Task<bool> TryHandshakeAsync() {
+            try {
+               await HandshakeAsync();
+               return true;
+            } catch (TimeoutException) {
+               return false;
+            }
          }
 
          public Task HandshakeAsync() {
             return connectionContext.ConnectAsync(CancellationToken.None);
          }
+
+         public bool IsConnected => connectionContext.IsAppearingConnected(self);
+         public ReadableChannel<byte[]> InboundChannel => connectionContext.GetInboundChannel(self);
+         public WritableChannel<byte[]> OutboundChannel => connectionContext.GetOtherInboundChannel(self);
       }
 
       public class SimulationConnectionContext {
@@ -104,6 +127,10 @@ namespace CampfireNet.Simulator {
          // connect: 
          private bool isConnectingPeerPending;
          private AsyncLatch connectingPeerSignal;
+
+         // send:
+         private readonly Channel<byte[]> firstInboundChannel = ChannelFactory.Nonblocking<byte[]>();
+         private readonly Channel<byte[]> secondInboundChannel = ChannelFactory.Nonblocking<byte[]>();
 
          public SimulationConnectionContext(DeviceAgent firstAgent, DeviceAgent secondAgent) {
             this.firstAgent = firstAgent;
@@ -130,6 +157,7 @@ namespace CampfireNet.Simulator {
 
                   guard.Free();
 
+                  // there's a race here.
                   await connectingPeerSignal.WaitAsync(cancellationToken);
 
                   isSecondConnected = true;
@@ -140,11 +168,14 @@ namespace CampfireNet.Simulator {
          public async Task SendAsync(DeviceAgent sender, byte[] contents, CancellationToken cancellationToken) {
             using (await synchronization.LockAsync(cancellationToken)) {
                await AssertConnectedElseTimeout(sender);
-               GetOther(sender).BluetoothAdapter.Inject(sender.BluetoothAdapterId, contents);
+               GetOtherInboundChannel(sender).Write(contents);
             }
          }
 
          private DeviceAgent GetOther(DeviceAgent self) => self == firstAgent ? secondAgent : firstAgent;
+
+         public Channel<byte[]> GetInboundChannel(DeviceAgent self) => self == firstAgent ? firstInboundChannel : secondInboundChannel;
+         public Channel<byte[]> GetOtherInboundChannel(DeviceAgent self) => GetInboundChannel(GetOther(self));
 
          private async Task AssertConnectedElseTimeout(DeviceAgent sender) {
             if (sender == firstAgent) {
@@ -165,27 +196,75 @@ namespace CampfireNet.Simulator {
                }
             }
          }
+
+         public bool IsAppearingConnected(DeviceAgent self) {
+            return self == firstAgent ? isFirstConnected : isSecondConnected;
+         }
       }
    }
 
    public class CampfireNetClient {
+      private readonly ConcurrentSet<byte[]> haves = new ConcurrentSet<byte[]>();
+      private readonly ConcurrentSet<IBluetoothNeighbor> discoveredNeighbors = new ConcurrentSet<IBluetoothNeighbor>();
       private readonly IBluetoothAdapter bluetoothAdapter;
+      private Task discoveryTask;
 
       public CampfireNetClient(IBluetoothAdapter bluetoothAdapter) {
          this.bluetoothAdapter = bluetoothAdapter;
       }
 
+      public int Number { get; set; }
+
       public async Task RunAsync() {
-         var connectedNeighbors = new HashSet<IBluetoothNeighbor>();
+         discoveryTask = DiscoverAsync().Forgettable();
+      }
+
+      public async Task DiscoverAsync() {
          while (true) {
             var neighbors = await bluetoothAdapter.DiscoverAsync();
-            foreach (var neighbor in neighbors) {
-               if (!connectedNeighbors.Contains(neighbor)) {
-                  await neighbor.HandshakeAsync();
-                  connectedNeighbors.Add(neighbor);
-                  Console.WriteLine("Handshook!");
-               }
-            }
+            await Task.WhenAll(
+               neighbors.Where(neighbor => !neighbor.IsConnected)
+                        .Select(neighbor => Go(async () => {
+                           var connected = await neighbor.TryHandshakeAsync();
+                           if (connected && discoveredNeighbors.TryAdd(neighbor)) {
+                              HandleConnectionAsync(neighbor).Forget();
+                           }
+                        }))
+            );
+         }
+      }
+
+      private async Task HandleConnectionAsync(IBluetoothNeighbor neighbor) {
+         var inboundChannel = neighbor.InboundChannel;
+         var outboundChannel = neighbor.OutboundChannel;
+
+         var syncTimerChannel = ChannelFactory.Timer(500);
+
+         Console.WriteLine("!");
+
+         while (true) {
+            try {
+               await new Select {
+                  Case(inboundChannel, async message => {
+                     if (!haves.TryAdd(message))
+                        return;
+
+                     var n = BitConverter.ToInt32(message, 0);
+                     if (n > Number) {
+                        Console.WriteLine(n);
+                        Number = n;
+                     }
+
+                     foreach (var peer in discoveredNeighbors) {
+                        await peer.OutboundChannel.WriteAsync(message);
+                     }
+                  }),
+                  Case(syncTimerChannel, async message => {
+                     // periodically send our number to peer.
+                     await outboundChannel.WriteAsync(BitConverter.GetBytes(Number));
+                  })
+               }.ConfigureAwait(false);
+            } catch (TimeoutException) { }
          }
       }
    }
@@ -237,6 +316,7 @@ namespace CampfireNet.Simulator {
       private Texture2D whiteTexture;
       private Texture2D whiteCircleTexture;
       private RasterizerState rasterizerState;
+      private int epoch = 0;
 
       public SimulatorGame() {
          graphicsDeviceManager = new GraphicsDeviceManager(this) {
@@ -279,8 +359,8 @@ namespace CampfireNet.Simulator {
          for (var i = 0; i < agents.Length - 1; i++) {
             for (var j = i + 1; j < agents.Length; j++) {
                var connectionContext = new SimulationBluetoothAdapter.SimulationConnectionContext(agents[i], agents[j]);
-               agentIndexToNeighborsByAdapterId[i].Add(agents[j].BluetoothAdapterId, new SimulationBluetoothAdapter.SimulationBluetoothNeighbor(connectionContext));
-               agentIndexToNeighborsByAdapterId[j].Add(agents[i].BluetoothAdapterId, new SimulationBluetoothAdapter.SimulationBluetoothNeighbor(connectionContext));
+               agentIndexToNeighborsByAdapterId[i].Add(agents[j].BluetoothAdapterId, new SimulationBluetoothAdapter.SimulationBluetoothNeighbor(agents[i], connectionContext));
+               agentIndexToNeighborsByAdapterId[j].Add(agents[i].BluetoothAdapterId, new SimulationBluetoothAdapter.SimulationBluetoothNeighbor(agents[j], connectionContext));
             }
          }
 
@@ -288,7 +368,7 @@ namespace CampfireNet.Simulator {
             var bluetoothAdapter = agents[i].BluetoothAdapter = new SimulationBluetoothAdapter(agents, i, agentIndexToNeighborsByAdapterId[i]);
             agents[i].BluetoothAdapter.Permit(SimulationBluetoothAdapter.MAX_RATE_LIMIT_TOKENS * (float)random.NextDouble());
 
-            var client = new CampfireNetClient(bluetoothAdapter);
+            var client = agents[i].Client = new CampfireNetClient(bluetoothAdapter);
             client.RunAsync().ContinueWith(task => {
                if (task.IsFaulted) {
                   Console.WriteLine(task.Exception);
@@ -296,7 +376,8 @@ namespace CampfireNet.Simulator {
             });
          }
 
-         agents[0].Value = MAX_VALUE;
+         epoch++;
+         agents[0].Client.Number = epoch;
          //for (int i = 0; i < agents.Count; i++) {
          //   agents[i].Position = new Vector2(320 + 50 * (i % 14), 80 + 70 * i / 14);
          //   agents[i].Velocity *= 0.05f;
@@ -344,23 +425,13 @@ namespace CampfireNet.Simulator {
 
                aConnectionStates[j].Quality = bConnectionStates[i].Quality = quality;
                aConnectionStates[j].Connectedness = bConnectionStates[i].Connectedness = connectedness;
-               
-               if (connectedness == 1.0f) {
-                  if (a.Value < MAX_VALUE && b.Value >= MAX_VALUE) {
-                     a.Value += quality * dt;
-                  } else if (b.Value < MAX_VALUE && a.Value >= MAX_VALUE) {
-                     b.Value += quality * dt;
-                  }
-               }
             }
 //         });
          }
 
          if (Keyboard.GetState().IsKeyDown(Keys.A)) {
-            for (var i = 0; i < agents.Length; i++) {
-               agents[i].Value = 0;
-            }
-            agents[(int)(DateTime.Now.ToFileTime() % agents.Length)].Value = 50;
+            epoch++;
+            agents[(int)(DateTime.Now.ToFileTime() % agents.Length)].Client.Number = epoch;
          }
       }
 
@@ -383,7 +454,7 @@ namespace CampfireNet.Simulator {
          }
 
          for (var i = 0; i < agents.Length; i++) {
-            DrawCenteredCircleWorld(agents[i].Position, AGENT_RADIUS, agents[i].Value < MAX_VALUE ? Color.Gray : Color.Red);
+            DrawCenteredCircleWorld(agents[i].Position, AGENT_RADIUS, agents[i].Client.Number != epoch ? Color.Gray : Color.Red);
          }
          //spriteBatch.DrawLine(new Vector2(0, 50), new Vector2(100, 50), Color.Red);
          spriteBatch.End();
