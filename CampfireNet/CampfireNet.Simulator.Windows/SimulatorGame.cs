@@ -39,6 +39,7 @@ namespace CampfireNet.Simulator {
       WritableChannel<byte[]> OutboundChannel { get; }
       Task<bool> TryHandshakeAsync();
       Task HandshakeAsync();
+      Task TrySendAsync(byte[] data);
    }
 
    public interface IBluetoothAdapter {
@@ -53,6 +54,8 @@ namespace CampfireNet.Simulator {
       public const int MAX_RATE_LIMIT_TOKENS = 3;
       private float rateLimitTokenGrantingCounter = 0.0f;
       private readonly Dictionary<Guid, SimulationBluetoothNeighbor> neighborsByAdapterId;
+
+      public Dictionary<Guid, SimulationBluetoothNeighbor> NeighborsByAdapterId => neighborsByAdapterId;
 
       public unsafe SimulationBluetoothAdapter(DeviceAgent[] agents, int agentIndex, Dictionary<Guid, SimulationBluetoothNeighbor> neighborsByAdapterId) {
          this.agents = agents;
@@ -108,6 +111,10 @@ namespace CampfireNet.Simulator {
 
          public Task HandshakeAsync() {
             return connectionContext.ConnectAsync(CancellationToken.None);
+         }
+
+         public Task TrySendAsync(byte[] data) {
+            return connectionContext.SendAsync(self, data, CancellationToken.None);
          }
 
          public bool IsConnected => connectionContext.IsAppearingConnected(self);
@@ -255,13 +262,15 @@ namespace CampfireNet.Simulator {
                         Number = n;
                      }
 
-                     foreach (var peer in discoveredNeighbors) {
-                        await peer.OutboundChannel.WriteAsync(message);
-                     }
+//                     foreach (var peer in discoveredNeighbors) {
+//                        await peer.OutboundChannel.WriteAsync(message);
+//                     }
                   }),
                   Case(syncTimerChannel, async message => {
                      // periodically send our number to peer.
-                     await outboundChannel.WriteAsync(BitConverter.GetBytes(Number));
+                     try {
+                        await neighbor.TrySendAsync(BitConverter.GetBytes(Number));
+                     } catch (TimeoutException) {}
                   })
                }.ConfigureAwait(false);
             } catch (TimeoutException) { }
@@ -286,7 +295,7 @@ namespace CampfireNet.Simulator {
          return new SimulationBluetoothConnectivity {
             InRange = quality > 0.0,
             IsSufficientQuality = quality > SimulationBluetoothConstants.MIN_VIABLE_SIGNAL_QUALITY,
-            SignalQuality = (float)quality
+            SignalQuality = (float)Math.Max(0, quality)
          };
       }
 
@@ -447,9 +456,10 @@ namespace CampfireNet.Simulator {
             var a = agents[i];
             for (var j = i + 1; j < agents.Length; j++) {
                var b = agents[j];
-               if (a.BluetoothState.ConnectionStates[j].Connectedness == 1.0f) {
+               if (a.BluetoothAdapter.NeighborsByAdapterId[b.BluetoothAdapterId].IsConnected)
+//               if (a.BluetoothState.ConnectionStates[j].Connectedness == 1.0f) {
                   spriteBatch.DrawLine(a.Position, b.Position, Color.Gray);
-               }
+//               }
             }
          }
 
