@@ -10,9 +10,9 @@ namespace IdentityService
     class Identity
     {
         public const int KEY_SIZE = 2048;
-        private RSAParameters keyInfo;
         public string publicKey;
-        private Permission permission;
+        public Permission permission;
+        private RSAParameters keyInfo;
 
         public Identity(Permission permission)
         {
