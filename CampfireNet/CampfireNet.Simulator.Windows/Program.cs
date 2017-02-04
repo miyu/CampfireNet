@@ -28,7 +28,8 @@ namespace CampfireNet.Simulator {
    public static class Program {
       [STAThread]
       public static void Main() {
-         var configuration = SimulatorConfiguration.Build(1, 1920, 1080);
+         ThreadPool.SetMaxThreads(8, 8);
+         var configuration = SimulatorConfiguration.Build(2, 1920, 1080);
          var agents = ConstructAgents(configuration);
          new SimulatorGame(configuration, agents).Run();
       }

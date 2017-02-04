@@ -36,9 +36,7 @@ namespace CampfireNet.Simulator {
    public interface IBluetoothNeighbor {
       bool IsConnected { get; }
       ReadableChannel<byte[]> InboundChannel { get; }
-      WritableChannel<byte[]> OutboundChannel { get; }
       Task<bool> TryHandshakeAsync();
-      Task HandshakeAsync();
       Task TrySendAsync(byte[] data);
    }
 
@@ -491,7 +489,6 @@ namespace CampfireNet.Simulator {
          var dConnectnessInRangeBase = dt * 5.0f;
          var dConnectnessOutOfRangeBase = -dt * 50.0f;
          for (var i = 0; i < agents.Length - 1; i++) {
-//         Parallel.For(0, agents.Length - 1, new ParallelOptions { MaxDegreeOfParallelism = 8 }, i => {
             var a = agents[i];
             var aConnectionStates = a.BluetoothState.ConnectionStates;
             for (var j = i + 1; j < agents.Length; j++) {
@@ -507,7 +504,6 @@ namespace CampfireNet.Simulator {
                aConnectionStates[j].Quality = bConnectionStates[i].Quality = quality;
                aConnectionStates[j].Connectedness = bConnectionStates[i].Connectedness = connectedness;
             }
-//         });
          }
 
          if (Keyboard.GetState().IsKeyDown(Keys.A)) {

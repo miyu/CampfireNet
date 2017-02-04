@@ -51,7 +51,6 @@ namespace CampfireNet.Simulator {
          await connectedChannel.ReadAsync(CancellationToken.None, x => true);
 
          var inboundChannel = neighbor.InboundChannel;
-         var outboundChannel = neighbor.OutboundChannel;
          var syncTimerChannel = ChannelFactory.Timer(500);
 
          while (true) {
