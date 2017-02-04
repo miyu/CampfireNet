@@ -55,6 +55,7 @@
     <Compile Include="DargonCommonsExtensions.Collections.cs" />
     <Compile Include="DargonCommonsExtensions.cs" />
     <Compile Include="InvalidStateException.cs" />
+    <Compile Include="PriorityQueue.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -1,4 +1,5 @@
 ﻿using System;
+using System.CodeDom;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -122,10 +123,94 @@ namespace CampfireNet.Simulator {
          public WritableChannel<byte[]> OutboundChannel => connectionContext.GetOtherInboundChannel(self);
       }
 
+      public class AsyncPriorityQueue<T> {
+         private readonly AsyncLock sync = new AsyncLock();
+         private readonly PriorityQueue<T> inner;
+
+         public AsyncPriorityQueue(PriorityQueue<T> inner) {
+            this.inner = inner;
+         }
+
+         public int Count => inner.Count;
+
+         public async Task EnqueueAsync(T item) {
+            using (await sync.LockAsync()) {
+               inner.Enqueue(item);
+            }
+         }
+
+         public async Task<(bool success, T item)> TryDequeueAsync() {
+            using (await sync.LockAsync()) {
+               if (inner.IsEmpty) {
+                  return (false, default(T));
+               } else {
+                  return (true, inner.Dequeue());
+               }
+            }
+         }
+      }
+
+      public class AsyncAdapterEventPriorityQueueChannel<T> : Channel<T> {
+         private readonly object queueSync = new object();
+         private readonly PriorityQueue<T> queue;
+         private readonly Channel<bool> available;
+         private readonly Func<T, DateTime> getItemAvailableTime;
+
+         public AsyncAdapterEventPriorityQueueChannel(PriorityQueue<T> queue, Channel<bool> available, Func<T, DateTime> getItemAvailableTime) {
+            this.queue = queue;
+            this.available = available;
+            this.getItemAvailableTime = getItemAvailableTime;
+         }
+
+         public int Count => queue.Count;
+
+         public bool TryRead(out T message) {
+            bool throwaway;
+            if (available.TryRead(out throwaway)) {
+               lock (queueSync) {
+                  message = queue.Dequeue();
+               }
+               return true;
+            }
+            message = default(T);
+            return false;
+         }
+
+         public async Task<T> ReadAsync(CancellationToken cancellationToken, Func<T, bool> acceptanceTest) {
+            while (true) {
+               await available.ReadAsync(cancellationToken, x => true);
+               lock (queueSync) {
+                  if (acceptanceTest(queue.Peek())) {
+                     return queue.Dequeue();
+                  }
+               }
+               await available.WriteAsync(true, CancellationToken.None);
+            }
+         }
+
+         public async Task WriteAsync(T message, CancellationToken cancellationToken) {
+            lock (queueSync) {
+               queue.Enqueue(message);
+            }
+            Go(async () => {
+               var now = DateTime.Now;
+               var ready = getItemAvailableTime(message);
+               if (now < ready) {
+                  await Task.Delay(ready - now);
+               }
+               await available.WriteAsync(true, CancellationToken.None);
+            }).Forget();
+         }
+      }
+
       public class SimulationConnectionContext {
          private readonly AsyncLock synchronization = new AsyncLock();
          private readonly DeviceAgent firstAgent; 
          private readonly DeviceAgent secondAgent;
+         private readonly Channel<AdapterEvent> adapterEventQueueChannel = new AsyncAdapterEventPriorityQueueChannel<AdapterEvent>(
+            new PriorityQueue<AdapterEvent>((a, b) => a.Time.CompareTo(b.Time)),
+            ChannelFactory.Nonblocking<bool>(),
+            item => item.Time);
 
          // state
          private bool isFirstConnected = false;
@@ -144,43 +229,50 @@ namespace CampfireNet.Simulator {
             this.secondAgent = secondAgent;
          }
 
-         public async Task ConnectAsync(CancellationToken cancellationToken) {
-            using (var guard = await synchronization.LockAsync(cancellationToken)) {
-               if (isConnectingPeerPending) {
-                  // simulate handshake delay
-                  var connectivity = SimulationBluetoothCalculator.ComputeConnectivity(firstAgent, secondAgent);
-                  if (!connectivity.IsSufficientQuality) {
-                     await Task.Delay(SimulationBluetoothConstants.HANDSHAKE_TIMEOUT_MILLIS);
-                     throw new TimeoutException();
-                  }
-                  await Task.Delay(SimulationBluetoothCalculator.ComputeHandshakeDelay(connectivity.SignalQuality), cancellationToken);
+         public void Start() {
+            RunAsync().Forget();
+         }
 
-                  isFirstConnected = true;
+         private async Task RunAsync() {
+            var isConnected = false;
+            var pendingConnectionRequest = (BeginConnectEvent)null;
 
-                  connectingPeerSignal.Set();
-               } else {
-                  isConnectingPeerPending = true;
-                  connectingPeerSignal = new AsyncLatch();
+            while (true) {
+               await new Select {
+                  Case(adapterEventQueueChannel, async adapterEvent => {
+                     switch (adapterEvent.GetType().Name) {
+                        case nameof(BeginConnectEvent):
+                           var connectRequest = (BeginConnectEvent)adapterEvent;
+                           if (pendingConnectionRequest == null) {
+                              pendingConnectionRequest = connectRequest;
+                           } else {
+                              pendingConnectionRequest.ResultBox.SetResult(true);
+                              connectRequest.ResultBox
+                           }
 
-                  guard.Free();
-
-                  // there's a race here.
-                  await connectingPeerSignal.WaitAsync(cancellationToken);
-
-                  isSecondConnected = true;
-               }
+                           break;
+                        case nameof(SendAdapterEvent):
+                           var send = (SendAdapterEvent)adapterEvent;
+                           break;
+                     }
+                  })
+               }.ConfigureAwait(false);
             }
          }
 
-         public async Task SendAsync(DeviceAgent sender, byte[] contents, CancellationToken cancellationToken) {
-            using (await synchronization.LockAsync(cancellationToken)) {
-               await AssertConnectedElseTimeout(sender);
-               GetOtherInboundChannel(sender).Write(contents);
-            }
+         public async Task ConnectAsync(DeviceAgent sender) {
+            var now = DateTime.Now;
+            var connectEvent = new BeginConnectEvent(now, sender);
+            await adapterEventQueueChannel.WriteAsync(connectEvent);
+            var timeoutEvent = new TimeoutConnectEvent(now + TimeSpan.FromMilliseconds(SimulationBluetoothConstants.HANDSHAKE_TIMEOUT_MILLIS), connectEvent);
+            await adapterEventQueueChannel.WriteAsync(timeoutEvent);
+            await connectEvent.ResultBox.GetResultAsync();
+         }
+
+         public async Task SendAsync(DeviceAgent sender, byte[] contents) {
          }
 
          private DeviceAgent GetOther(DeviceAgent self) => self == firstAgent ? secondAgent : firstAgent;
-
          public Channel<byte[]> GetInboundChannel(DeviceAgent self) => self == firstAgent ? firstInboundChannel : secondInboundChannel;
          public Channel<byte[]> GetOtherInboundChannel(DeviceAgent self) => GetInboundChannel(GetOther(self));
 
@@ -207,6 +299,38 @@ namespace CampfireNet.Simulator {
          public bool IsAppearingConnected(DeviceAgent self) {
             return self == firstAgent ? isFirstConnected : isSecondConnected;
          }
+      }
+
+      public abstract class AdapterEvent {
+         protected AdapterEvent(DateTime time) {
+            Time = time;
+         }
+
+         public DateTime Time { get; }
+      }
+
+      public class BeginConnectEvent : AdapterEvent {
+         public BeginConnectEvent(DateTime time, DeviceAgent initiator) : base(time) {
+            Initiator = initiator;
+         }
+
+         public DeviceAgent Initiator { get; }
+         public AsyncBox<bool> ResultBox { get; } = new AsyncBox<bool>();
+      }
+
+      public class TimeoutConnectEvent : AdapterEvent {
+         public TimeoutConnectEvent(DateTime time, BeginConnectEvent beginEvent) : base(time) {
+            BeginEvent = beginEvent;
+         }
+
+         public BeginConnectEvent BeginEvent { get; }
+      }
+
+      public class SendAdapterEvent : AdapterEvent {
+         public SendAdapterEvent(DateTime time, DeviceAgent initiator) : base(time) {
+            Initiator = initiator;
+         }
+         public DeviceAgent Initiator { get; }
       }
    }
 

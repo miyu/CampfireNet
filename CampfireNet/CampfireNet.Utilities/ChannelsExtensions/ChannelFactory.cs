@@ -64,7 +64,7 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
       }
 
       #region List Initializer Support
-      public void Add(ICaseTemporary c) {
+      public void beginConnect(ICaseTemporary c) {
          c.Register(dispatchContext);
       }
 
