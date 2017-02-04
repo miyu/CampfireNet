@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "scratchpad-android", "scratchpad-android\scratchpad-android.csproj", "{5B7F0B2B-685D-43A5-8608-D5E8FA455498}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CampfireNet.Simulator.Windows", "CampfireNet.Simulator.Windows\CampfireNet.Simulator.Windows.csproj", "{82A75F3E-EFAD-4237-AE27-3D54D7183028}"
+	ProjectSection(ProjectDependencies) = postProject
+		{2B952A46-062B-4238-933F-923BC8E77FC9} = {2B952A46-062B-4238-933F-923BC8E77FC9}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CampfireNet.Utilities", "CampfireNet.Utilities\CampfireNet.Utilities.csproj", "{2B952A46-062B-4238-933F-923BC8E77FC9}"
 EndProject

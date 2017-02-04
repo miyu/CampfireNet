@@ -47,7 +47,7 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
                await Task.Delay(interval).ConfigureAwait(false);
                await channel.WriteAsync(true).ConfigureAwait(false);
             }
-         });
+         }).Forget();
 
          return channel;
       }
@@ -64,7 +64,7 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
       }
 
       #region List Initializer Support
-      public void beginConnect(ICaseTemporary c) {
+      public void Add(ICaseTemporary c) {
          c.Register(dispatchContext);
       }
 
