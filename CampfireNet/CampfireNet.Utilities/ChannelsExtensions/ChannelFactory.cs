@@ -120,16 +120,16 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
       //-------------------------------------------------------------------------------------------
       // Syntax Option 3: Select.Case<T>(channel, callback).Case(channel, callback)...
       //-------------------------------------------------------------------------------------------
-      public static DispatchContext Case<T>(ReadableChannel<T> channel, Action<T> callback) {
-         return Dispatch.Once().Case(channel, callback);
+      public static DispatchContext Case<T>(ReadableChannel<T> channel, Action<T> callback, Func<T, bool> additionalAcceptanceTest = null) {
+         return Dispatch.Once().Case(channel, callback, additionalAcceptanceTest);
       }
 
-      public static DispatchContext Case<T>(ReadableChannel<T> channel, Func<Task> callback) {
-         return Dispatch.Once().Case(channel, callback);
+      public static DispatchContext Case<T>(ReadableChannel<T> channel, Func<Task> callback, Func<T, bool> additionalAcceptanceTest = null) {
+         return Dispatch.Once().Case(channel, callback, additionalAcceptanceTest);
       }
 
-      public static DispatchContext Case<T>(ReadableChannel<T> channel, Func<T, Task> callback) {
-         return Dispatch.Once().Case(channel, callback);
+      public static DispatchContext Case<T>(ReadableChannel<T> channel, Func<T, Task> callback, Func<T, bool> additionalAcceptanceTest = null) {
+         return Dispatch.Once().Case(channel, callback, additionalAcceptanceTest);
       }
    }
 

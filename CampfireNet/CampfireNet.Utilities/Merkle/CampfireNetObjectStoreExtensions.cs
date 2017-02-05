@@ -3,6 +3,31 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace CampfireNet.Utilities.Merkle {
+   public static class MerkleNodeSerializationExtensions {
+      public static MerkleNode ReadMerkleNode(this BinaryReader reader) {
+         var result = new MerkleNode();
+         result.TypeTag = (MerkleNodeTypeTag)reader.ReadUInt32();
+         result.LeftHash = reader.ReadSha256Base64();
+         result.RightHash = reader.ReadSha256Base64();
+         result.Descendents = reader.ReadUInt32();
+         result.Contents = reader.ReadBytes((int)reader.ReadUInt32());
+         return result;
+      }
+
+      public static void WriteMerkleNode(this BinaryWriter writer, MerkleNode node) {
+         writer.Write((uint)node.TypeTag);
+         writer.WriteSha256Base64(node.LeftHash);
+         writer.WriteSha256Base64(node.RightHash);
+         writer.Write((uint)node.Descendents);
+         if (node.Contents == null) {
+            writer.Write((uint)0);
+         } else {
+            writer.Write((uint)node.Contents.Length);
+            writer.Write(node.Contents, 0, node.Contents.Length);
+         }
+      }
+   }
+
    public static class CampfireNetObjectStoreExtensions {
       public static async Task<MerkleNode> ReadMerkleNodeAsync(this ICampfireNetObjectStore store, string ns, string hash) {
          var tryReadResult = await store.TryReadAsync(ns, hash);
@@ -14,29 +39,14 @@ namespace CampfireNet.Utilities.Merkle {
          var objectData = tryReadResult.Item2;
          using (var ms = new MemoryStream(objectData))
          using (var reader = new BinaryReader(ms)) {
-            var result = new MerkleNode();
-            result.TypeTag = (MerkleNodeTypeTag)reader.ReadUInt32();
-            result.LeftHash = reader.ReadSha256Base64();
-            result.RightHash = reader.ReadSha256Base64();
-            result.Descendents = reader.ReadUInt32();
-            result.Contents = reader.ReadBytes((int)reader.ReadUInt32());
-            return result;
+            return reader.ReadMerkleNode();
          }
       }
 
       public static async Task<string> WriteMerkleNodeAsync(this ICampfireNetObjectStore store, string ns, MerkleNode node) {
          using (var ms = new MemoryStream()) {
             using (var writer = new BinaryWriter(ms, Encoding.UTF8, true)) {
-               writer.Write((uint)node.TypeTag);
-               writer.WriteSha256Base64(node.LeftHash);
-               writer.WriteSha256Base64(node.RightHash);
-               writer.Write((uint)node.Descendents);
-               if (node.Contents == null) {
-                  writer.Write((uint)0);
-               } else {
-                  writer.Write((uint)node.Contents.Length);
-                  writer.Write(node.Contents, 0, node.Contents.Length);
-               }
+               writer.WriteMerkleNode(node);
             }
 
             var objectData = ms.GetBuffer();

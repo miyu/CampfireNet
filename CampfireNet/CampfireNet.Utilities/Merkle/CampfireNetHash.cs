@@ -22,6 +22,10 @@ namespace CampfireNet.Utilities.Merkle {
          return Convert.ToBase64String(sha256.Value.ComputeHash(contents, offset, length));
       }
 
+      public static string ConvertBase64BufferToSha256Base64String(byte[] buffer) {
+         return new BinaryReader(new MemoryStream(buffer)).ReadSha256Base64();
+      }
+
       public static string ReadSha256Base64(this BinaryReader reader) {
          var buffer = reader.ReadBytes(BASE64_BYTE_COUNT);
          var length = buffer.ToList().IndexOf(0);

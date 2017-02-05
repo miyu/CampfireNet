@@ -8,16 +8,17 @@ using CampfireNet.Utilities.AsyncPrimatives;
 namespace CampfireNet.Utilities.Merkle {
    public class MerkleTree<T> {
       private readonly AsyncLock treeSync = new AsyncLock();
-      private readonly string ns;
+      private readonly string rootKey;
       private readonly IItemOperations<T> itemOperations;
       private readonly ICampfireNetObjectStore objectStore;
 
-      public MerkleTree(string ns, IItemOperations<T> itemOperations, ICampfireNetObjectStore objectStore) {
-         this.ns = ns;
+      public MerkleTree(string rootKey, IItemOperations<T> itemOperations, ICampfireNetObjectStore objectStore) {
+         this.rootKey = rootKey;
          this.itemOperations = itemOperations;
          this.objectStore = objectStore;
       }
 
+      private string RootsNamespace => $"net/roots";
       private string NetworkDataNamespace => $"net/data";
 
       public async Task<string> GetRootHashAsync() {
@@ -27,10 +28,10 @@ namespace CampfireNet.Utilities.Merkle {
       }
 
       private async Task<string> GetRootHashAsyncUnderLock() {
-         var tryReadResult = await objectStore.TryReadAsync(ns, "root");
+         var tryReadResult = await objectStore.TryReadAsync(RootsNamespace, rootKey);
          var rootExists = tryReadResult.Item1;
          return rootExists
-            ? new BinaryReader(new MemoryStream(tryReadResult.Item2)).ReadSha256Base64()
+            ? CampfireNetHash.ConvertBase64BufferToSha256Base64String(tryReadResult.Item2)
             : null;
       }
 
@@ -39,7 +40,7 @@ namespace CampfireNet.Utilities.Merkle {
          using (var ms = new MemoryStream(nextRootHashBytes))
          using (var writer = new BinaryWriter(ms)) {
             writer.WriteSha256Base64(nextRootHash);
-            await objectStore.WriteAsync(ns, "root", nextRootHashBytes);
+            await objectStore.WriteAsync(RootsNamespace, rootKey, nextRootHashBytes);
          }
       }
 
@@ -57,6 +58,18 @@ namespace CampfireNet.Utilities.Merkle {
             Descendents = 0,
             Contents = contents
          };
+         await InsertAsyncInternal(itemNode);
+      }
+
+      public Task InsertAsync(MerkleNode merkleNode) {
+         if (merkleNode.LeftHash != CampfireNetHash.ZERO_HASH_BASE64 ||
+             merkleNode.RightHash != CampfireNetHash.ZERO_HASH_BASE64) {
+            throw new ArgumentException();
+         }
+         return InsertAsyncInternal(merkleNode);
+      }
+
+      private async Task InsertAsyncInternal(MerkleNode itemNode) {
          var itemHash = await objectStore.WriteMerkleNodeAsync(NetworkDataNamespace, itemNode);
 
          // Persist pointer to object in merkle structure.

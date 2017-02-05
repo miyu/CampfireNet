@@ -47,34 +47,36 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
 
       public static Task<T> Go<T>(Func<Task<T>> task) => Run(task);
 
-      public static ICaseTemporary Case<T>(ReadableChannel<T> channel, Action callback) {
-         return new CaseTemporary<T>(channel, Convert<T>(callback));
+      public static ICaseTemporary Case<T>(ReadableChannel<T> channel, Action callback, Func<T, bool> additionalAcceptanceTest = null) {
+         return new CaseTemporary<T>(channel, Convert<T>(callback), additionalAcceptanceTest);
       }
 
-      public static ICaseTemporary Case<T>(ReadableChannel<T> channel, Action<T> callback) {
-         return new CaseTemporary<T>(channel, Convert<T>(callback));
+      public static ICaseTemporary Case<T>(ReadableChannel<T> channel, Action<T> callback, Func<T, bool> additionalAcceptanceTest = null) {
+         return new CaseTemporary<T>(channel, Convert<T>(callback), additionalAcceptanceTest);
       }
 
-      public static ICaseTemporary Case<T>(ReadableChannel<T> channel, Func<Task> callback) {
-         return new CaseTemporary<T>(channel, Convert<T>(callback));
+      public static ICaseTemporary Case<T>(ReadableChannel<T> channel, Func<Task> callback, Func<T, bool> additionalAcceptanceTest = null) {
+         return new CaseTemporary<T>(channel, Convert<T>(callback), additionalAcceptanceTest);
       }
 
-      public static ICaseTemporary Case<T>(ReadableChannel<T> channel, Func<T, Task> callback) {
-         return new CaseTemporary<T>(channel, callback);
+      public static ICaseTemporary Case<T>(ReadableChannel<T> channel, Func<T, Task> callback, Func<T, bool> additionalAcceptanceTest = null) {
+         return new CaseTemporary<T>(channel, callback, additionalAcceptanceTest);
       }
    }
 
    public class CaseTemporary<T> : ICaseTemporary {
       private readonly ReadableChannel<T> channel;
       private readonly Func<T, Task> callback;
+      private readonly Func<T, bool> additionalAcceptanceTest;
 
-      public CaseTemporary(ReadableChannel<T> channel, Func<T, Task> callback) {
+      public CaseTemporary(ReadableChannel<T> channel, Func<T, Task> callback, Func<T, bool> additionalAcceptanceTest) {
          this.channel = channel;
          this.callback = callback;
+         this.additionalAcceptanceTest = additionalAcceptanceTest;
       }
 
       public void Register(DispatchContext dispatchContext) {
-         dispatchContext.Case(channel, callback);
+         dispatchContext.Case(channel, callback, additionalAcceptanceTest);
       }
    }
 
@@ -96,25 +98,25 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
 
       public bool IsCompleted { get; private set; }
 
-      public DispatchContext Case<T>(ReadableChannel<T> channel, Action callback) {
-         return Case(channel, Convert<T>(callback));
+      public DispatchContext Case<T>(ReadableChannel<T> channel, Action callback, Func<T, bool> additionalAcceptanceTest = null) {
+         return Case(channel, Convert<T>(callback), additionalAcceptanceTest);
       }
 
-      public DispatchContext Case<T>(ReadableChannel<T> channel, Action<T> callback) {
-         return Case(channel, Convert<T>(callback));
+      public DispatchContext Case<T>(ReadableChannel<T> channel, Action<T> callback, Func<T, bool> additionalAcceptanceTest = null) {
+         return Case(channel, Convert<T>(callback), additionalAcceptanceTest);
       }
 
-      public DispatchContext Case<T>(ReadableChannel<T> channel, Func<Task> callback) {
-         return Case(channel, Convert<T>(callback));
+      public DispatchContext Case<T>(ReadableChannel<T> channel, Func<Task> callback, Func<T, bool> additionalAcceptanceTest = null) {
+         return Case(channel, Convert<T>(callback), additionalAcceptanceTest);
       }
 
-      public DispatchContext Case<T>(ReadableChannel<T> channel, Func<T, Task> callback) {
-         var task = ProcessCaseAsync<T>(channel, callback);
+      public DispatchContext Case<T>(ReadableChannel<T> channel, Func<T, Task> callback, Func<T, bool> additionalAcceptanceTest = null) {
+         var task = ProcessCaseAsync<T>(channel, callback, additionalAcceptanceTest ?? AcceptAlways);
          tasksToShutdown.Enqueue(task);
          return this;
       }
 
-      private async Task ProcessCaseAsync<T>(ReadableChannel<T> channel, Func<T, Task> callback) {
+      private async Task ProcessCaseAsync<T>(ReadableChannel<T> channel, Func<T, Task> callback, Func<T, bool> additionalAcceptanceTest) {
          try {
             while (!cts.IsCancellationRequested) {
                bool isFinalDispatch = false;
@@ -122,7 +124,10 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
                try {
                   item = await channel.ReadAsync(
                      cts.Token,
-                     acceptanceTest => {
+                     x => {
+                        if (!additionalAcceptanceTest(x)) {
+                           return false;
+                        }
                         if (Interlocked.CompareExchange(ref dispatchesRemaining, 0, 0) == kTimesInfinite) {
                            return true;
                         } else {
@@ -154,17 +159,7 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
                }
 
                // Execute callback
-               try {
-                  await callback(item).ConfigureAwait(false);
-               } catch (Exception ex) {
-                  // Signal all other case workers to exit
-                  cts.Cancel();
-
-                  // Bubble all exceptions up to dispatcher awaiters
-                  IsCompleted = true;
-                  completionBox.SetException(ex);
-                  break;
-               }
+               await callback(item).ConfigureAwait(false);
 
                // Mark dispatcher as completed, signal awaiters
                if (isFinalDispatch) {
@@ -172,9 +167,13 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
                   completionBox.SetResult(true);
                }
             }
-         } catch (Exception e) {
-            Console.Error.WriteLine(e);
-            throw;
+         } catch (Exception ex) {
+            // Signal all other case workers to exit
+            cts.Cancel();
+
+            // Bubble all exceptions up to dispatcher awaiters
+            IsCompleted = true;
+            completionBox.SetException(ex);
          }
       }
 
@@ -193,6 +192,8 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
             }
          }
       }
+
+      public static bool AcceptAlways<T>(T x) => true;
    }
 
    public static class ToFuncTTaskConverter {

@@ -34,13 +34,15 @@ namespace CampfireNet.Simulator {
    }
 
    public interface IBluetoothNeighbor {
+      Guid AdapterId { get; }
       bool IsConnected { get; }
       ReadableChannel<byte[]> InboundChannel { get; }
       Task<bool> TryHandshakeAsync();
-      Task TrySendAsync(byte[] data);
+      Task SendAsync(byte[] data);
    }
 
    public interface IBluetoothAdapter {
+      Guid AdapterId { get; }
       Task<IReadOnlyList<IBluetoothNeighbor>> DiscoverAsync();
    }
 
@@ -65,6 +67,8 @@ namespace CampfireNet.Simulator {
          this.bluetoothState = agents[agentIndex].BluetoothState;
          this.neighborsByAdapterId = neighborsByAdapterId;
       }
+
+      public Guid AdapterId => agents[agentIndex].BluetoothAdapterId;
 
       public void Permit(float dt) {
          rateLimitTokenGrantingCounter += dt;
@@ -102,6 +106,8 @@ namespace CampfireNet.Simulator {
             this.connectionContext = connectionContext;
          }
 
+         public Guid AdapterId => connectionContext.GetOther(self).BluetoothAdapterId;
+
          public async Task<bool> TryHandshakeAsync() {
             try {
                await HandshakeAsync();
@@ -115,7 +121,7 @@ namespace CampfireNet.Simulator {
             return connectionContext.ConnectAsync(self);
          }
 
-         public Task TrySendAsync(byte[] data) {
+         public Task SendAsync(byte[] data) {
             return connectionContext.SendAsync(self, data);
          }
 
@@ -218,16 +224,21 @@ namespace CampfireNet.Simulator {
          private bool isSecondConnected = false;
 
          // connect: 
+         private readonly BinaryLatchChannel firstDisconnectChannel = new BinaryLatchChannel();
+         private readonly BinaryLatchChannel secondDisconnectChannel = new BinaryLatchChannel();
          private bool isConnectingPeerPending;
          private AsyncLatch connectingPeerSignal;
 
          // send:
-         private readonly Channel<byte[]> firstInboundChannel = ChannelFactory.Nonblocking<byte[]>();
-         private readonly Channel<byte[]> secondInboundChannel = ChannelFactory.Nonblocking<byte[]>();
+         private readonly DisconnectableChannel<byte[]> firstInboundChannel;
+         private readonly DisconnectableChannel<byte[]> secondInboundChannel;
 
          public SimulationConnectionContext(DeviceAgent firstAgent, DeviceAgent secondAgent) {
             this.firstAgent = firstAgent;
             this.secondAgent = secondAgent;
+
+            this.firstInboundChannel = new DisconnectableChannel<byte[]>(firstDisconnectChannel, ChannelFactory.Nonblocking<byte[]>());
+            this.secondInboundChannel = new DisconnectableChannel<byte[]>(secondDisconnectChannel, ChannelFactory.Nonblocking<byte[]>());
          }
 
          public void Start() {
@@ -245,13 +256,17 @@ namespace CampfireNet.Simulator {
                      if (pendingBeginConnect == null) {
                         pendingBeginConnect = beginConnect;
                      } else {
-                        //                              Console.WriteLine("Connect success!");
-                        pendingBeginConnect.ResultBox.SetResult(true);
-                        beginConnect.ResultBox.SetResult(true);
+                        await firstDisconnectChannel.SetIsClosedAsync(false);
+                        await secondDisconnectChannel.SetIsClosedAsync(false);
 
-                        pendingBeginConnect = null;
                         isFirstConnected = true;
                         isSecondConnected = true;
+
+                        var pendingBeginConnectCapture = pendingBeginConnect;
+                        pendingBeginConnect = null;
+
+                        pendingBeginConnectCapture.ResultBox.SetResult(true);
+                        beginConnect.ResultBox.SetResult(true);
                      }
                      break;
                   case nameof(TimeoutConnectEvent):
@@ -270,8 +285,12 @@ namespace CampfireNet.Simulator {
 
                      var connectivity = SimulationBluetoothCalculator.ComputeConnectivity(firstAgent, secondAgent);
                      if (!connectivity.InRange) {
+                        await firstDisconnectChannel.SetIsClosedAsync(true);
+                        await secondDisconnectChannel.SetIsClosedAsync(true);
+
                         SetIsConnected(GetOther(send.Initiator), false);
                         SetIsConnected(send.Initiator, false);
+
                         send.CompletionBox.SetException(new NotConnectedException());
                         break;
                      }
@@ -308,7 +327,7 @@ namespace CampfireNet.Simulator {
             await completionBox.GetResultAsync();
          }
 
-         private DeviceAgent GetOther(DeviceAgent self) => self == firstAgent ? secondAgent : firstAgent;
+         public DeviceAgent GetOther(DeviceAgent self) => self == firstAgent ? secondAgent : firstAgent;
          public Channel<byte[]> GetInboundChannel(DeviceAgent self) => self == firstAgent ? firstInboundChannel : secondInboundChannel;
          public Channel<byte[]> GetOtherInboundChannel(DeviceAgent self) => GetInboundChannel(GetOther(self));
          public bool GetIsConnected(DeviceAgent self) => self == firstAgent ? isFirstConnected : isSecondConnected;
@@ -431,6 +450,7 @@ namespace CampfireNet.Simulator {
       private Texture2D whiteTexture;
       private Texture2D whiteCircleTexture;
       private RasterizerState rasterizerState;
+      private int epochAgentIndex = 0;
       private int epoch = 0;
 
       public SimulatorGame(SimulatorConfiguration configuration, DeviceAgent[] agents) {
@@ -456,7 +476,12 @@ namespace CampfireNet.Simulator {
          rasterizerState = GraphicsDevice.RasterizerState = new RasterizerState { MultiSampleAntiAlias = true };
 
          epoch++;
-         agents[0].Client.Number = epoch;
+         epochAgentIndex = 0;
+         agents[epochAgentIndex].Client.BroadcastAsync(
+            new BroadcastMessage {
+               Data = BitConverter.GetBytes(epoch)
+            }).Forget();
+
          //for (int i = 0; i < agents.Count; i++) {
          //   agents[i].Position = new Vector2(320 + 50 * (i % 14), 80 + 70 * i / 14);
          //   agents[i].Velocity *= 0.05f;
@@ -508,7 +533,11 @@ namespace CampfireNet.Simulator {
 
          if (Keyboard.GetState().IsKeyDown(Keys.A)) {
             epoch++;
-            agents[(int)(DateTime.Now.ToFileTime() % agents.Length)].Client.Number = epoch;
+            epochAgentIndex = (int)(DateTime.Now.ToFileTime() % agents.Length);
+            agents[epochAgentIndex].Client.BroadcastAsync(
+               new BroadcastMessage {
+                  Data = BitConverter.GetBytes(epoch)
+               }).Forget();
          }
       }
 
@@ -529,7 +558,7 @@ namespace CampfireNet.Simulator {
          }
 
          for (var i = 0; i < agents.Length; i++) {
-            DrawCenteredCircleWorld(agents[i].Position, configuration.AgentRadius, agents[i].Client.Number != epoch ? Color.Gray : Color.Red);
+            DrawCenteredCircleWorld(agents[i].Position, configuration.AgentRadius, agents[i].Client.Value == 0 ? Color.Gray : Color.Red);
          }
          //spriteBatch.DrawLine(new Vector2(0, 50), new Vector2(100, 50), Color.Red);
          spriteBatch.End();
