@@ -44,6 +44,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="CoTProcessor.cs" />
+    <Compile Include="IdentityManager.cs" />
     <Compile Include="Permission.cs" />
     <Compile Include="Identity.cs" />
     <Compile Include="Program.cs" />
