@@ -30,7 +30,7 @@ namespace CampfireNet.Simulator {
       [STAThread]
       public static void Main() {
          ThreadPool.SetMaxThreads(8, 8);
-         var configuration = SimulatorConfiguration.Build(2, 1920, 1080);
+         var configuration = SimulatorConfiguration.Build(3, 1920, 1080);
          var agents = ConstructAgents(configuration);
          new SimulatorGame(configuration, agents).Run();
       }
@@ -46,10 +46,7 @@ namespace CampfireNet.Simulator {
                   random.Next(configuration.AgentRadius, configuration.FieldWidth - configuration.AgentRadius),
                   random.Next(configuration.AgentRadius, configuration.FieldHeight - configuration.AgentRadius)
                ),
-               Velocity = Vector2.Transform(new Vector2(10, 0), Matrix.CreateRotationZ((float)(random.NextDouble() * Math.PI * 2))),
-               BluetoothState = new SimulationBluetoothState {
-                  ConnectionStates = Enumerable.Range(0, agents.Length).Select(x => new SimulationBluetoothConnectionState()).ToArray()
-               }
+               Velocity = Vector2.Transform(new Vector2(10, 0), Matrix.CreateRotationZ((float)(random.NextDouble() * Math.PI * 2)))
             };
          }
 

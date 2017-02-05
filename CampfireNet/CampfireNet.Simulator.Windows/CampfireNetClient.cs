@@ -39,7 +39,7 @@ namespace CampfireNet.Simulator {
       }
 
       public async Task DiscoverAsync() {
-         var rateLimit = ChannelFactory.Timer(5000, 5000);
+         var rateLimit = ChannelFactory.Timer(1000); //5000, 5000);
          var connectedNeighborContextsByAdapterId = new ConcurrentDictionary<Guid, NeighborConnectionContext>();
          while (true) {
             await rateLimit.ReadAsync();

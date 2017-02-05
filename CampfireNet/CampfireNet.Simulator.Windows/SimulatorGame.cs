@@ -1,5 +1,6 @@
 ﻿using System;
 using System.CodeDom;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -15,20 +16,16 @@ using Rectangle = Microsoft.Xna.Framework.Rectangle;
 using static CampfireNet.Utilities.ChannelsExtensions.ChannelsExtensions;
 
 namespace CampfireNet.Simulator {
-   public struct SimulationBluetoothConnectionState {
+   public class SimulationBluetoothConnectionState {
       public float Quality;
       public float Connectedness;
-   }
-
-   public class SimulationBluetoothState {
-      public SimulationBluetoothConnectionState[] ConnectionStates { get; set; }
    }
    
    public class DeviceAgent {
       public Guid BluetoothAdapterId;
       public Vector2 Position;
       public Vector2 Velocity;
-      public SimulationBluetoothState BluetoothState;
+      public ConcurrentDictionary<DeviceAgent, SimulationBluetoothConnectionState> ActiveConnectionStates = new ConcurrentDictionary<DeviceAgent, SimulationBluetoothConnectionState>();
       public SimulationBluetoothAdapter BluetoothAdapter;
       public CampfireNetClient Client;
    }
@@ -54,7 +51,6 @@ namespace CampfireNet.Simulator {
       private readonly AsyncSemaphore requestRateLimitSemaphore = new AsyncSemaphore(0);
       private readonly DeviceAgent[] agents;
       private readonly int agentIndex;
-      private readonly SimulationBluetoothState bluetoothState;
       public const int MAX_RATE_LIMIT_TOKENS = 3;
       private float rateLimitTokenGrantingCounter = 0.0f;
       private readonly Dictionary<Guid, SimulationBluetoothNeighbor> neighborsByAdapterId;
@@ -64,7 +60,6 @@ namespace CampfireNet.Simulator {
       public SimulationBluetoothAdapter(DeviceAgent[] agents, int agentIndex, Dictionary<Guid, SimulationBluetoothNeighbor> neighborsByAdapterId) {
          this.agents = agents;
          this.agentIndex = agentIndex;
-         this.bluetoothState = agents[agentIndex].BluetoothState;
          this.neighborsByAdapterId = neighborsByAdapterId;
       }
 
@@ -85,16 +80,12 @@ namespace CampfireNet.Simulator {
       public async Task<IReadOnlyList<IBluetoothNeighbor>> DiscoverAsync() {
          await requestRateLimitSemaphore.WaitAsync();
          var neighbors = new List<IBluetoothNeighbor>();
-         for (int i = 0; i < agents.Length; i++) {
-            if (bluetoothState.ConnectionStates[i].Connectedness == 1.0f) {
-               neighbors.Add(neighborsByAdapterId[agents[i].BluetoothAdapterId]);
+         foreach (var pair in agents[agentIndex].ActiveConnectionStates) {
+            if (pair.Value.Connectedness == 1.0f) {
+               neighbors.Add(neighborsByAdapterId[pair.Key.BluetoothAdapterId]);
             }
          }
          return neighbors;
-      }
-
-      public void Inject(Guid senderId, byte[] contents) {
-
       }
 
       public class SimulationBluetoothNeighbor : IBluetoothNeighbor {
@@ -472,25 +463,84 @@ namespace CampfireNet.Simulator {
             agent.BluetoothAdapter.Permit(dt);
          }
 
-         var dConnectnessInRangeBase = dt * 5.0f;
-         var dConnectnessOutOfRangeBase = -dt * 50.0f;
-         for (var i = 0; i < agents.Length - 1; i++) {
-            var a = agents[i];
-            var aConnectionStates = a.BluetoothState.ConnectionStates;
-            for (var j = i + 1; j < agents.Length; j++) {
-               var b = agents[j];
-               var bConnectionStates = b.BluetoothState.ConnectionStates;
-               var distanceSquared = (a.Position - b.Position).LengthSquared();
-               var quality = 1.0f - distanceSquared / (float)SimulationBluetoothConstants.RANGE_SQUARED; // Math.Max(0.0f, 1.0f - distanceSquared / (float)BLUETOOTH_RANGE_SQUARED);
-               var inRange = distanceSquared < SimulationBluetoothConstants.RANGE_SQUARED;
-               float connectedness = aConnectionStates[j].Connectedness;
-               var dConnectedness = (inRange ? quality * dConnectnessInRangeBase : dConnectnessOutOfRangeBase);
-               connectedness = Math.Max(0.0f, Math.Min(1.0f, connectedness + dConnectedness));
+         int columns = 1 + (configuration.FieldWidth - 1) / SimulationBluetoothConstants.RANGE;
+         int rows = 1 + (configuration.FieldHeight - 1) / SimulationBluetoothConstants.RANGE;
+         var bins = Enumerable.Range(0, columns * rows).Select(i => new List<DeviceAgent>()).ToArray();
+         foreach (var agent in agents) {
+            var binX = ((int)agent.Position.X) / SimulationBluetoothConstants.RANGE;
+            var binY = ((int)agent.Position.Y) / SimulationBluetoothConstants.RANGE;
+            bins[binX + binY * columns].Add(agent);
+         }
 
-               aConnectionStates[j].Quality = bConnectionStates[i].Quality = quality;
-               aConnectionStates[j].Connectedness = bConnectionStates[i].Connectedness = connectedness;
+         var processAgentPair = new Action<DeviceAgent, DeviceAgent>((a, b) => {
+            var distanceSquared = (a.Position - b.Position).LengthSquared();
+            if (distanceSquared < SimulationBluetoothConstants.RANGE_SQUARED) {
+               if (!a.ActiveConnectionStates.ContainsKey(b)) {
+                  var connectionState = new SimulationBluetoothConnectionState();
+                  a.ActiveConnectionStates.AddOrThrow(b, connectionState);
+                  b.ActiveConnectionStates.AddOrThrow(a, connectionState);
+               }
+            }
+         });
+
+         var processBins = new Action<List<DeviceAgent>, List<DeviceAgent>>((a, b) => {
+            if (a == b) {
+               for (var i = 0; i < a.Count - 1; i++) {
+                  for (var j = i + 1; j < a.Count; j++) {
+                     processAgentPair(a[i], a[j]);
+                  }
+               }
+            } else {
+               for (var i = 0; i < a.Count; i++) {
+                  for (var j = 0; j < b.Count; j++) {
+                     processAgentPair(a[i], b[j]);
+                  }
+               }
+            }
+         });
+         
+         for (var y = 0; y < rows - 1; y++) {
+            for (var x = 0; x < columns - 1; x++) {
+               var a = bins[x + y * columns];
+               processBins(a, a);
+               processBins(a, bins[(x + 1) + y * columns]);
+               processBins(a, bins[x + (y + 1) * columns]);
+               processBins(a, bins[(x + 1) + (y + 1) * columns]);
             }
          }
+
+         var dConnectnessInRangeBase = dt * 5.0f;
+         var dConnectnessOutOfRangeBase = -dt * 50.0f;
+         foreach (var agent in agents) {
+            foreach (var pair in agent.ActiveConnectionStates) {
+               if (agent.BluetoothAdapterId.CompareTo(pair.Key.BluetoothAdapterId) < 0)
+                  continue;
+
+               var other = pair.Key;
+               var connectivity = SimulationBluetoothCalculator.ComputeConnectivity(agent, other);
+               var deltaConnectedness = (connectivity.InRange ? connectivity.SignalQuality * dConnectnessInRangeBase : dConnectnessOutOfRangeBase);
+
+               var connectionState = pair.Value;
+               float nextConnectedness = Math.Max(0.0f, Math.Min(1.0f, connectionState.Connectedness + deltaConnectedness));
+
+               connectionState.Quality = connectivity.SignalQuality;
+               connectionState.Connectedness = nextConnectedness;
+
+               if (connectionState.Connectedness < 0) {
+                  agent.ActiveConnectionStates.RemoveOrThrow(other);
+                  other.ActiveConnectionStates.RemoveOrThrow(agent);
+               }
+            }
+         }
+
+//         for (var i = 0; i < agents.Length - 1; i++) {
+//            var a = agents[i];
+//            var aConnectionStates = a.BluetoothState.ConnectionStates;
+//            for (var j = i + 1; j < agents.Length; j++) {
+//               var b = agents[j];
+//               var bConnectionStates = b.BluetoothState.ConnectionStates;
+//            }
+//         }
 
          if (Keyboard.GetState().IsKeyDown(Keys.A)) {
             epoch++;
@@ -505,16 +555,22 @@ namespace CampfireNet.Simulator {
       protected override void Draw(GameTime gameTime) {
          base.Draw(gameTime);
 
+         Console.WriteLine((int)(1000 / gameTime.ElapsedGameTime.TotalMilliseconds) + " " + gameTime.ElapsedGameTime.TotalMilliseconds);
+
          GraphicsDevice.Clear(Color.White);
          spriteBatch.Begin(SpriteSortMode.Deferred, null, transformMatrix: Matrix.CreateScale((float)configuration.DisplayHeight / configuration.FieldHeight));
 
          for (var i = 0; i < agents.Length - 1; i++) {
-            var a = agents[i];
-            for (var j = i + 1; j < agents.Length; j++) {
-               var b = agents[j];
-               var neighborBluetoothAdapter = a.BluetoothAdapter.NeighborsByAdapterId[b.BluetoothAdapterId];
+            var agent = agents[i];
+            foreach (var pair in agent.ActiveConnectionStates) {
+               var other = pair.Key;
+
+               if (agent.BluetoothAdapterId.CompareTo(other.BluetoothAdapterId) < 0)
+                  continue;
+
+               var neighborBluetoothAdapter = agent.BluetoothAdapter.NeighborsByAdapterId[other.BluetoothAdapterId];
                if (neighborBluetoothAdapter.IsConnected)
-                  spriteBatch.DrawLine(a.Position, b.Position, Color.Gray);
+                  spriteBatch.DrawLine(agent.Position, other.Position, Color.Gray);
             }
          }
 
