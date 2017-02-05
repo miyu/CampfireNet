@@ -526,7 +526,7 @@ namespace CampfireNet.Simulator {
                connectionState.Quality = connectivity.SignalQuality;
                connectionState.Connectedness = nextConnectedness;
 
-               if (connectionState.Connectedness < 0) {
+               if (nextConnectedness == 0.0f) {
                   agent.ActiveConnectionStates.RemoveOrThrow(other);
                   other.ActiveConnectionStates.RemoveOrThrow(agent);
                }
