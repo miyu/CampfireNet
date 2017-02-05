@@ -3,9 +3,11 @@
   <MonoDevelop.Ide.ItemProperties.IdentityService PreferredExecutionTarget="MonoDevelop.Default" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Droid/MainActivity.cs">
     <Files>
-      <File FileName="Droid/MainActivity.cs" Line="78" Column="3" />
-      <File FileName="AndroidTest/MyClass.cs" Line="8" Column="4" />
-      <File FileName="Droid/BluetoothTest.cs" Line="12" Column="31" />
+      <File FileName="Droid/MainActivity.cs" Line="103" Column="1" />
+      <File FileName="Droid/ChatServer.cs" Line="134" Column="9" />
+      <File FileName="IdentityService/Program.cs" Line="19" Column="71" />
+      <File FileName="IdentityService/Permissions.cs" Line="11" Column="3" />
+      <File FileName="IdentityService/TrustManager.cs" Line="28" Column="1" />
       <File FileName="Droid/Properties/AndroidManifest.xml" Line="10" Column="12" />
     </Files>
   </MonoDevelop.Ide.Workbench>
@@ -16,5 +18,5 @@
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
   <MultiItemStartupConfigurations />
-  <MonoDevelop.Ide.ItemProperties.AndroidTest.Droid AndroidDesignerPreferredDevice="Nexus 4" PreferredExecutionTarget="Android.Android_Accelerated_x86" />
+  <MonoDevelop.Ide.ItemProperties.AndroidTest.Droid AndroidDesignerPreferredDevice="Nexus 4" PreferredExecutionTarget="Android.05157df5aab39832" AndroidDesignerPreferredTheme="Theme.Black.NoTitleBar" />
 </Properties>

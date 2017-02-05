@@ -2,19 +2,79 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
-    <Button
-        android:text="Press to discover"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/Discover" />
-    <ProgressBar
-        style="?android:attr/progressBarStyleLarge"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/Progress" />
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/DeviceList" />
+    android:layout_height="match_parent"
+    android:weightSum="100">
+    <LinearLayout
+        android:orientation="vertical"
+        android:id="@+id/DeviceDiscoverLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="200dp">
+        <Button
+            android:text="Press to discover"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/Discover" />
+        <ListView
+            android:minWidth="25px"
+            android:minHeight="25px"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:id="@+id/DeviceList"
+            android:layout_marginBottom="0.0dp"
+            android:layout_marginTop="0.0dp" />
+    </LinearLayout>
+    <LinearLayout
+        android:orientation="vertical"
+        android:minWidth="25px"
+        android:minHeight="25px"
+        android:layout_below="@+id/DeviceDiscoverLayout"
+        android:id="@+id/ConnectionLayout"
+        android:layout_width="wrap_content"
+        android:layout_height="fill_parent">
+        <LinearLayout
+            android:orientation="horizontal"
+            android:id="@+id/ModeButtonLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <Button
+                android:text="Be Server"
+                android:id="@+id/Server"
+                android:layout_weight="1"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content" />
+            <Button
+                android:text="Be Client"
+                android:id="@+id/Client"
+                android:layout_weight="1"
+                android:layout_width="0dip"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+        <ListView
+            android:minWidth="25px"
+            android:minHeight="25px"
+            android:id="@+id/Log"
+            android:layout_below="@id/ModeButtonLayout"
+            android:listSelector="@android:color/transparent"
+            android:cacheColorHint="@android:color/transparent"
+            android:contextClickable="false"
+            android:layout_width="match_parent"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" />
+        <RelativeLayout 
+            android:id="@+id/SendTextLayout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true" >
+            <EditText
+                android:id="@+id/TextInput"
+                android:layout_width="fill_parent"
+                android:layout_height="wrap_content" />
+            <Button
+                android:text="Send"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentRight="true" 
+                android:id="@+id/SendTextButton" />
+        </RelativeLayout>
+    </LinearLayout>
 </LinearLayout>
