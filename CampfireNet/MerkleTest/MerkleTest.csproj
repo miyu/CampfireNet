@@ -4,16 +4,17 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2B952A46-062B-4238-933F-923BC8E77FC9}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CampfireNet.Utilities</RootNamespace>
-    <AssemblyName>CampfireNet.Utilities</AssemblyName>
+    <ProjectGuid>{D8196E2A-968B-4921-A541-1ED72558B159}</ProjectGuid>
+    <OutputType>Exe</OutputType>
+    <RootNamespace>MerkleTest</RootNamespace>
+    <AssemblyName>MerkleTest</AssemblyName>
     <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
@@ -23,6 +24,7 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <PlatformTarget>AnyCPU</PlatformTarget>
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
@@ -41,31 +43,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AsyncPrimatives\AsyncAutoResetLatch.cs" />
-    <Compile Include="AsyncPrimatives\AsyncBox.cs" />
-    <Compile Include="AsyncPrimatives\AsyncCountdownLatch.cs" />
-    <Compile Include="AsyncPrimatives\AsyncLatch.cs" />
-    <Compile Include="AsyncPrimatives\AsyncLock.cs" />
-    <Compile Include="AsyncPrimatives\AsyncSemaphore.cs" />
-    <Compile Include="ChannelsExtensions\Channel.cs" />
-    <Compile Include="ChannelsExtensions\ChannelFactory.cs" />
-    <Compile Include="ChannelsExtensions\ChannelsExtensions.cs" />
-    <Compile Include="ChannelsExtensions\NonblockingChannel.cs" />
-    <Compile Include="Collections\ConcurrentSet.cs" />
-    <Compile Include="DargonCommonsExtensions.Collections.cs" />
-    <Compile Include="DargonCommonsExtensions.cs" />
-    <Compile Include="InvalidStateException.cs" />
-    <Compile Include="Merkle\CampfireNetHash.cs" />
-    <Compile Include="Merkle\CampfireNetObjectStoreExtensions.cs" />
-    <Compile Include="Merkle\FileSystemCampfireNetObjectStore.cs" />
-    <Compile Include="Merkle\ICampfireNetObjectStore.cs" />
-    <Compile Include="Merkle\IItemOperations.cs" />
-    <Compile Include="Merkle\MerkleNode.cs" />
-    <Compile Include="Merkle\MerkleNodeTypeTag.cs" />
-    <Compile Include="Merkle\MerkleTree.cs" />
-    <Compile Include="PriorityQueue.cs" />
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
+      <Project>{2b952a46-062b-4238-933f-923bc8e77fc9}</Project>
+      <Name>CampfireNet.Utilities</Name>
+    </ProjectReference>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
