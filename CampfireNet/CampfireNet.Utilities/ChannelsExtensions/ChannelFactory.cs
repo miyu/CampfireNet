@@ -36,15 +36,17 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
          return channel;
       }
 
-      public static ReadableChannel<bool> Timer(int millis) => Timer(TimeSpan.FromMilliseconds(millis));
+      public static ReadableChannel<bool> Timer(int millis, int randomize = 0) => Timer(TimeSpan.FromMilliseconds(millis), TimeSpan.FromMilliseconds(randomize));
 
-      public static ReadableChannel<bool> Timer(TimeSpan interval) {
+      public static ReadableChannel<bool> Timer(TimeSpan interval, TimeSpan randomize = default(TimeSpan)) {
          var channel = Blocking<bool>();
 
          // TODO: Timer must be disposable to prevent task leaks.
          Go(async () => {
+            var rand = new Random(channel.GetHashCode());
             while (true) {
-               await Task.Delay(interval).ConfigureAwait(false);
+               var delay = TimeSpan.FromMilliseconds(interval.TotalMilliseconds + randomize.TotalMilliseconds * rand.NextDouble());
+               await Task.Delay(delay).ConfigureAwait(false);
                await channel.WriteAsync(true).ConfigureAwait(false);
             }
          }).Forget();

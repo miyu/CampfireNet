@@ -55,6 +55,7 @@
   <ItemGroup>
     <Compile Include="CampfireNetClient.cs" />
     <Compile Include="BroadcastMessage.cs" />
+    <Compile Include="NeighborConnectionContext.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="SimulatorGame.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

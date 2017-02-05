@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -40,17 +39,25 @@ namespace CampfireNet.Simulator {
       }
 
       public async Task DiscoverAsync() {
+         var rateLimit = ChannelFactory.Timer(5000, 5000);
+         var connectedNeighborContextsByAdapterId = new ConcurrentDictionary<Guid, NeighborConnectionContext>();
          while (true) {
+            await rateLimit.ReadAsync();
+
             var neighbors = await bluetoothAdapter.DiscoverAsync();
             await Task.WhenAll(
                neighbors.Where(neighbor => !neighbor.IsConnected)
+                        .Where(neighbor => !connectedNeighborContextsByAdapterId.ContainsKey(neighbor.AdapterId))
                         .Select(neighbor => Go(async () => {
                            var connected = await neighbor.TryHandshakeAsync();
                            if (!connected) return;
 
                            var remoteMerkleTree = merkleTreeFactory.CreateForNeighbor(neighbor.AdapterId.ToString("N"));
                            var connectionContext = new NeighborConnectionContext(bluetoothAdapter, neighbor, localMerkleTree, remoteMerkleTree);
-                           connectionContext.Start();
+                           connectedNeighborContextsByAdapterId.AddOrThrow(neighbor.AdapterId, connectionContext);
+                           connectionContext.Start(() => {
+                              connectedNeighborContextsByAdapterId.RemoveOrThrow(neighbor.AdapterId);
+                           });
                         }))
             );
          }
@@ -62,6 +69,11 @@ namespace CampfireNet.Simulator {
       private bool isClosed = false;
       private AsyncLatch latch = new AsyncLatch();
 
+      public BinaryLatchChannel(bool isClosed = false) {
+         SetIsClosed(isClosed);
+      }
+
+      public bool IsClosed => isClosed;
       public int Count => isClosed ? 1 : 0;
 
       public bool TryRead(out bool message) {
@@ -79,9 +91,10 @@ namespace CampfireNet.Simulator {
          }
       }
 
-      public async Task SetIsClosedAsync(bool value) {
+      public void SetIsClosed(bool value) {
          lock (synchronization) {
             if (isClosed == value) return;
+            isClosed = value;
 
             if (value) {
                latch.Set();
@@ -108,186 +121,24 @@ namespace CampfireNet.Simulator {
       }
 
       public async Task<T> ReadAsync(CancellationToken cancellationToken, Func<T, bool> acceptanceTest) {
+         bool disconnected = false;
          T result = default(T);
          await new Select {
             Case(disconnectedChannel, () => {
-               throw new NotConnectedException();
+               disconnected = true;
             }),
             Case(dataChannel, data => {
                result = data;
             }, acceptanceTest)
          }.WaitAsync(cancellationToken);
+         if (disconnected) {
+            throw new NotConnectedException();
+         }
          return result;
       }
 
       public Task WriteAsync(T message, CancellationToken cancellationToken) {
          return dataChannel.WriteAsync(message, cancellationToken);
-      }
-   }
-
-   public class NeighborConnectionContext {
-      private readonly WirePacketSerializer serializer = new WirePacketSerializer();
-
-      private readonly BinaryLatchChannel disconnectLatchChannel = new BinaryLatchChannel();
-      private readonly DisconnectableChannel<HavePacket> haveChannel;
-      private readonly DisconnectableChannel<NeedPacket> needChannel;
-      private readonly DisconnectableChannel<GivePacket> giveChannel;
-      private readonly DisconnectableChannel<DonePacket> doneChannel;
-
-      private readonly IBluetoothAdapter bluetoothAdapter;
-      private readonly IBluetoothNeighbor neighbor;
-
-      private readonly MerkleTree<BroadcastMessage> localMerkleTree;
-      private readonly MerkleTree<BroadcastMessage> remoteMerkleTree;
-
-      public NeighborConnectionContext(
-         IBluetoothAdapter bluetoothAdapter, 
-         IBluetoothNeighbor neighbor,
-         MerkleTree<BroadcastMessage> localMerkleTree,
-         MerkleTree<BroadcastMessage> remoteMerkleTree
-      ) {
-         this.haveChannel = new DisconnectableChannel<HavePacket>(disconnectLatchChannel, ChannelFactory.Nonblocking<HavePacket>());
-         this.needChannel = new DisconnectableChannel<NeedPacket>(disconnectLatchChannel, ChannelFactory.Nonblocking<NeedPacket>());
-         this.giveChannel = new DisconnectableChannel<GivePacket>(disconnectLatchChannel, ChannelFactory.Nonblocking<GivePacket>());
-         this.doneChannel = new DisconnectableChannel<DonePacket>(disconnectLatchChannel, ChannelFactory.Nonblocking<DonePacket>());
-
-         this.bluetoothAdapter = bluetoothAdapter;
-         this.neighbor = neighbor;
-         this.localMerkleTree = localMerkleTree;
-         this.remoteMerkleTree = remoteMerkleTree;
-      }
-
-      public void Start() {
-         RouterTaskStart().Forget();
-         SynchronizationLoopTaskStart().Forget();
-      }
-
-      private async Task RouterTaskStart() {
-         var inboundChannel = neighbor.InboundChannel;
-         try {
-            while (true) {
-               var packetData = await inboundChannel.ReadAsync();
-               var packet = serializer.ToObject(packetData);
-               switch (packet.GetType().Name) {
-                  case nameof(HavePacket):
-                     await haveChannel.WriteAsync((HavePacket)packet);
-                     break;
-                  case nameof(NeedPacket):
-                     await needChannel.WriteAsync((NeedPacket)packet);
-                     break;
-                  case nameof(GivePacket):
-                     await giveChannel.WriteAsync((GivePacket)packet);
-                     break;
-                  case nameof(DonePacket):
-                     await doneChannel.WriteAsync((DonePacket)packet);
-                     break;
-                  default:
-                     throw new InvalidStateException();
-               }
-            }
-         } catch (NotConnectedException) {
-            await disconnectLatchChannel.SetIsClosedAsync(true);
-         }
-      }
-
-      private async Task SynchronizationLoopTaskStart() {
-         var isGreater = bluetoothAdapter.AdapterId.CompareTo(neighbor.AdapterId) > 0;
-         var rateLimit = ChannelFactory.Timer(1000);
-         try {
-            while (true) {
-               await rateLimit.ReadAsync();
-
-               if (isGreater) {
-                  await SynchronizeRemoteToLocalAsync();
-                  await SynchronizeLocalToRemoteAsync();
-               } else {
-                  await SynchronizeLocalToRemoteAsync();
-                  await SynchronizeRemoteToLocalAsync();
-               }
-            }
-         } catch (NotConnectedException) {
-            await disconnectLatchChannel.SetIsClosedAsync(true);
-         }
-      }
-
-      private async Task SynchronizeRemoteToLocalAsync() {
-         var have = await haveChannel.ReadAsync();
-         
-         if (!await IsRemoteObjectHeldLocally(have.MerkleRootHash)) {
-            var nodesToImport = new List<Tuple<string, MerkleNode>>();
-
-            var neededHashes = new LinkedList<string>();
-            neededHashes.AddLast(have.MerkleRootHash);
-
-            while (neededHashes.Count != 0) {
-               foreach (var hash in neededHashes) {
-                  Console.WriteLine("EMIT NEED " + hash);
-                  var need = new NeedPacket { MerkleRootHash = hash };
-                  await neighbor.SendAsync(serializer.ToByteArray(need));
-               }
-
-               foreach (var hash in Enumerable.Range(0, neededHashes.Count)) {
-                  neededHashes.RemoveFirst();
-
-                  var give = await giveChannel.ReadAsync();
-                  nodesToImport.Add(Tuple.Create(give.NodeHash, give.Node));
-                  Console.WriteLine("RECV GIVE " + give.NodeHash);
-
-                  if (!await IsRemoteObjectHeldLocally(give.Node.LeftHash)) {
-                     neededHashes.AddLast(give.Node.LeftHash);
-                  }
-
-                  if (!await IsRemoteObjectHeldLocally(give.Node.RightHash)) {
-                     neededHashes.AddLast(give.Node.RightHash);
-                  }
-               }
-            }
-
-            Console.WriteLine("IMPORT");
-            await remoteMerkleTree.ImportAsync(have.MerkleRootHash, nodesToImport);
-
-            foreach (var tuple in nodesToImport) {
-               var node = tuple.Item2;
-               if (node.Descendents == 0) {
-                  await localMerkleTree.InsertAsync(tuple.Item2);
-               }
-            }
-         }
-
-         await neighbor.SendAsync(serializer.ToByteArray(new DonePacket()));
-      }
-
-      private async Task SynchronizeLocalToRemoteAsync() {
-         var localRootHash = await localMerkleTree.GetRootHashAsync() ?? CampfireNetHash.ZERO_HASH_BASE64;
-         var havePacket = new HavePacket { MerkleRootHash = localRootHash };
-         await neighbor.SendAsync(serializer.ToByteArray(havePacket));
-
-         bool done = false;
-         while (!done) {
-            await new Select {
-               Case(doneChannel, () => {
-                  done = true;
-               }),
-               Case(needChannel, async need => {
-                  Console.WriteLine("RECV NEED " + need.MerkleRootHash);
-
-                  var node = await localMerkleTree.GetNodeAsync(need.MerkleRootHash);
-                  var give = new GivePacket {
-                     NodeHash = need.MerkleRootHash,
-                     Node = node
-                  };
-                  await neighbor.SendAsync(serializer.ToByteArray(give));
-                  Console.WriteLine("EMIT GIVE " + need.MerkleRootHash);
-               })
-            }.ConfigureAwait(false);
-         }
-      }
-
-      private async Task<bool> IsRemoteObjectHeldLocally(string hash) {
-         if (hash == CampfireNetHash.ZERO_HASH_BASE64) {
-            return true;
-         }
-         return await remoteMerkleTree.GetNodeAsync(hash) != null;
       }
    }
 

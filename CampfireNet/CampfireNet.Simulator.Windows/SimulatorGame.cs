@@ -125,9 +125,8 @@ namespace CampfireNet.Simulator {
             return connectionContext.SendAsync(self, data);
          }
 
-         public bool IsConnected => connectionContext.IsAppearingConnected(self);
+         public bool IsConnected => connectionContext.GetIsConnected(self);
          public ReadableChannel<byte[]> InboundChannel => connectionContext.GetInboundChannel(self);
-         public WritableChannel<byte[]> OutboundChannel => connectionContext.GetOtherInboundChannel(self);
       }
 
       public class AsyncPriorityQueue<T> {
@@ -219,13 +218,9 @@ namespace CampfireNet.Simulator {
             ChannelFactory.Nonblocking<bool>(),
             item => item.Time);
 
-         // state
-         private bool isFirstConnected = false;
-         private bool isSecondConnected = false;
-
          // connect: 
-         private readonly BinaryLatchChannel firstDisconnectChannel = new BinaryLatchChannel();
-         private readonly BinaryLatchChannel secondDisconnectChannel = new BinaryLatchChannel();
+         private readonly BinaryLatchChannel firstDisconnectChannel = new BinaryLatchChannel(true);
+         private readonly BinaryLatchChannel secondDisconnectChannel = new BinaryLatchChannel(true);
          private bool isConnectingPeerPending;
          private AsyncLatch connectingPeerSignal;
 
@@ -256,11 +251,8 @@ namespace CampfireNet.Simulator {
                      if (pendingBeginConnect == null) {
                         pendingBeginConnect = beginConnect;
                      } else {
-                        await firstDisconnectChannel.SetIsClosedAsync(false);
-                        await secondDisconnectChannel.SetIsClosedAsync(false);
-
-                        isFirstConnected = true;
-                        isSecondConnected = true;
+                        firstDisconnectChannel.SetIsClosed(false);
+                        secondDisconnectChannel.SetIsClosed(false);
 
                         var pendingBeginConnectCapture = pendingBeginConnect;
                         pendingBeginConnect = null;
@@ -285,11 +277,8 @@ namespace CampfireNet.Simulator {
 
                      var connectivity = SimulationBluetoothCalculator.ComputeConnectivity(firstAgent, secondAgent);
                      if (!connectivity.InRange) {
-                        await firstDisconnectChannel.SetIsClosedAsync(true);
-                        await secondDisconnectChannel.SetIsClosedAsync(true);
-
-                        SetIsConnected(GetOther(send.Initiator), false);
-                        SetIsConnected(send.Initiator, false);
+                        firstDisconnectChannel.SetIsClosed(true);
+                        secondDisconnectChannel.SetIsClosed(true);
 
                         send.CompletionBox.SetException(new NotConnectedException());
                         break;
@@ -298,7 +287,7 @@ namespace CampfireNet.Simulator {
                      var deltaBytesSent = (int)Math.Ceiling(connectivity.SignalQuality * send.Interval.TotalSeconds * SimulationBluetoothConstants.MAX_OUTBOUND_BYTES_PER_SECOND);
                      var bytesSent = send.BytesSent + deltaBytesSent;
                      if (bytesSent >= send.Payload.Length) {
-                        await GetOtherInboundChannel(send.Initiator).WriteAsync(send.Payload);
+                        await GetOtherInboundChannelInternal(send.Initiator).WriteAsync(send.Payload);
                         send.CompletionBox.SetResult(true);
                         break;
                      }
@@ -328,40 +317,12 @@ namespace CampfireNet.Simulator {
          }
 
          public DeviceAgent GetOther(DeviceAgent self) => self == firstAgent ? secondAgent : firstAgent;
-         public Channel<byte[]> GetInboundChannel(DeviceAgent self) => self == firstAgent ? firstInboundChannel : secondInboundChannel;
-         public Channel<byte[]> GetOtherInboundChannel(DeviceAgent self) => GetInboundChannel(GetOther(self));
-         public bool GetIsConnected(DeviceAgent self) => self == firstAgent ? isFirstConnected : isSecondConnected;
-         public void SetIsConnected(DeviceAgent self, bool value) {
-            if (self == firstAgent) {
-               isFirstConnected = value;
-            } else {
-               isSecondConnected = value;
-            }
-         }
+         private Channel<byte[]> GetInboundChannelInternal(DeviceAgent self) => self == firstAgent ? firstInboundChannel : secondInboundChannel;
+         public ReadableChannel<byte[]> GetInboundChannel(DeviceAgent self) => GetInboundChannelInternal(self);
+         private Channel<byte[]> GetOtherInboundChannelInternal(DeviceAgent self) => GetInboundChannelInternal(GetOther(self));
+         public ReadableChannel<byte[]> GetOtherInboundChannel(DeviceAgent self) => GetOtherInboundChannelInternal(self);
 
-         private async Task AssertConnectedElseTimeout(DeviceAgent sender) {
-            if (sender == firstAgent) {
-               if (!isFirstConnected) {
-                  throw new InvalidOperationException("not connected");
-               } else if (!SimulationBluetoothCalculator.ComputeConnectivity(firstAgent, secondAgent).IsSufficientQuality) {
-                  await Task.Delay(SimulationBluetoothConstants.SENDRECV_TIMEOUT_MILLIS);
-                  isFirstConnected = false;
-                  throw new TimeoutException();
-               }
-            } else {
-               if (!isSecondConnected) {
-                  throw new InvalidOperationException("not connected");
-               } else if (!SimulationBluetoothCalculator.ComputeConnectivity(firstAgent, secondAgent).IsSufficientQuality) {
-                  await Task.Delay(SimulationBluetoothConstants.SENDRECV_TIMEOUT_MILLIS);
-                  isSecondConnected = false;
-                  throw new TimeoutException();
-               }
-            }
-         }
-
-         public bool IsAppearingConnected(DeviceAgent self) {
-            return self == firstAgent ? isFirstConnected : isSecondConnected;
-         }
+         public bool GetIsConnected(DeviceAgent self) => self == firstAgent ? !firstDisconnectChannel.IsClosed : !secondDisconnectChannel.IsClosed;
       }
 
       public abstract class AdapterEvent {
