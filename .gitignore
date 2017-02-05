@@ -190,3 +190,5 @@ FakesAssemblies/
 project.lock.json
 .vs
 scriptcs_*
+
+*.userprefs
