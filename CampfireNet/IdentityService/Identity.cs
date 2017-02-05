@@ -12,14 +12,27 @@ namespace IdentityService
         public const int KEY_SIZE = 2048;
         public string publicKey;
         public Permission permission;
+        public Permission gPermission;
+        public byte[] coT;
         private RSAParameters keyInfo;
 
-        public Identity(Permission permission)
+        public Identity(Permission permission, Permission gPermission, byte[] coT)
         {
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider();
+            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(KEY_SIZE);
             keyInfo = rsa.ExportParameters(true);
             publicKey = rsa.ToXmlString(false);
             this.permission = permission;
+            this.gPermission = gPermission;
+            this.coT = coT ?? Encoding.UTF8.GetBytes(publicKey);
+        }
+
+        public Identity CreateUser(Permission permission, Permission gPermission)
+        {
+            if (CoTProcessor.CheckCoT(this) && GrantPermission(permission) && GrantPermission(gPermission))
+            {
+                return new Identity(permission, gPermission, CoTProcessor.FormCoT(this, permission, gPermission));
+            }
+            throw new InvalidPermissionException("Insufficient Authorization.");
         }
 
         public byte[] Encrypt(byte[] dataToEncrypt, string key, bool doOAEPPadding)
@@ -97,25 +110,35 @@ namespace IdentityService
             }
         }
 
-        public Permission GrantPermission(bool unicast, bool broadcast, bool invite)
+        public bool GrantPermission(Permission permission)
         {
-            Permission newPermission = Permission.None;
-            if (permission.HasFlag(Permission.Invite))
+            if (this.permission.HasFlag(Permission.Invite))
             {
-                if(permission.HasFlag(Permission.Unicast) && unicast)
+                if(permission.HasFlag(Permission.Unicast) && !this.gPermission.HasFlag(Permission.Unicast))
                 {
-                    newPermission |= Permission.Unicast;
+                    return false;
                 }
-                if(permission.HasFlag(Permission.Broadcast) && broadcast)
+                if(permission.HasFlag(Permission.Broadcast) && !this.gPermission.HasFlag(Permission.Broadcast))
                 {
-                    newPermission |= Permission.Broadcast;
+                    return false;
                 }
-                if(invite)
+                if(permission.HasFlag(Permission.Invite) && !this.gPermission.HasFlag(Permission.Invite))
                 {
-                    newPermission |= Permission.Invite;
+                    return false;
                 }
             }
-            return newPermission;
+            return true;
+        }
+
+        public class InvalidPermissionException : Exception
+        {
+            public InvalidPermissionException() : base() { }
+            public InvalidPermissionException(string message) : base(message) { }
+            public InvalidPermissionException(string message, Exception inner) : base(message, inner) { }
+
+            public InvalidPermissionException(System.Runtime.Serialization.SerializationInfo info,
+                                              System.Runtime.Serialization.StreamingContext context)
+            { }
         }
     }
 }
