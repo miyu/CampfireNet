@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{74987653-09DA-4274-BEC8-759F95BC9836}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>CampfireNet</RootNamespace>
+    <AssemblyName>CampfireNet.Core</AssemblyName>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;__MonoCS__;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="CampfireNetClient.cs" />
+    <Compile Include="NeighborConnectionContext.cs" />
+    <Compile Include="IO\NotConnectedException.cs" />
+    <Compile Include="IO\Transport\IBluetoothAdapter.cs" />
+    <Compile Include="IO\Transport\IBluetoothNeighbor.cs" />
+    <Compile Include="IO\Packets\PacketType.cs" />
+    <Compile Include="IO\Packets\HavePacket.cs" />
+    <Compile Include="IO\Packets\NeedPacket.cs" />
+    <Compile Include="IO\Packets\GivePacket.cs" />
+    <Compile Include="IO\Packets\DonePacket.cs" />
+    <Compile Include="IO\Packets\WirePacketSerializer.cs" />
+    <Compile Include="IO\Packets\CampfireNetPacketMerkleOperations.cs" />
+    <Compile Include="IO\BroadcastMessage.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="IO\" />
+    <Folder Include="IO\Transport\" />
+    <Folder Include="IO\Packets\" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
+      <Project>{2B952A46-062B-4238-933F-923BC8E77FC9}</Project>
+      <Name>CampfireNet.Utilities</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <TextStylePolicy TabsToSpaces="True" RemoveTrailingWhitespace="True" EolMarker="Native" FileWidth="120" TabWidth="3" IndentWidth="3" NoTabsAfterNonTabs="True" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/x-csharp" />
+          <CSharpFormattingPolicy IndentBlock="True" IndentBraces="False" IndentSwitchCaseSection="True" LabelPositioning="OneLess" NewLinesForBracesInProperties="False" NewLinesForBracesInAccessors="False" NewLinesForBracesInAnonymousMethods="False" NewLinesForBracesInControlBlocks="False" NewLinesForBracesInAnonymousTypes="False" NewLinesForBracesInObjectCollectionArrayInitializers="False" NewLinesForBracesInLambdaExpressionBody="False" NewLineForElse="False" NewLineForCatch="False" NewLineForFinally="False" SpaceWithinMethodDeclarationParenthesis="False" SpaceBetweenEmptyMethodDeclarationParentheses="False" SpaceWithinMethodCallParentheses="False" SpaceBetweenEmptyMethodCallParentheses="False" SpaceAfterControlFlowStatementKeyword="True" SpaceWithinExpressionParentheses="False" SpaceWithinCastParentheses="False" SpaceWithinOtherParentheses="False" SpaceAfterCast="False" SpacesIgnoreAroundVariableDeclaration="False" SpaceBetweenEmptySquareBrackets="False" SpaceWithinSquareBrackets="False" SpaceAfterColonInBaseTypeDeclaration="True" SpaceAfterComma="True" SpaceAfterDot="False" SpaceAfterSemicolonsInForStatement="True" SpaceBeforeColonInBaseTypeDeclaration="True" SpaceBeforeComma="False" SpaceBeforeDot="False" SpaceBeforeSemicolonsInForStatement="False" SpacingAroundBinaryOperator="Single" WrappingPreserveSingleLine="True" WrappingKeepStatementsOnSingleLine="True" PlaceSystemDirectiveFirst="True" IndentSwitchSection="True" NewLinesForBracesInTypes="False" NewLinesForBracesInMethods="False" NewLineForMembersInObjectInit="True" NewLineForMembersInAnonymousTypes="True" NewLineForClausesInQuery="True" SpacingAfterMethodDeclarationName="False" SpaceAfterMethodCallName="False" SpaceBeforeOpenSquareBracket="False" inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+</Project>
