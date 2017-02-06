@@ -19,9 +19,9 @@ namespace CampfireNet.Simulator {
             AgentCount = 112 * scale * scale,
             DisplayWidth = displayWidth,
             DisplayHeight = displayHeight,
-            FieldWidth = 1280 * scale,
-            FieldHeight = 720 * scale,
-            AgentRadius = 10
+            FieldWidth = 1280,
+            FieldHeight = 720,
+            AgentRadius = 5
          };
       }
    }
@@ -30,7 +30,7 @@ namespace CampfireNet.Simulator {
       [STAThread]
       public static void Main() {
          ThreadPool.SetMaxThreads(8, 8);
-         var configuration = SimulatorConfiguration.Build(3, 1920, 1080);
+         var configuration = SimulatorConfiguration.Build(2, 1920, 1080);
          var agents = ConstructAgents(configuration);
          new SimulatorGame(configuration, agents).Run();
       }
@@ -53,9 +53,19 @@ namespace CampfireNet.Simulator {
          agents[0].Position = new Vector2(300, 300);
          agents[1].Position = new Vector2(310, 300);
 
-         var w = (4 * (int)Math.Sqrt(agents.Length)) / 3;
+         var agentsPerRow = (4 * (int)Math.Sqrt(agents.Length)) / 3;
+         var gw = agentsPerRow * 15;
+         var gh = (agents.Length / agentsPerRow) * 20;
+         var ox = (configuration.FieldWidth - gw) / 2;
+         var oy = (configuration.FieldHeight - gh) / 2;
+         var spacing = 30;
          for (var i = 0; i < agents.Length; i++) {
-            agents[i].Position = new Vector2((i % w) * 80, (i / w) * 80);
+            agents[i].Position = new Vector2((i % agentsPerRow) * spacing + ox - 100, (i / agentsPerRow) * spacing + oy - 50);
+         }
+
+         for (var i =0; i < agents.Length; i++) {
+            agents[i].Position += agents[i].Velocity * 10;
+            agents[i].Velocity = Vector2.Zero;
          }
 
          var agentIndexToNeighborsByAdapterId = Enumerable.Range(0, agents.Length).ToDictionary(
