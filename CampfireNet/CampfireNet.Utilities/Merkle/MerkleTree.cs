@@ -132,6 +132,7 @@ namespace CampfireNet.Utilities.Merkle {
             var merkleHash = job.Item1;
             var merkleNode = job.Item2;
             var insertHash = await objectStore.WriteMerkleNodeAsync(NetworkDataNamespace, merkleNode);
+            await objectStore.WriteAsync(TreeContainmentNamespace, insertHash, new byte[0]);
             if (merkleHash != insertHash) {
                throw new InvalidStateException($"Hash Mismatch! {merkleHash} {insertHash}");
             }

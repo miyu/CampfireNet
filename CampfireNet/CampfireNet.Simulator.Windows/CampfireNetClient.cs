@@ -81,9 +81,9 @@ namespace CampfireNet.Simulator {
       }
 
       public async Task<bool> ReadAsync(CancellationToken cancellationToken, Func<bool, bool> acceptanceTest) {
-         Thread.MemoryBarrier();
-
          while (true) {
+            Thread.MemoryBarrier();
+
             await latch.WaitAsync(cancellationToken);
             if (acceptanceTest(true)) {
                return true;

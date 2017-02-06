@@ -82,11 +82,9 @@ namespace CampfireNet.Simulator {
 
       private async Task SynchronizationLoopTaskStart() {
          var isGreater = bluetoothAdapter.AdapterId.CompareTo(neighbor.AdapterId) > 0;
-//         var rateLimit = ChannelFactory.Timer(1000);
+         var rateLimit = ChannelFactory.Timer(5000, 3000);
          try {
             while (true) {
-//               await rateLimit.ReadAsync();
-//               await neighbor.SendAsync(serializer.ToByteArray(new DonePacket()));
                if (isGreater) {
                   await SynchronizeRemoteToLocalAsync();
                   await SynchronizeLocalToRemoteAsync();
@@ -94,6 +92,7 @@ namespace CampfireNet.Simulator {
                   await SynchronizeLocalToRemoteAsync();
                   await SynchronizeRemoteToLocalAsync();
                }
+               await rateLimit.ReadAsync();
             }
          } catch (NotConnectedException) {
             disconnectLatchChannel.SetIsClosed(true);
@@ -111,7 +110,12 @@ namespace CampfireNet.Simulator {
 
             while (neededHashes.Count != 0) {
                foreach (var hash in neededHashes) {
-//                  Console.WriteLine("EMIT NEED " + hash);
+                  var localNode = await localMerkleTree.GetNodeAsync(hash);
+                  if (localNode != null) {
+                     nodesToImport.Add(Tuple.Create(hash, localNode));
+                     continue;
+                  }
+
                   var need = new NeedPacket { MerkleRootHash = hash };
                   await neighbor.SendAsync(serializer.ToByteArray(need));
                }

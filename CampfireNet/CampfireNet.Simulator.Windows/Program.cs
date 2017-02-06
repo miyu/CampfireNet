@@ -53,6 +53,11 @@ namespace CampfireNet.Simulator {
          agents[0].Position = new Vector2(300, 300);
          agents[1].Position = new Vector2(310, 300);
 
+         var w = (4 * (int)Math.Sqrt(agents.Length)) / 3;
+         for (var i = 0; i < agents.Length; i++) {
+            agents[i].Position = new Vector2((i % w) * 80, (i / w) * 80);
+         }
+
          var agentIndexToNeighborsByAdapterId = Enumerable.Range(0, agents.Length).ToDictionary(
             i => i,
             i => new Dictionary<Guid, SimulationBluetoothAdapter.SimulationBluetoothNeighbor>());

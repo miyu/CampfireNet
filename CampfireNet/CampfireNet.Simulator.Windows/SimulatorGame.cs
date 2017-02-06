@@ -428,7 +428,7 @@ namespace CampfireNet.Simulator {
          rasterizerState = GraphicsDevice.RasterizerState = new RasterizerState { MultiSampleAntiAlias = true };
 
          epoch++;
-         epochAgentIndex = 0;
+         epochAgentIndex = agents.Length / 2;
          agents[epochAgentIndex].Client.BroadcastAsync(
             new BroadcastMessage {
                Data = BitConverter.GetBytes(epoch)
