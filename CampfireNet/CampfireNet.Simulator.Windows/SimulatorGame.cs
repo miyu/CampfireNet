@@ -477,6 +477,14 @@ namespace CampfireNet.Simulator {
             if (distanceSquared < SimulationBluetoothConstants.RANGE_SQUARED) {
                if (!a.ActiveConnectionStates.ContainsKey(b)) {
                   var connectionState = new SimulationBluetoothConnectionState();
+
+                  if (!a.BluetoothAdapter.NeighborsByAdapterId.ContainsKey(b.BluetoothAdapterId)) {
+                     var connectionContext = new SimulationBluetoothAdapter.SimulationConnectionContext(a, b);
+                     a.BluetoothAdapter.NeighborsByAdapterId[b.BluetoothAdapterId] = new SimulationBluetoothAdapter.SimulationBluetoothNeighbor(a, connectionContext);
+                     b.BluetoothAdapter.NeighborsByAdapterId[a.BluetoothAdapterId] = new SimulationBluetoothAdapter.SimulationBluetoothNeighbor(b, connectionContext);
+                     connectionContext.Start();
+                  }
+
                   a.ActiveConnectionStates.AddOrThrow(b, connectionState);
                   b.ActiveConnectionStates.AddOrThrow(a, connectionState);
                }

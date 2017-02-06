@@ -61,15 +61,6 @@ namespace CampfireNet.Simulator {
          var agentIndexToNeighborsByAdapterId = Enumerable.Range(0, agents.Length).ToDictionary(
             i => i,
             i => new Dictionary<Guid, SimulationBluetoothAdapter.SimulationBluetoothNeighbor>());
-         for (var i = 0; i < agents.Length - 1; i++) {
-            Console.WriteLine(i);
-            for (var j = i + 1; j < agents.Length; j++) {
-               var connectionContext = new SimulationBluetoothAdapter.SimulationConnectionContext(agents[i], agents[j]);
-               agentIndexToNeighborsByAdapterId[i].Add(agents[j].BluetoothAdapterId, new SimulationBluetoothAdapter.SimulationBluetoothNeighbor(agents[i], connectionContext));
-               agentIndexToNeighborsByAdapterId[j].Add(agents[i].BluetoothAdapterId, new SimulationBluetoothAdapter.SimulationBluetoothNeighbor(agents[j], connectionContext));
-               connectionContext.Start();
-            }
-         }
 
          for (int i = 0; i < agents.Length; i++) {
             var bluetoothAdapter = agents[i].BluetoothAdapter = new SimulationBluetoothAdapter(agents, i, agentIndexToNeighborsByAdapterId[i]);
