@@ -16,7 +16,8 @@
     <MonoAndroidResourcePrefix>Resources</MonoAndroidResourcePrefix>
     <MonoAndroidAssetsPrefix>Assets</MonoAndroidAssetsPrefix>
     <AndroidUseLatestPlatformSdk>true</AndroidUseLatestPlatformSdk>
-    <AndroidTlsProvider></AndroidTlsProvider>
+    <AndroidTlsProvider>
+    </AndroidTlsProvider>
     <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
@@ -43,16 +44,27 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.ServiceModel.Internals" />
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="Mono.Android" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="AndroidBluetoothAdapter.cs" />
+    <Compile Include="BluetoothDiscoveryFacade.cs" />
+    <Compile Include="AndroidBluetoothFacade.cs" />
+    <Compile Include="AutomaticPairingService.cs" />
+    <Compile Include="BluetoothServer.cs" />
+    <Compile Include="CampfireNetBluetoothConstants.cs" />
+    <Compile Include="InboundBluetoothSocketTable.cs" />
+    <Compile Include="LambdaBroadcastReceiver.cs" />
+    <Compile Include="LambdaHandler.cs" />
+    <Compile Include="MacUtilities.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BluetoothTest.cs" />
-    <Compile Include="ChatServer.cs" />
+    <None Include="ChatServer.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
@@ -73,6 +85,14 @@
     <ProjectReference Include="..\AndroidTest\AndroidTest.csproj">
       <Project>{FD4B66A8-03DC-43B1-AAB9-C6451A401963}</Project>
       <Name>AndroidTest</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CampfireNet.Core\CampfireNet.Core.csproj">
+      <Project>{74987653-09da-4274-bec8-759f95bc9836}</Project>
+      <Name>CampfireNet.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
+      <Project>{2b952a46-062b-4238-933f-923bc8e77fc9}</Project>
+      <Name>CampfireNet.Utilities</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

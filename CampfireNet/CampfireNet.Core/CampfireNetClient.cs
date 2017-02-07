@@ -42,25 +42,37 @@ namespace CampfireNet {
          while (true) {
             await ChannelsExtensions.ReadAsync(rateLimit);
 
+            Console.WriteLine("Starting discovery round!");
             var neighbors = await bluetoothAdapter.DiscoverAsync();
-            await Task.WhenAll(
-               neighbors.Where(neighbor => !neighbor.IsConnected)
-                        .Where(neighbor => !connectedNeighborContextsByAdapterId.ContainsKey(neighbor.AdapterId))
-                        .Select(neighbor => ChannelsExtensions.Go(async () => {
-                           var connected = await neighbor.TryHandshakeAsync();
-                           if (!connected) return;
+            try {
+               await Task.WhenAll(
+                  neighbors.Where(neighbor => !neighbor.IsConnected)
+                           .Where(neighbor => !connectedNeighborContextsByAdapterId.ContainsKey(neighbor.AdapterId))
+                           .Select(neighbor => ChannelsExtensions.Go(async () => {
+                              Console.WriteLine("Attempt to connect to: " + neighbor.AdapterId);
+                              var connected = await neighbor.TryHandshakeAsync();
+                              if (!connected) {
+                                 Console.WriteLine("Failed to connect to: " + neighbor.AdapterId);
+                                 return;
+                              }
+                              Console.WriteLine("Successfully connected to: " + neighbor.AdapterId);
 
-//                           Console.WriteLine("Discovered neighbor: " + neighbor.AdapterId);
-                           var remoteMerkleTree = merkleTreeFactory.CreateForNeighbor(neighbor.AdapterId.ToString("N"));
-                           var connectionContext = new NeighborConnectionContext(bluetoothAdapter, neighbor, broadcastMessageSerializer, localMerkleTree, remoteMerkleTree);
-                           connectedNeighborContextsByAdapterId.AddOrThrow(neighbor.AdapterId, connectionContext);
-                           connectionContext.BroadcastReceived += HandleBroadcastReceived;
-                           connectionContext.Start(() => {
-                              connectionContext.BroadcastReceived -= HandleBroadcastReceived;
-                              connectedNeighborContextsByAdapterId.RemoveOrThrow(neighbor.AdapterId);
-                           });
-                        }))
-            );
+                              //                           Console.WriteLine("Discovered neighbor: " + neighbor.AdapterId);
+                              var remoteMerkleTree = merkleTreeFactory.CreateForNeighbor(neighbor.AdapterId.ToString("N"));
+                              var connectionContext = new NeighborConnectionContext(bluetoothAdapter, neighbor, broadcastMessageSerializer, localMerkleTree, remoteMerkleTree);
+                              connectedNeighborContextsByAdapterId.AddOrThrow(neighbor.AdapterId, connectionContext);
+                              connectionContext.BroadcastReceived += HandleBroadcastReceived;
+                              connectionContext.Start(() => {
+                                 connectionContext.BroadcastReceived -= HandleBroadcastReceived;
+                                 connectedNeighborContextsByAdapterId.RemoveOrThrow(neighbor.AdapterId);
+                              });
+                           }))
+               );
+            } catch (Exception e) {
+               Console.WriteLine("Discovery threw!");
+               Console.WriteLine(e);
+            }
+            Console.WriteLine("Ending discovery round!");
          }
       }
 

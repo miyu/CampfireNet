@@ -4,18 +4,26 @@ using System.Threading.Tasks;
 
 namespace CampfireNet.Utilities.AsyncPrimatives {
    public class AsyncBox<T> {
-      private readonly TaskCompletionSource<T> tcs = new TaskCompletionSource<T>(TaskCreationOptions.RunContinuationsAsynchronously);
+      private readonly TaskCompletionSource<bool> tcs = new TaskCompletionSource<bool>(TaskCreationOptions.RunContinuationsAsynchronously);
+      private readonly object synchronization = new object();
+      private T result;
 
       public void SetResult(T value) {
-         tcs.SetResult(value);
+         lock (synchronization) {
+            result = value;
+         }
+         tcs.TrySetResult(true);
       }
 
       public void SetException(Exception ex) {
          tcs.SetException(ex);
       }
 
-      public Task<T> GetResultAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-         return tcs.Task;
+      public async Task<T> GetResultAsync(CancellationToken cancellationToken = default(CancellationToken)) {
+         await tcs.Task;
+         lock (synchronization) {
+            return result;
+         }
       }
    }
 }

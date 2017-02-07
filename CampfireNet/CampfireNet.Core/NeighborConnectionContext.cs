@@ -1,4 +1,4 @@
-//#define NCC_DEBUG
+#define NCC_DEBUG
 
 using System;
 using System.Collections;
@@ -162,7 +162,7 @@ namespace CampfireNet {
             var color = colors[Math.Abs(bluetoothAdapter.AdapterId.GetHashCode()) % colors.Length];
             var cc = Console.ForegroundColor;
             Console.ForegroundColor = color;
-            Console.WriteLine(bluetoothAdapter.AdapterId.ToString("n") + " " + s, args);
+            Console.WriteLine(bluetoothAdapter.AdapterId.ToString("n") + " => " + neighbor.AdapterId.ToString("n") + " " + s, args);
             Console.ForegroundColor = cc;
          }
 #endif
