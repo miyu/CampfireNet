@@ -67,8 +67,7 @@ namespace CampfireNet.Simulator
 			Debug.Listeners.Add(debugConsoleWriter);
 
 			// Fun begins..
-			game = new SimulatorGame();
-			game.Run();
+			CampfireNet.Simulator.EntryPoint.Run();
 		}
 
 		public override bool ApplicationShouldTerminateAfterLastWindowClosed(NSApplication sender)
