@@ -1,3 +1,4 @@
+using System;
 using System.IO;
 using System.Text;
 using System.Threading.Tasks;
@@ -43,7 +44,7 @@ namespace CampfireNet.Utilities.Merkle {
          }
       }
 
-      public static async Task<string> WriteMerkleNodeAsync(this ICampfireNetObjectStore store, string ns, MerkleNode node) {
+      public static async Task<Tuple<bool, string>> TryWriteMerkleNodeAsync(this ICampfireNetObjectStore store, string ns, MerkleNode node) {
          using (var ms = new MemoryStream()) {
             using (var writer = new BinaryWriter(ms, Encoding.UTF8, true)) {
                writer.WriteMerkleNode(node);
@@ -52,13 +53,13 @@ namespace CampfireNet.Utilities.Merkle {
             var objectData = ms.GetBuffer();
             var length = (int)ms.Position;
             var hash = CampfireNetHash.ComputeSha256Base64(objectData, 0, length);
-            await store.WriteAsync(ns, hash, objectData);
+            var isNewlyWritten = await store.TryWriteAsync(ns, hash, objectData);
 
             var copy = await ReadMerkleNodeAsync(store, ns, hash);
             if (copy.TypeTag != node.TypeTag || copy.LeftHash != node.LeftHash || copy.RightHash != node.RightHash || copy.Descendents != node.Descendents) {
                throw new InvalidStateException();
             }
-            return hash;
+            return Tuple.Create(isNewlyWritten, hash);
          }
       }
    }

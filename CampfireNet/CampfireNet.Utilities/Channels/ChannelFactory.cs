@@ -5,9 +5,8 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using CampfireNet.Utilities.AsyncPrimatives;
-using static CampfireNet.Utilities.ChannelsExtensions.ChannelsExtensions;
 
-namespace CampfireNet.Utilities.ChannelsExtensions {
+namespace CampfireNet.Utilities.Channels {
    public static class ChannelFactory {
       public static Channel<T> Nonblocking<T>() => Nonblocking<T>(-1);
 
@@ -27,7 +26,7 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
       public static ReadableChannel<bool> Timeout(TimeSpan interval) {
          var channel = Nonblocking<bool>(1);
 
-         Go(async () => {
+         ChannelsExtensions.Go(async () => {
             await Task.Delay(interval).ConfigureAwait(false);
             //            Console.WriteLine("Time signalling");
             await channel.WriteAsync(true).ConfigureAwait(false);
@@ -42,7 +41,7 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
          var channel = Blocking<bool>();
 
          // TODO: Timer must be disposable to prevent task leaks.
-         Go(async () => {
+         ChannelsExtensions.Go(async () => {
             var rand = new Random(channel.GetHashCode());
             while (true) {
                var delay = TimeSpan.FromMilliseconds(interval.TotalMilliseconds + randomize.TotalMilliseconds * rand.NextDouble());

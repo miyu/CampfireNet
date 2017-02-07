@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -25,7 +25,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="BroadcastReceivedEventArgs.cs" />
     <Compile Include="CampfireNetClient.cs" />
+    <Compile Include="ClientMerkleTreeFactory.cs" />
     <Compile Include="NeighborConnectionContext.cs" />
     <Compile Include="IO\NotConnectedException.cs" />
     <Compile Include="IO\Transport\IBluetoothAdapter.cs" />
@@ -36,14 +38,10 @@
     <Compile Include="IO\Packets\GivePacket.cs" />
     <Compile Include="IO\Packets\DonePacket.cs" />
     <Compile Include="IO\Packets\WirePacketSerializer.cs" />
-    <Compile Include="IO\Packets\CampfireNetPacketMerkleOperations.cs" />
+    <Compile Include="IO\BroadcastMessageSerializer.cs" />
     <Compile Include="IO\BroadcastMessage.cs" />
   </ItemGroup>
-  <ItemGroup>
-    <Folder Include="IO\" />
-    <Folder Include="IO\Transport\" />
-    <Folder Include="IO\Packets\" />
-  </ItemGroup>
+  <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
       <Project>{2B952A46-062B-4238-933F-923BC8E77FC9}</Project>

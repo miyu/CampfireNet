@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace CampfireNet.Utilities.ChannelsExtensions {
+namespace CampfireNet.Utilities.Channels {
    public interface Channel<T> : ReadableChannel<T>, WritableChannel<T> { }
 
    public interface CountableChannel {

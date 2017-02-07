@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CampfireNet.Utilities.AsyncPrimatives;
 
-namespace CampfireNet.Utilities.ChannelsExtensions {
+namespace CampfireNet.Utilities.Channels {
    public class NonblockingChannel<T> : Channel<T> {
       private readonly ConcurrentQueue<T> writeQueue;
       private readonly AsyncSemaphore readSemaphore;

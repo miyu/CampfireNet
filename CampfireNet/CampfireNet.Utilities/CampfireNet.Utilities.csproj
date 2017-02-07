@@ -47,10 +47,13 @@
     <Compile Include="AsyncPrimatives\AsyncLatch.cs" />
     <Compile Include="AsyncPrimatives\AsyncLock.cs" />
     <Compile Include="AsyncPrimatives\AsyncSemaphore.cs" />
-    <Compile Include="ChannelsExtensions\Channel.cs" />
-    <Compile Include="ChannelsExtensions\ChannelFactory.cs" />
-    <Compile Include="ChannelsExtensions\ChannelsExtensions.cs" />
-    <Compile Include="ChannelsExtensions\NonblockingChannel.cs" />
+    <Compile Include="AsyncPrimatives\AsyncSpinner.cs" />
+    <Compile Include="Channels\BinaryLatchChannel.cs" />
+    <Compile Include="Channels\Channel.cs" />
+    <Compile Include="Channels\ChannelFactory.cs" />
+    <Compile Include="Channels\ChannelsExtensions.cs" />
+    <Compile Include="Channels\DisconnectableChannel.cs" />
+    <Compile Include="Channels\NonblockingChannel.cs" />
     <Compile Include="Collections\ConcurrentSet.cs" />
     <Compile Include="DargonCommonsExtensions.Collections.cs" />
     <Compile Include="DargonCommonsExtensions.cs" />

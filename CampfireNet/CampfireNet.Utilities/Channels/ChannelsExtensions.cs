@@ -4,9 +4,8 @@ using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using CampfireNet.Utilities.AsyncPrimatives;
-using static CampfireNet.Utilities.ChannelsExtensions.ToFuncTTaskConverter;
 
-namespace CampfireNet.Utilities.ChannelsExtensions {
+namespace CampfireNet.Utilities.Channels {
    public static class ChannelsExtensions {
       public static void Write<T>(this WritableChannel<T> channel, T message) {
          channel.WriteAsync(message).Wait();
@@ -48,15 +47,15 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
       public static Task<T> Go<T>(Func<Task<T>> task) => Run(task);
 
       public static ICaseTemporary Case<T>(ReadableChannel<T> channel, Action callback, Func<T, bool> additionalAcceptanceTest = null) {
-         return new CaseTemporary<T>(channel, Convert<T>(callback), additionalAcceptanceTest);
+         return new CaseTemporary<T>(channel, ToFuncTTaskConverter.Convert<T>(callback), additionalAcceptanceTest);
       }
 
       public static ICaseTemporary Case<T>(ReadableChannel<T> channel, Action<T> callback, Func<T, bool> additionalAcceptanceTest = null) {
-         return new CaseTemporary<T>(channel, Convert<T>(callback), additionalAcceptanceTest);
+         return new CaseTemporary<T>(channel, ToFuncTTaskConverter.Convert<T>(callback), additionalAcceptanceTest);
       }
 
       public static ICaseTemporary Case<T>(ReadableChannel<T> channel, Func<Task> callback, Func<T, bool> additionalAcceptanceTest = null) {
-         return new CaseTemporary<T>(channel, Convert<T>(callback), additionalAcceptanceTest);
+         return new CaseTemporary<T>(channel, ToFuncTTaskConverter.Convert<T>(callback), additionalAcceptanceTest);
       }
 
       public static ICaseTemporary Case<T>(ReadableChannel<T> channel, Func<T, Task> callback, Func<T, bool> additionalAcceptanceTest = null) {
@@ -99,15 +98,15 @@ namespace CampfireNet.Utilities.ChannelsExtensions {
       public bool IsCompleted { get; private set; }
 
       public DispatchContext Case<T>(ReadableChannel<T> channel, Action callback, Func<T, bool> additionalAcceptanceTest = null) {
-         return Case(channel, Convert<T>(callback), additionalAcceptanceTest);
+         return Case(channel, ToFuncTTaskConverter.Convert<T>(callback), additionalAcceptanceTest);
       }
 
       public DispatchContext Case<T>(ReadableChannel<T> channel, Action<T> callback, Func<T, bool> additionalAcceptanceTest = null) {
-         return Case(channel, Convert<T>(callback), additionalAcceptanceTest);
+         return Case(channel, ToFuncTTaskConverter.Convert<T>(callback), additionalAcceptanceTest);
       }
 
       public DispatchContext Case<T>(ReadableChannel<T> channel, Func<Task> callback, Func<T, bool> additionalAcceptanceTest = null) {
-         return Case(channel, Convert<T>(callback), additionalAcceptanceTest);
+         return Case(channel, ToFuncTTaskConverter.Convert<T>(callback), additionalAcceptanceTest);
       }
 
       public DispatchContext Case<T>(ReadableChannel<T> channel, Func<T, Task> callback, Func<T, bool> additionalAcceptanceTest = null) {

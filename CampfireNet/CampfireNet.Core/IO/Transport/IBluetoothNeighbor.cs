@@ -1,6 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using CampfireNet.Utilities.ChannelsExtensions;
+using CampfireNet.Utilities.Channels;
 
 namespace CampfireNet.IO.Transport
 {

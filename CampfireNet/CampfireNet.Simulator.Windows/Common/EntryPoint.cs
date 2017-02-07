@@ -7,6 +7,7 @@ using CampfireNet.IO.Packets;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.Merkle;
 using System.Collections.Generic;
+using System.Text;
 using Microsoft.Xna.Framework;
 
 namespace CampfireNet.Simulator {
@@ -78,8 +79,13 @@ namespace CampfireNet.Simulator {
 				var bluetoothAdapter = agents[i].BluetoothAdapter = new SimulationBluetoothAdapter(agents, i, agentIndexToNeighborsByAdapterId[i]);
 				agents[i].BluetoothAdapter.Permit(SimulationBluetoothAdapter.MAX_RATE_LIMIT_TOKENS * (float)random.NextDouble());
 
-				var merkleTreeFactory = new ClientMerkleTreeFactory(new CampfireNetPacketMerkleOperations(), new InMemoryCampfireNetObjectStore());
-				var client = agents[i].Client = new CampfireNetClient(bluetoothAdapter, merkleTreeFactory);
+			   var broadcastMessageSerializer = new BroadcastMessageSerializer();
+			   var objectStore = new InMemoryCampfireNetObjectStore();
+			   var merkleTreeFactory = new ClientMerkleTreeFactory(broadcastMessageSerializer, objectStore);
+				var client = agents[i].Client = new CampfireNetClient(bluetoothAdapter, broadcastMessageSerializer, merkleTreeFactory);
+			   client.BroadcastReceived += e => {
+               Console.WriteLine("Client " + client.AdapterId + " @ " + BitConverter.ToInt32(e.Message.Data, 0));
+			   };
 				client.RunAsync().ContinueWith(task => {
 					if (task.IsFaulted) {
 						Console.WriteLine(task.Exception);

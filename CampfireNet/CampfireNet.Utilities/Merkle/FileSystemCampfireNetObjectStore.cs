@@ -1,6 +1,8 @@
 using System;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using CampfireNet.Utilities.AsyncPrimatives;
 
 namespace CampfireNet.Utilities.Merkle {
    public class FileSystemCampfireNetObjectStore : ICampfireNetObjectStore {
@@ -29,11 +31,19 @@ namespace CampfireNet.Utilities.Merkle {
          }
       }
 
-      public async Task WriteAsync(string ns, string hash, byte[] contents) {
+      public async Task<bool> TryWriteAsync(string ns, string hash, byte[] contents) {
          var filePath = BuildPath(ns, hash);
          Directory.CreateDirectory(Path.GetDirectoryName(filePath));
-         using (var fs = File.OpenWrite(filePath)) {
+
+         // todo: validate file not corrupted e.g. due to app crash
+         if (File.Exists(filePath)) {
+            return false;
+         }
+
+         // todo: handle race
+         using (var fs = File.Open(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None)) {
             await fs.WriteAsync(contents, 0, contents.Length);
+            return true;
          }
       }
 

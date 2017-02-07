@@ -7,21 +7,23 @@ using CampfireNet.IO;
 using CampfireNet.IO.Packets;
 using CampfireNet.IO.Transport;
 using CampfireNet.Utilities;
-using CampfireNet.Utilities.ChannelsExtensions;
+using CampfireNet.Utilities.Channels;
 using CampfireNet.Utilities.Merkle;
 
-namespace CampfireNet.Simulator {
+namespace CampfireNet {
    public class NeighborConnectionContext {
       private readonly WirePacketSerializer serializer = new WirePacketSerializer();
 
       private readonly BinaryLatchChannel disconnectLatchChannel = new BinaryLatchChannel();
-      private readonly DisconnectableChannel<HavePacket> haveChannel;
-      private readonly DisconnectableChannel<NeedPacket> needChannel;
-      private readonly DisconnectableChannel<GivePacket> giveChannel;
-      private readonly DisconnectableChannel<DonePacket> doneChannel;
+      private readonly DisconnectableChannel<HavePacket, NotConnectedException> haveChannel;
+      private readonly DisconnectableChannel<NeedPacket, NotConnectedException> needChannel;
+      private readonly DisconnectableChannel<GivePacket, NotConnectedException> giveChannel;
+      private readonly DisconnectableChannel<DonePacket, NotConnectedException> doneChannel;
 
       private readonly IBluetoothAdapter bluetoothAdapter;
       private readonly IBluetoothNeighbor neighbor;
+
+      private readonly BroadcastMessageSerializer broadcastMessageSerializer;
 
       private readonly MerkleTree<BroadcastMessage> localMerkleTree;
       private readonly MerkleTree<BroadcastMessage> remoteMerkleTree;
@@ -29,19 +31,23 @@ namespace CampfireNet.Simulator {
       public NeighborConnectionContext(
          IBluetoothAdapter bluetoothAdapter, 
          IBluetoothNeighbor neighbor,
+         BroadcastMessageSerializer broadcastMessageSerializer,
          MerkleTree<BroadcastMessage> localMerkleTree,
          MerkleTree<BroadcastMessage> remoteMerkleTree
       ) {
-         this.haveChannel = new DisconnectableChannel<HavePacket>(disconnectLatchChannel, ChannelFactory.Nonblocking<HavePacket>());
-         this.needChannel = new DisconnectableChannel<NeedPacket>(disconnectLatchChannel, ChannelFactory.Nonblocking<NeedPacket>());
-         this.giveChannel = new DisconnectableChannel<GivePacket>(disconnectLatchChannel, ChannelFactory.Nonblocking<GivePacket>());
-         this.doneChannel = new DisconnectableChannel<DonePacket>(disconnectLatchChannel, ChannelFactory.Nonblocking<DonePacket>());
+         this.haveChannel = new DisconnectableChannel<HavePacket, NotConnectedException>(disconnectLatchChannel, ChannelFactory.Nonblocking<HavePacket>());
+         this.needChannel = new DisconnectableChannel<NeedPacket, NotConnectedException>(disconnectLatchChannel, ChannelFactory.Nonblocking<NeedPacket>());
+         this.giveChannel = new DisconnectableChannel<GivePacket, NotConnectedException>(disconnectLatchChannel, ChannelFactory.Nonblocking<GivePacket>());
+         this.doneChannel = new DisconnectableChannel<DonePacket, NotConnectedException>(disconnectLatchChannel, ChannelFactory.Nonblocking<DonePacket>());
 
          this.bluetoothAdapter = bluetoothAdapter;
          this.neighbor = neighbor;
+         this.broadcastMessageSerializer = broadcastMessageSerializer;
          this.localMerkleTree = localMerkleTree;
          this.remoteMerkleTree = remoteMerkleTree;
       }
+
+      public event BroadcastReceivedEventHandler BroadcastReceived;
 
       public void Start(Action shutdownCallback) {
          Task.WhenAll(
@@ -180,11 +186,16 @@ namespace CampfireNet.Simulator {
 
 //            Console.WriteLine("IMPORT");
             await remoteMerkleTree.ImportAsync(have.MerkleRootHash, nodesToImport);
-
             foreach (var tuple in nodesToImport) {
                var node = tuple.Item2;
                if (node.Descendents == 0 && await localMerkleTree.GetNodeAsync(tuple.Item1) == null) {
-                  await localMerkleTree.InsertAsync(tuple.Item2);
+                  var isDataNode = node.TypeTag == MerkleNodeTypeTag.Data;
+                  BroadcastMessage message = isDataNode ? broadcastMessageSerializer.Deserialize(node.Contents) : null;
+
+                  var insertionResult = await localMerkleTree.TryInsertAsync(tuple.Item2);
+                  if (insertionResult.Item1 && isDataNode) {
+                     BroadcastReceived?.Invoke(new BroadcastReceivedEventArgs(neighbor, message));
+                  }
                }
             }
          }

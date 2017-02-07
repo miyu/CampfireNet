@@ -9,13 +9,13 @@ using CampfireNet.IO;
 using CampfireNet.IO.Transport;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.AsyncPrimatives;
-using CampfireNet.Utilities.ChannelsExtensions;
+using CampfireNet.Utilities.Channels;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using Color = Microsoft.Xna.Framework.Color;
 using Rectangle = Microsoft.Xna.Framework.Rectangle;
-using static CampfireNet.Utilities.ChannelsExtensions.ChannelsExtensions;
+using static CampfireNet.Utilities.Channels.ChannelsExtensions;
 
 namespace CampfireNet.Simulator {
    public class SimulationBluetoothConnectionState {
@@ -201,15 +201,15 @@ namespace CampfireNet.Simulator {
          private AsyncLatch connectingPeerSignal;
 
          // send:
-         private readonly DisconnectableChannel<byte[]> firstInboundChannel;
-         private readonly DisconnectableChannel<byte[]> secondInboundChannel;
+         private readonly DisconnectableChannel<byte[], NotConnectedException> firstInboundChannel;
+         private readonly DisconnectableChannel<byte[], NotConnectedException> secondInboundChannel;
 
          public SimulationConnectionContext(DeviceAgent firstAgent, DeviceAgent secondAgent) {
             this.firstAgent = firstAgent;
             this.secondAgent = secondAgent;
 
-            this.firstInboundChannel = new DisconnectableChannel<byte[]>(firstDisconnectChannel, ChannelFactory.Nonblocking<byte[]>());
-            this.secondInboundChannel = new DisconnectableChannel<byte[]>(secondDisconnectChannel, ChannelFactory.Nonblocking<byte[]>());
+            this.firstInboundChannel = new DisconnectableChannel<byte[], NotConnectedException>(firstDisconnectChannel, ChannelFactory.Nonblocking<byte[]>());
+            this.secondInboundChannel = new DisconnectableChannel<byte[], NotConnectedException>(secondDisconnectChannel, ChannelFactory.Nonblocking<byte[]>());
          }
 
          public void Start() {
@@ -560,7 +560,7 @@ namespace CampfireNet.Simulator {
          }
 
          for (var i = 0; i < agents.Length; i++) {
-            DrawCenteredCircleWorld(agents[i].Position, configuration.AgentRadius, agents[i].Client.Value == 0 ? Color.Gray : Color.Red);
+            DrawCenteredCircleWorld(agents[i].Position, configuration.AgentRadius, true ? Color.Gray : Color.Red);
          }
          //spriteBatch.DrawLine(new Vector2(0, 50), new Vector2(100, 50), Color.Red);
          spriteBatch.End();
