@@ -17,8 +17,7 @@ namespace IdentityService
 
 		public Identity LookupIdentity(string user)
 		{
-			Identity identity;
-			if (identityTable.TryGetValue(user, out identity))
+			if (identityTable.TryGetValue(user, out Identity identity))
 			{
 				return identity;
 			}

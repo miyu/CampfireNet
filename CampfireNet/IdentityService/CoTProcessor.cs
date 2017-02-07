@@ -9,7 +9,7 @@ namespace IdentityService
     class CoTProcessor
     {
         public const int SIGN_SIZE = 256;
-        public const int NAME_SIZE = 830;
+        public const int NAME_SIZE = 415;
         public const int PERM_SIZE = 4;
         //[root][root, perm, gperm][root signature][parent, perm, gperm][parent signature]
 
@@ -55,13 +55,27 @@ namespace IdentityService
             return newCoT;
         }
 
+        public static Permission GetPermission(Identity identity)
+        {
+            if (identity.coT.Length == NAME_SIZE)
+            {
+                return Permission.All;
+            }
+            int permOffset = identity.coT.Length - SIGN_SIZE - PERM_SIZE * 2;
+            byte[] perm = new byte[PERM_SIZE];
+            Buffer.BlockCopy(identity.coT, permOffset, perm, 0, PERM_SIZE);
+            return (Permission)BitConverter.ToInt32(perm, 0);
+        }
+
         public static bool CommonRoot(Identity i1, Identity i2)
         {
             byte[] root1 = new byte[NAME_SIZE];
             byte[] root2 = new byte[NAME_SIZE];
             Buffer.BlockCopy(i1.coT, 0, root1, 0, NAME_SIZE);
             Buffer.BlockCopy(i2.coT, 0, root2, 0, NAME_SIZE);
-            return root1.Equals(root2);
+            string rooti1 = Encoding.UTF8.GetString(root1);
+            string rooti2 = Encoding.UTF8.GetString(root2);
+            return rooti1.Equals(rooti2);
         }
     }
 }

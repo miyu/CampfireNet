@@ -4,12 +4,16 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Security.Cryptography;
+using System.IO;
 
 namespace IdentityService
 {
     class Identity
     {
         public const int KEY_SIZE = 2048;
+        public const int SKEY_SIZE = 32;
+        public const int BLOCK_SIZE = 16;
+        public const int SSIZE = 64;
         public string publicKey;
         public Permission permission;
         public Permission gPermission;
@@ -33,6 +37,47 @@ namespace IdentityService
                 return new Identity(permission, gPermission, CoTProcessor.FormCoT(this, permission, gPermission));
             }
             throw new InvalidPermissionException("Insufficient Authorization.");
+        }
+
+        public byte[] SEncrypt(byte[] dataToEncrypt, byte[] key, byte[] IV)
+        {
+            byte[] encryptedData;
+            using (AesManaged aesAlg = new AesManaged())
+            {
+                aesAlg.Key = key;
+                aesAlg.IV = IV;
+                ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
+                using (MemoryStream msEncrypt = new MemoryStream())
+                {
+                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
+                    {
+                        csEncrypt.Write(dataToEncrypt, 0, dataToEncrypt.Length);
+                        csEncrypt.FlushFinalBlock();
+                        encryptedData = msEncrypt.ToArray();
+                    }
+                }
+            }
+            return encryptedData;
+        }
+
+        public byte[] SDecrypt(byte[] dataToDecrypt, byte[] key, byte[] IV)
+        {
+            byte[] decryptedData;
+            using (AesManaged aesAlg = new AesManaged())
+            {
+                aesAlg.Key = key;
+                aesAlg.IV = IV;
+                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
+                using (MemoryStream msDecrypt = new MemoryStream(dataToDecrypt))
+                {
+                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
+                    {
+                        csDecrypt.Read(dataToDecrypt, 0, dataToDecrypt.Length);
+                        decryptedData = msDecrypt.ToArray();
+                    }
+                }
+            }
+            return decryptedData;
         }
 
         public byte[] Encrypt(byte[] dataToEncrypt, string key, bool doOAEPPadding)
@@ -128,6 +173,18 @@ namespace IdentityService
                 }
             }
             return true;
+        }
+
+        public byte[] GenerateKey()
+        {
+            DeriveBytes rgb = new Rfc2898DeriveBytes(publicKey, SSIZE);
+            return rgb.GetBytes(SKEY_SIZE);
+        }
+
+        public byte[] GenerateIV()
+        {
+            DeriveBytes rgb = new Rfc2898DeriveBytes(publicKey, SSIZE);
+            return rgb.GetBytes(BLOCK_SIZE);
         }
 
         public class InvalidPermissionException : Exception
