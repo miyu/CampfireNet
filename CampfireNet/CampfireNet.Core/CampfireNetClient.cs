@@ -50,6 +50,7 @@ namespace CampfireNet.Simulator {
                         var connected = await neighbor.TryHandshakeAsync();
                         if (!connected) return;
 
+                        Console.WriteLine("Discovered neighbor: " + neighbor.AdapterId);
                         var remoteMerkleTree = merkleTreeFactory.CreateForNeighbor(neighbor.AdapterId.ToString("N"));
                         var connectionContext = new NeighborConnectionContext(bluetoothAdapter, neighbor, localMerkleTree, remoteMerkleTree);
                         connectedNeighborContextsByAdapterId.AddOrThrow(neighbor.AdapterId, connectionContext);
