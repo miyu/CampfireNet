@@ -89,31 +89,42 @@ namespace CampfireNet.Windows {
          public ReadableChannel<byte[]> InboundChannel => inboundChannel;
 
          public async Task<bool> TryHandshakeAsync() {
-            using (await synchronization.LockAsync()) {
-               bluetoothClient = new BluetoothClient();
-               bluetoothClient.Authenticate = false;
-               bluetoothClient.Encrypt = false;
+            try {
+               using (await synchronization.LockAsync()) {
+                  Console.WriteLine("Attempting to connect to ID " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
 
-               await bluetoothClient.ConnectAsync(address, CAMPFIRE_NET_SERVICE_CLASS);
-               disconnectedChannel.SetIsClosed(false);
+                  bluetoothClient = new BluetoothClient();
+                  bluetoothClient.Authenticate = false;
+                  bluetoothClient.Encrypt = false;
 
-               ChannelsExtensions.Go(async () => {
-                  Console.WriteLine("Entered BT Reader Task");
-                  var networkStream = bluetoothClient.GetStream();
-                  try {
-                     while (!disconnectedChannel.IsClosed) {
-                        Console.WriteLine("Reading BT Frame");
-                        var dataLengthBuffer = await ReadBytesAsync(networkStream, 4);
-                        var dataLength = BitConverter.ToInt32(dataLengthBuffer, 0);
-                        var data = await ReadBytesAsync(networkStream, dataLength);
-                        await inboundChannel.WriteAsync(data);
+                  await bluetoothClient.ConnectAsync(address, CAMPFIRE_NET_SERVICE_CLASS);
+                  disconnectedChannel.SetIsClosed(false);
+
+                  Console.WriteLine("Connected. Their Adapter ID is " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
+
+                  ChannelsExtensions.Go(async () => {
+                     Console.WriteLine("Entered BT Reader Task");
+                     var networkStream = bluetoothClient.GetStream();
+                     try {
+                        while (!disconnectedChannel.IsClosed) {
+                           Console.WriteLine("Reading BT Frame");
+                           var dataLengthBuffer = await ReadBytesAsync(networkStream, 4);
+                           var dataLength = BitConverter.ToInt32(dataLengthBuffer, 0);
+                           Console.WriteLine("Got BT Frame Length: " + dataLength);
+                           var data = await ReadBytesAsync(networkStream, dataLength);
+                           await inboundChannel.WriteAsync(data);
+                        }
+                     } catch (Exception e) {
+                        Console.WriteLine(e);
+                        Teardown();
                      }
-                  } catch (Exception e) {
-                     Console.WriteLine(e);
-                     Teardown();
-                  }
-               }).Forget();
-               return true;
+                  }).Forget();
+                  return true;
+               }
+            } catch (Exception e) {
+               Console.WriteLine("Failed to connect to ID " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
+               Console.WriteLine(e.GetType().FullName);
+               return false;
             }
          }
 

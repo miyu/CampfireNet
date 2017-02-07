@@ -23,6 +23,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CampfireNet.Utilities", "Ca
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CampfireNet.Windows", "CampfireNet.Windows\CampfireNet.Windows.csproj", "{8C817616-FD3A-467D-A8C2-54DC23B34973}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2DA4F66E-3BC4-48FC-B8CA-F7B2E2F397F2}"
+	ProjectSection(SolutionItems) = preProject
+		Scratch.txt = Scratch.txt
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
