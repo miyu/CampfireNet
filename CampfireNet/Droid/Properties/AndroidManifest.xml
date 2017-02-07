@@ -7,4 +7,10 @@
 	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+	<receiver android:name=".MainActivity$Receiver">
+		<intent-filter>
+			<action android:name="android.bluetooth.device.action.PAIRING_REQUEST" />
+			<action android:name="android.bluetooth.device.action.PAIRING_CANCEL" />
+		</intent-filter>
+	</receiver>
 </manifest>
