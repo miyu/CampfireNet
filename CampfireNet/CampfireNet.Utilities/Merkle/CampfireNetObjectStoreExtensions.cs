@@ -53,8 +53,8 @@ namespace CampfireNet.Utilities.Merkle {
             var objectData = ms.GetBuffer();
             var length = (int)ms.Position;
             var hash = CampfireNetHash.ComputeSha256Base64(objectData, 0, length);
-            var isNewlyWritten = await store.TryWriteAsync(ns, hash, objectData);
-
+            var isNewlyWritten = await store.TryWriteUniqueAsync(ns, hash, objectData);
+            
             var copy = await ReadMerkleNodeAsync(store, ns, hash);
             if (copy.TypeTag != node.TypeTag || copy.LeftHash != node.LeftHash || copy.RightHash != node.RightHash || copy.Descendents != node.Descendents) {
                throw new InvalidStateException();

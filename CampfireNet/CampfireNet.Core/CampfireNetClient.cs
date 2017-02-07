@@ -26,7 +26,10 @@ namespace CampfireNet {
       public Guid AdapterId => bluetoothAdapter.AdapterId;
 
       public async Task BroadcastAsync(BroadcastMessage message) {
-         await localMerkleTree.TryInsertAsync(message);
+         var localInsertionResult = await localMerkleTree.TryInsertAsync(message);
+         if (localInsertionResult.Item1) {
+            BroadcastReceived?.Invoke(new BroadcastReceivedEventArgs(null, message));
+         }
       }
 
       public async Task RunAsync() {
@@ -34,7 +37,7 @@ namespace CampfireNet {
       }
 
       public async Task DiscoverAsync() {
-         var rateLimit = ChannelFactory.Timer(1000); //5000, 5000);
+         var rateLimit = ChannelFactory.Timer(5000, 5000);
          var connectedNeighborContextsByAdapterId = new ConcurrentDictionary<Guid, NeighborConnectionContext>();
          while (true) {
             await ChannelsExtensions.ReadAsync(rateLimit);
@@ -47,7 +50,7 @@ namespace CampfireNet {
                            var connected = await neighbor.TryHandshakeAsync();
                            if (!connected) return;
 
-                           Console.WriteLine("Discovered neighbor: " + neighbor.AdapterId);
+//                           Console.WriteLine("Discovered neighbor: " + neighbor.AdapterId);
                            var remoteMerkleTree = merkleTreeFactory.CreateForNeighbor(neighbor.AdapterId.ToString("N"));
                            var connectionContext = new NeighborConnectionContext(bluetoothAdapter, neighbor, broadcastMessageSerializer, localMerkleTree, remoteMerkleTree);
                            connectedNeighborContextsByAdapterId.AddOrThrow(neighbor.AdapterId, connectionContext);

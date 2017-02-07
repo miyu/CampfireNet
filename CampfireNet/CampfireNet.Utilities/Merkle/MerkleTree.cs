@@ -33,7 +33,7 @@ namespace CampfireNet.Utilities.Merkle {
       }
 
       private async Task<string> GetRootHashAsyncUnderLock() {
-         var tryReadResult = await objectStore.TryReadAsync(TreeNamespace, treeKey);
+         var tryReadResult = await objectStore.TryReadAsync(TreeNamespace, "root");
          var rootExists = tryReadResult.Item1;
          return rootExists
             ? CampfireNetHash.ConvertBase64BufferToSha256Base64String(tryReadResult.Item2)
@@ -45,7 +45,7 @@ namespace CampfireNet.Utilities.Merkle {
          using (var ms = new MemoryStream(nextRootHashBytes))
          using (var writer = new BinaryWriter(ms)) {
             writer.WriteSha256Base64(nextRootHash);
-            await objectStore.TryWriteAsync(TreeNamespace, treeKey, nextRootHashBytes);
+            await objectStore.WriteAsync(TreeNamespace, "root", nextRootHashBytes);
          }
       }
 
@@ -104,7 +104,8 @@ namespace CampfireNet.Utilities.Merkle {
                   }
 
                   await SetRootHashAsyncUnderLock(nextRootHash);
-                  await objectStore.TryWriteAsync(TreeContainmentNamespace, itemHash, new byte[0]);
+                  await objectStore.TryWriteUniqueAsync(TreeContainmentNamespace, itemHash, new byte[0]);
+//                  Console.WriteLine($"LOC UPD ROOT {rootHash:n} => {nextRootHash:n}");
                }
             }
          }
@@ -126,7 +127,7 @@ namespace CampfireNet.Utilities.Merkle {
                Descendents = 2 + replaceeNode.Descendents
             };
             var internalNodeHash = (await objectStore.TryWriteMerkleNodeAsync(NetworkDataNamespace, internalNode)).Item2;
-            await objectStore.TryWriteAsync(TreeContainmentNamespace, internalNodeHash, new byte[0]);
+            await objectStore.TryWriteUniqueAsync(TreeContainmentNamespace, internalNodeHash, new byte[0]);
             return internalNodeHash;
          }
 
@@ -135,7 +136,7 @@ namespace CampfireNet.Utilities.Merkle {
          replaceeNode.RightHash = rightReplacementHash;
 
          var newReplaceeNodeHash = (await objectStore.TryWriteMerkleNodeAsync(NetworkDataNamespace, replaceeNode)).Item2;
-         await objectStore.TryWriteAsync(TreeContainmentNamespace, newReplaceeNodeHash, new byte[0]);
+         await objectStore.TryWriteUniqueAsync(TreeContainmentNamespace, newReplaceeNodeHash, new byte[0]);
          return newReplaceeNodeHash;
       }
 
@@ -144,7 +145,7 @@ namespace CampfireNet.Utilities.Merkle {
             var merkleHash = job.Item1;
             var merkleNode = job.Item2;
             var insertHash = (await objectStore.TryWriteMerkleNodeAsync(NetworkDataNamespace, merkleNode)).Item2;
-            await objectStore.TryWriteAsync(TreeContainmentNamespace, insertHash, new byte[0]);
+            await objectStore.TryWriteUniqueAsync(TreeContainmentNamespace, insertHash, new byte[0]);
             if (merkleHash != insertHash) {
                throw new InvalidStateException($"Hash Mismatch! {merkleHash} {insertHash}");
             }

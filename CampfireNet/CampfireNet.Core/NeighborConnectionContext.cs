@@ -1,3 +1,5 @@
+//#define NCC_DEBUG
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -66,15 +68,19 @@ namespace CampfireNet {
                var packet = serializer.ToObject(packetData);
                switch (packet.GetType().Name) {
                   case nameof(HavePacket):
+                     DebugPrint("Got HAVE {0}", ((HavePacket)packet).MerkleRootHash);
                      await haveChannel.WriteAsync((HavePacket)packet);
                      break;
                   case nameof(NeedPacket):
+                     DebugPrint("Got NEED {0}", ((NeedPacket)packet).MerkleRootHash);
                      await needChannel.WriteAsync((NeedPacket)packet);
                      break;
                   case nameof(GivePacket):
+                     DebugPrint("Got GIVE {0}", ((GivePacket)packet).NodeHash);
                      await giveChannel.WriteAsync((GivePacket)packet);
                      break;
                   case nameof(DonePacket):
+                     DebugPrint("Got DONE");
                      await doneChannel.WriteAsync((DonePacket)packet);
                      break;
                   default:
@@ -147,28 +153,55 @@ namespace CampfireNet {
       }
 #endif
 
+      private static object g_printLock = new object();
+
+      private void DebugPrint(string s, params object[] args) {
+#if NCC_DEBUG
+         lock (g_printLock) {
+            var colors = new ConsoleColor[] { ConsoleColor.Red, ConsoleColor.Green, ConsoleColor.Yellow, ConsoleColor.White };
+            var color = colors[Math.Abs(bluetoothAdapter.AdapterId.GetHashCode()) % colors.Length];
+            var cc = Console.ForegroundColor;
+            Console.ForegroundColor = color;
+            Console.WriteLine(bluetoothAdapter.AdapterId.ToString("n") + " " + s, args);
+            Console.ForegroundColor = cc;
+         }
+#endif
+      }
+
       private async Task SynchronizeRemoteToLocalAsync() {
+         DebugPrint("Enter Remote to Local");
          var have = await haveChannel.ReadAsync();
-         
-         if (!await IsRemoteObjectHeldLocally(have.MerkleRootHash)) {
+         DebugPrint("Have is {0}", have.MerkleRootHash);
+         var isRemoteRootSyncedLocally = await IsRemoteObjectHeldLocally(have.MerkleRootHash);
+         DebugPrint("IRRSL {0}", isRemoteRootSyncedLocally);
+
+         if (!isRemoteRootSyncedLocally) {
             var nodesToImport = new List<Tuple<string, MerkleNode>>();
             var neededHashes = new LinkedList<string>();
             neededHashes.AddLast(have.MerkleRootHash);
 
             while (neededHashes.Count != 0) {
+               var hashesReadLocally = new HashSet<string>();
                foreach (var hash in neededHashes) {
                   var localNode = await localMerkleTree.GetNodeAsync(hash);
                   if (localNode != null) {
                      nodesToImport.Add(Tuple.Create(hash, localNode));
+                     hashesReadLocally.Add(hash);
                      continue;
                   }
 
                   var need = new NeedPacket { MerkleRootHash = hash };
+                  DebugPrint("SEND NEED {0}", need.MerkleRootHash);
                   await neighbor.SendAsync(serializer.ToByteArray(need));
                }
 
-               foreach (var hash in Enumerable.Range(0, neededHashes.Count)) {
+               foreach (var i in Enumerable.Range(0, neededHashes.Count)) {
+                  var hash = neededHashes.First();
                   neededHashes.RemoveFirst();
+
+                  if (hashesReadLocally.Contains(hash)) {
+                     continue;
+                  }
 
                   var give = await giveChannel.ReadAsync();
                   nodesToImport.Add(Tuple.Create(give.NodeHash, give.Node));
@@ -200,12 +233,16 @@ namespace CampfireNet {
             }
          }
 
+         DebugPrint("SEND DONE");
          await neighbor.SendAsync(serializer.ToByteArray(new DonePacket()));
       }
 
       private async Task SynchronizeLocalToRemoteAsync() {
+         DebugPrint("Enter Local to Remote");
+
          var localRootHash = await localMerkleTree.GetRootHashAsync() ?? CampfireNetHash.ZERO_HASH_BASE64;
          var havePacket = new HavePacket { MerkleRootHash = localRootHash };
+         DebugPrint("SEND HAVE {0}", havePacket.MerkleRootHash);
          await neighbor.SendAsync(serializer.ToByteArray(havePacket));
 
          bool done = false;
@@ -222,6 +259,7 @@ namespace CampfireNet {
                      NodeHash = need.MerkleRootHash,
                      Node = node
                   };
+                  DebugPrint("SEND GIVE");
                   await neighbor.SendAsync(serializer.ToByteArray(give));
 //                  Console.WriteLine("EMIT GIVE " + need.MerkleRootHash);
                })

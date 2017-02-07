@@ -31,7 +31,16 @@ namespace CampfireNet.Utilities.Merkle {
          }
       }
 
-      public async Task<bool> TryWriteAsync(string ns, string hash, byte[] contents) {
+      public async Task WriteAsync(string ns, string hash, byte[] contents) {
+         var filePath = BuildPath(ns, hash);
+         Directory.CreateDirectory(Path.GetDirectoryName(filePath));
+
+         using (var fs = File.OpenWrite(filePath)) {
+            await fs.WriteAsync(contents, 0, contents.Length);
+         }
+      }
+
+      public async Task<bool> TryWriteUniqueAsync(string ns, string hash, byte[] contents) {
          var filePath = BuildPath(ns, hash);
          Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
