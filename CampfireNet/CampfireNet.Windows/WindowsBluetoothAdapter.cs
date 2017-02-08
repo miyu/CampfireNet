@@ -43,6 +43,7 @@ namespace CampfireNet.Windows {
                neighbor = new Neighbor(device.DeviceAddress, neighborId, device.DeviceName);
                neighborsById[neighborId] = neighbor;
             }
+            Console.WriteLine("Discovered " + (neighbor.Name ?? "[unknown]") + " " + neighbor.AdapterId + " " + neighbor.IsConnected);
             results.Add(neighbor);
          }
          return results;
@@ -130,11 +131,15 @@ namespace CampfireNet.Windows {
 
          public async Task SendAsync(byte[] data) {
             using (await synchronization.LockAsync()) {
+               Console.WriteLine("Sending to ID " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
+
                try {
                   var stream = bluetoothClient.GetStream();
                   await stream.WriteAsync(BitConverter.GetBytes(data.Length), 0, 4);
                   await stream.WriteAsync(data, 0, data.Length);
+                  Console.WriteLine("Sent to ID " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
                } catch {
+                  Console.WriteLine("Failed to send to ID " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
                   Teardown();
                   throw new NotConnectedException();
                }
@@ -142,6 +147,7 @@ namespace CampfireNet.Windows {
          }
 
          private void Teardown() {
+            Console.WriteLine("Teardown connection to ID " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
             bluetoothClient?.Dispose();
             bluetoothClient = null;
             disconnectedChannel.SetIsClosed(true);
@@ -151,7 +157,12 @@ namespace CampfireNet.Windows {
             var buffer = new byte[count];
             int index = 0;
             while (index < count) {
-               index += await stream.ReadAsync(buffer, index, count - index);
+               var bytesRead = await stream.ReadAsync(buffer, index, count - index);
+               if (bytesRead <= 0) {
+                  Console.WriteLine(nameof(WindowsBluetoothAdapter) + ": Bytes Read was " + bytesRead);
+                  throw new NotConnectedException();
+               }
+               index += bytesRead;
             }
             return buffer;
          }

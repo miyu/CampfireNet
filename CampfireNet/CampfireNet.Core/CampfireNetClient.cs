@@ -63,6 +63,8 @@ namespace CampfireNet {
                               connectedNeighborContextsByAdapterId.AddOrThrow(neighbor.AdapterId, connectionContext);
                               connectionContext.BroadcastReceived += HandleBroadcastReceived;
                               connectionContext.Start(() => {
+                                 Console.WriteLine("Connection Context Torn Down: " + neighbor.AdapterId);
+
                                  connectionContext.BroadcastReceived -= HandleBroadcastReceived;
                                  connectedNeighborContextsByAdapterId.RemoveOrThrow(neighbor.AdapterId);
                               });

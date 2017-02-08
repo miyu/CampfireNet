@@ -93,6 +93,8 @@ namespace CampfireNet {
                await neighbor.SendAsync(new byte[0]);
                throw new InvalidStateException();
             } catch (NotConnectedException) { }
+         } finally {
+            DebugPrint("Router loop exiting");
          }
       }
 
@@ -112,6 +114,8 @@ namespace CampfireNet {
             }
          } catch (NotConnectedException) {
             disconnectLatchChannel.SetIsClosed(true);
+         } finally {
+            DebugPrint("Sync loop exiting");
          }
       }
 
