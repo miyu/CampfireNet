@@ -196,7 +196,7 @@ namespace CampfireNet {
 
                   var need = new NeedPacket { MerkleRootHash = hash };
                   DebugPrint("SEND NEED {0}", need.MerkleRootHash);
-                  await neighbor.SendAsync(serializer.ToByteArray(need));
+                  neighbor.SendAsync(serializer.ToByteArray(need)).Forget();
                }
 
                foreach (var i in Enumerable.Range(0, neededHashes.Count)) {
@@ -264,8 +264,8 @@ namespace CampfireNet {
                      Node = node
                   };
                   DebugPrint("SEND GIVE");
-                  await neighbor.SendAsync(serializer.ToByteArray(give));
-//                  Console.WriteLine("EMIT GIVE " + need.MerkleRootHash);
+                  neighbor.SendAsync(serializer.ToByteArray(give)).Forget();
+                  //                  Console.WriteLine("EMIT GIVE " + need.MerkleRootHash);
                })
             }.ConfigureAwait(false);
          }
