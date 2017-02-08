@@ -31,7 +31,7 @@ namespace CampfireNet {
       private readonly MerkleTree<BroadcastMessage> remoteMerkleTree;
 
       public NeighborConnectionContext(
-         IBluetoothAdapter bluetoothAdapter, 
+         IBluetoothAdapter bluetoothAdapter,
          IBluetoothNeighbor neighbor,
          BroadcastMessageSerializer broadcastMessageSerializer,
          MerkleTree<BroadcastMessage> localMerkleTree,
@@ -150,7 +150,7 @@ namespace CampfireNet {
 
          IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
 
-         private class Node { 
+         private class Node {
             public Node Next { get; set; }
             public T Value { get; set; }
          }
@@ -209,7 +209,7 @@ namespace CampfireNet {
 
                   var give = await giveChannel.ReadAsync();
                   nodesToImport.Add(Tuple.Create(give.NodeHash, give.Node));
-//                  Console.WriteLine("RECV GIVE " + give.NodeHash);
+                  //                  Console.WriteLine("RECV GIVE " + give.NodeHash);
 
                   if (!await IsRemoteObjectHeldLocally(give.Node.LeftHash)) {
                      neededHashes.AddLast(give.Node.LeftHash);
@@ -221,7 +221,7 @@ namespace CampfireNet {
                }
             }
 
-//            Console.WriteLine("IMPORT");
+            //            Console.WriteLine("IMPORT");
             await remoteMerkleTree.ImportAsync(have.MerkleRootHash, nodesToImport);
             foreach (var tuple in nodesToImport) {
                var node = tuple.Item2;

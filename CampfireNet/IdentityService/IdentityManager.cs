@@ -1,40 +1,39 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace IdentityService
 {
 	class IdentityManager
 	{
-		private Dictionary<string, Identity> identityTable;
-		// may leave space for broadcast scheme
+		// keys are strings of public keys, formatted as:
+		//     ItentityService.getIdentityString(publicKey);
+		private ConcurrentDictionary<string, TrustChainNode> identityTable;
+
 		public IdentityManager()
 		{
-			identityTable = new Dictionary<string, Identity>();
+			identityTable = new ConcurrentDictionary<string, TrustChainNode>();
 		}
 
-		public Identity LookupIdentity(string user)
+		public static string GetIdentityString(byte[] publicKey)
 		{
-			if (identityTable.TryGetValue(user, out Identity identity))
+			return BitConverter.ToString(publicKey).Replace("-", "");
+		}
+
+		public bool AddIdentity(TrustChainNode identity)
+		{
+			return identityTable.TryAdd(GetIdentityString(identity.ThisId), identity);
+		}
+
+		public TrustChainNode LookupIdentity(string publicKey)
+		{
+			TrustChainNode identity;
+			if (identityTable.TryGetValue(publicKey, out identity))
 			{
 				return identity;
 			}
 			return null;
-		}
-
-		public void AddIdentity(string user, Identity identity)
-		{
-			identityTable.Add(user, identity);
-		}
-
-		public void UpdateIdentity(List<string> users, List<Identity> identities)
-		{
-			for (int i = 0; i < users.Count; i++)
-			{
-				identityTable.Add(users.ElementAt(i), identities.ElementAt(i));
-			}
 		}
 	}
 }

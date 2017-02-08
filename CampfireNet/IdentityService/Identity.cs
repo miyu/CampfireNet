@@ -1,201 +1,168 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Security.Cryptography;
-using System.IO;
 
 namespace IdentityService
 {
-    class Identity
-    {
-        public const int KEY_SIZE = 2048;
-        public const int SKEY_SIZE = 32;
-        public const int BLOCK_SIZE = 16;
-        public const int SSIZE = 64;
-        public string publicKey;
-        public Permission permission;
-        public Permission gPermission;
-        public byte[] coT;
-        private RSAParameters keyInfo;
+	class Identity
+	{
+		public const int ASYM_KEY_SIZE_BITS = 2048;
+		public const int ASYM_KEY_SIZE_BYTES = ASYM_KEY_SIZE_BITS / 8;
+		public const int SYM_KEY_SIZE = 32;
+		public const int IV_SIZE = 16;
+		public const int SALT_SIZE = 64;
 
-        public Identity(Permission permission, Permission gPermission, byte[] coT)
-        {
-            RSACryptoServiceProvider rsa = new RSACryptoServiceProvider(KEY_SIZE);
-            keyInfo = rsa.ExportParameters(true);
-            publicKey = rsa.ToXmlString(false);
-            this.permission = permission;
-            this.gPermission = gPermission;
-            this.coT = coT ?? Encoding.UTF8.GetBytes(publicKey);
-        }
+		public TrustChainNode[] TrustChain { get; private set; }
+		public Permission HeldPermissions { get; private set; }
+		public Permission GrantablePermissions { get; private set; }
 
-        public Identity CreateUser(Permission permission, Permission gPermission)
-        {
-            if (CoTProcessor.CheckCoT(this) && GrantPermission(permission) && GrantPermission(gPermission))
-            {
-                return new Identity(permission, gPermission, CoTProcessor.FormCoT(this, permission, gPermission));
-            }
-            throw new InvalidPermissionException("Insufficient Authorization.");
-        }
+		public byte[] PublicIdentity
+		{
+			get
+			{
+				return privateKey.Modulus;
+			}
+		}
 
-        public byte[] SEncrypt(byte[] dataToEncrypt, byte[] key, byte[] IV)
-        {
-            byte[] encryptedData;
-            using (AesManaged aesAlg = new AesManaged())
-            {
-                aesAlg.Key = key;
-                aesAlg.IV = IV;
-                ICryptoTransform encryptor = aesAlg.CreateEncryptor(aesAlg.Key, aesAlg.IV);
-                using (MemoryStream msEncrypt = new MemoryStream())
-                {
-                    using (CryptoStream csEncrypt = new CryptoStream(msEncrypt, encryptor, CryptoStreamMode.Write))
-                    {
-                        csEncrypt.Write(dataToEncrypt, 0, dataToEncrypt.Length);
-                        csEncrypt.FlushFinalBlock();
-                        encryptedData = msEncrypt.ToArray();
-                    }
-                }
-            }
-            return encryptedData;
-        }
+		private RSAParameters privateKey;
+		private IdentityManager identityManager;
 
-        public byte[] SDecrypt(byte[] dataToDecrypt, byte[] key, byte[] IV)
-        {
-            byte[] decryptedData;
-            using (AesManaged aesAlg = new AesManaged())
-            {
-                aesAlg.Key = key;
-                aesAlg.IV = IV;
-                ICryptoTransform decryptor = aesAlg.CreateDecryptor(aesAlg.Key, aesAlg.IV);
-                using (MemoryStream msDecrypt = new MemoryStream(dataToDecrypt))
-                {
-                    using (CryptoStream csDecrypt = new CryptoStream(msDecrypt, decryptor, CryptoStreamMode.Read))
-                    {
-                        csDecrypt.Read(dataToDecrypt, 0, dataToDecrypt.Length);
-                        decryptedData = msDecrypt.ToArray();
-                    }
-                }
-            }
-            return decryptedData;
-        }
+		public Identity(IdentityManager identityManager)
+		{
+			// generate new public and private keys
+			var rsa = new RSACryptoServiceProvider(ASYM_KEY_SIZE_BITS);
+			privateKey = rsa.ExportParameters(true);
 
-        public byte[] Encrypt(byte[] dataToEncrypt, string key, bool doOAEPPadding)
-        {
-            try
-            {
-                byte[] encryptedData;
-                using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
-                {
-                    rsa.FromXmlString(key);
-                    encryptedData = rsa.Encrypt(dataToEncrypt, doOAEPPadding);
-                    return encryptedData;
-                }
-            }
-            catch (CryptographicException e)
-            {
-                Console.WriteLine(e.Message);
-                return null;
-            }
-        }
+			this.identityManager = identityManager;
 
-        public byte[] Decrypt(byte[] dataToDecrypt, bool doOAEPPadding)
-        {
-            try
-            {
-                byte[] decryptedData;
-                using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
-                {
-                    rsa.ImportParameters(keyInfo);
-                    decryptedData = rsa.Decrypt(dataToDecrypt, doOAEPPadding);
-                    return decryptedData;
-                }
-            }
-            catch (CryptographicException e)
-            {
-                Console.WriteLine(e.ToString());
-                return null;
-            }
-        }
+			HeldPermissions = Permission.None;
+			GrantablePermissions = Permission.None;
+			TrustChain = null;
+		}
 
-        public byte[] Sign(byte[] dataToSign)
-        {
-            try
-            {
-                byte[] signedData;
-                using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
-                {
-                    rsa.ImportParameters(keyInfo);
-                    signedData = rsa.SignData(dataToSign, new SHA256Cng());
-                    return signedData;
-                }
-            }
-            catch (CryptographicException e)
-            {
-                Console.WriteLine(e.ToString());
-                return null;
-            }
-        }
+		// gives this identity a trust chain to use
+		public void AddTrustChain(byte[] trustChain)
+		{
+			TrustChainNode[] nodes = TrustChainUtil.SegmentChain(trustChain);
+			bool isValid = TrustChainUtil.ValidateTrustChain(nodes);
+			bool endsWithThis = nodes[nodes.Length - 1].ThisId.SequenceEqual(PublicIdentity);
 
-        public bool Verify(byte[] data, string key, byte[] signature)
-        {
-            try {
-                bool verified;
-                using (RSACryptoServiceProvider rsa = new RSACryptoServiceProvider())
-                {
-                    rsa.FromXmlString(key);
-                    verified = rsa.VerifyData(data, new SHA256Cng(), signature);
-                    return verified;
-                }
-            }
-            catch (CryptographicException e)
-            {
-                Console.WriteLine(e.ToString());
-                return false;
-            }
-        }
+			if (isValid && endsWithThis)
+			{
+				TrustChain = nodes;
+				HeldPermissions = nodes[nodes.Length - 1].HeldPermissions;
+				GrantablePermissions = nodes[nodes.Length - 1].GrantablePermissions;
+			}
+			else
+			{
+				throw new BadTrustChainException("Could not validate trust chain ending with this");
+			}
+		}
 
-        public bool GrantPermission(Permission permission)
-        {
-            if (this.permission.HasFlag(Permission.Invite))
-            {
-                if(permission.HasFlag(Permission.Unicast) && !this.gPermission.HasFlag(Permission.Unicast))
-                {
-                    return false;
-                }
-                if(permission.HasFlag(Permission.Broadcast) && !this.gPermission.HasFlag(Permission.Broadcast))
-                {
-                    return false;
-                }
-                if(permission.HasFlag(Permission.Invite) && !this.gPermission.HasFlag(Permission.Invite))
-                {
-                    return false;
-                }
-            }
-            return true;
-        }
+		// generates a new trust chain with this as the root node
+		public void GenerateRootChain()
+		{
+			byte[] rootChain = TrustChainUtil.GenerateNewChain(null, PublicIdentity, PublicIdentity, Permission.All,
+															   Permission.All, privateKey);
+			HeldPermissions = Permission.All;
+			GrantablePermissions = Permission.All;
+			AddTrustChain(rootChain);
+		}
 
-        public byte[] GenerateKey()
-        {
-            DeriveBytes rgb = new Rfc2898DeriveBytes(publicKey, SSIZE);
-            return rgb.GetBytes(SKEY_SIZE);
-        }
+		// generates a trust chain to pass to another client
+		public byte[] GenerateNewChain(byte[] childId, Permission heldPermissions, Permission grantablePermissions)
+		{
+			bool canGrant = CanGrantPermissions(heldPermissions, grantablePermissions);
 
-        public byte[] GenerateIV()
-        {
-            DeriveBytes rgb = new Rfc2898DeriveBytes(publicKey, SSIZE);
-            return rgb.GetBytes(BLOCK_SIZE);
-        }
+			if (canGrant)
+			{
+				return TrustChainUtil.GenerateNewChain(TrustChain, PublicIdentity, childId, heldPermissions,
+													   grantablePermissions, privateKey);
+			}
+			else
+			{
+				throw new InvalidPermissionException($"Insufficient authorization to grant permissions");
+			}
+		}
 
-        public class InvalidPermissionException : Exception
-        {
-            public InvalidPermissionException() : base() { }
-            public InvalidPermissionException(string message) : base(message) { }
-            public InvalidPermissionException(string message, Exception inner) : base(message, inner) { }
+		// validates the given trust chain and adds the nodes to the list of known nodes, or returns false
+		public bool ValidateAndAdd(byte[] trustChain)
+		{
+			if (TrustChain == null || TrustChain.Length == 0)
+			{
+				throw new BadTrustChainException("This trust chain is empty, can't validate others");
+			}
 
-            public InvalidPermissionException(System.Runtime.Serialization.SerializationInfo info,
-                                              System.Runtime.Serialization.StreamingContext context)
-            { }
-        }
-    }
+			TrustChainNode[] trustChainNodes = TrustChainUtil.SegmentChain(trustChain);
+
+			bool validChain = TrustChainUtil.ValidateTrustChain(trustChainNodes);
+			if (!validChain)
+			{
+				return false;
+			}
+
+			bool sameRoot = TrustChain[0].ParentId.SequenceEqual(trustChainNodes[0].ParentId);
+			if (!sameRoot)
+			{
+				return false;
+			}
+
+			for (int i = trustChainNodes.Length - 1; i >= 0; i--)
+			{
+				if (!identityManager.AddIdentity(trustChainNodes[i]))
+				{
+					break;
+				}
+			}
+
+			return true;
+		}
+
+
+		public byte[] AsymmetricEncrypt(byte[] data, RSAParameters privateKey, bool doOAEPPadding)
+		{
+			try
+			{
+				byte[] encryptedData;
+				using (var rsa = new RSACryptoServiceProvider())
+				{
+					rsa.ImportParameters(privateKey);
+					encryptedData = rsa.Encrypt(data, doOAEPPadding);
+					return encryptedData;
+				}
+			}
+			catch (CryptographicException e)
+			{
+				Console.WriteLine(e.Message);
+				throw e;
+			}
+		}
+
+		public byte[] AsymmetricDecrypt(byte[] data, bool doOAEPPadding)
+		{
+			try
+			{
+				byte[] decryptedData;
+				using (var rsa = new RSACryptoServiceProvider())
+				{
+					rsa.ImportParameters(privateKey);
+					decryptedData = rsa.Decrypt(data, doOAEPPadding);
+					return decryptedData;
+				}
+			}
+			catch (CryptographicException e)
+			{
+				Console.WriteLine(e.ToString());
+				throw e;
+			}
+		}
+
+		// whether the given permissions can be granted by this node
+		public bool CanGrantPermissions(Permission heldPermissions, Permission grantablePermissions)
+		{
+			return HeldPermissions.HasFlag(Permission.Invite) &&
+								  TrustChainUtil.ValidatePermissions(GrantablePermissions, heldPermissions) &&
+								  TrustChainUtil.ValidatePermissions(heldPermissions, grantablePermissions);
+		}
+	}
 }
