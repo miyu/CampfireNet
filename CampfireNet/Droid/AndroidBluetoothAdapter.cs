@@ -13,6 +13,7 @@ using CampfireNet.IO.Transport;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.AsyncPrimatives;
 using CampfireNet.Utilities.Channels;
+using static CampfireNet.Utilities.Channels.ChannelsExtensions;
 
 namespace AndroidTest.Droid {
    public class AndroidBluetoothAdapter : IBluetoothAdapter {
@@ -91,10 +92,36 @@ namespace AndroidTest.Droid {
                if (isServer) {
                   socket = await inboundBluetoothSocketTable.TakeAsyncOrTimeout(device).ConfigureAwait(false);
                } else {
-                  socket = await Task.Factory.StartNew(
-                     () => device.CreateInsecureRfcommSocketToServiceRecord(CampfireNetBluetoothConstants.APP_UUID),
-                     TaskCreationOptions.LongRunning).ConfigureAwait(false);
+                  var socketBox = new AsyncBox<BluetoothSocket>();
+                  new Thread(() => {
+                     try {
+                        socketBox.SetResult(device.CreateInsecureRfcommSocketToServiceRecord(CampfireNetBluetoothConstants.APP_UUID));
+                     } catch (Exception e) {
+                        socketBox.SetException(e);
+                     }
+                  }).Start();
+
+                  socket = await socketBox.GetResultAsync().ConfigureAwait(false);
+                  var connectedChannel = ChannelFactory.Nonblocking<bool>();
+
+                  Go(async () => {
                      await socket.ConnectAsync().ConfigureAwait(false);
+                     await connectedChannel.WriteAsync(true);
+                  }).Forget();
+
+                  bool isTimeout = false;
+                  await new Select {
+                     Case(ChannelFactory.Timer(5000), () => {
+                        socket.Dispose();
+                        isTimeout = true;
+                     }),
+                     Case(connectedChannel, () => {
+                        // whee!
+                     })
+                  }.ConfigureAwait(false);
+                  if (isTimeout) {
+                     throw new TimeoutException();
+                  }
                }
                disconnectedChannel.SetIsClosed(false);
 

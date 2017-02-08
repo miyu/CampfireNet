@@ -89,6 +89,7 @@ namespace AndroidTest.Droid {
 
          sendTextButton.Click += (s, e) => {
             var text = inputText.Text;
+            inputText.Text = "";
             client.BroadcastAsync(new BroadcastMessage {
                Data = Encoding.UTF8.GetBytes(text)
             }).Forget();
