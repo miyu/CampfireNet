@@ -42,7 +42,7 @@ namespace AndroidTest.Droid {
 
          bluetoothAdapter.StartDiscovery();
 
-         var peers = await resultBox.GetResultAsync();
+         var peers = await resultBox.GetResultAsync().ConfigureAwait(false);
          applicationContext.UnregisterReceiver(discoveryContext.Receiver);
 
          if (bluetoothAdapter.IsDiscovering) {

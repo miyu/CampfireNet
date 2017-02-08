@@ -28,7 +28,7 @@ namespace CampfireNet {
       public Guid AdapterId => bluetoothAdapter.AdapterId;
 
       public async Task BroadcastAsync(BroadcastMessage message) {
-         var localInsertionResult = await localMerkleTree.TryInsertAsync(message);
+         var localInsertionResult = await localMerkleTree.TryInsertAsync(message).ConfigureAwait(false);
          if (localInsertionResult.Item1) {
             BroadcastReceived?.Invoke(new BroadcastReceivedEventArgs(null, message));
          }
@@ -43,14 +43,14 @@ namespace CampfireNet {
          var connectedNeighborContextsByAdapterId = new ConcurrentDictionary<Guid, NeighborConnectionContext>();
          while (true) {
             Debug("Starting discovery round!");
-            var neighbors = await bluetoothAdapter.DiscoverAsync();
+            var neighbors = await bluetoothAdapter.DiscoverAsync().ConfigureAwait(false);
             try {
                await Task.WhenAll(
                   neighbors.Where(neighbor => !neighbor.IsConnected)
                            .Where(neighbor => !connectedNeighborContextsByAdapterId.ContainsKey(neighbor.AdapterId))
                            .Select(neighbor => ChannelsExtensions.Go(async () => {
                               Debug("Attempt to connect to: {0}", neighbor.AdapterId);
-                              var connected = await neighbor.TryHandshakeAsync();
+                              var connected = await neighbor.TryHandshakeAsync().ConfigureAwait(false);
                               if (!connected) {
                                  Debug("Failed to connect to: {0}", neighbor.AdapterId);
                                  return;
@@ -69,13 +69,13 @@ namespace CampfireNet {
                                  connectedNeighborContextsByAdapterId.RemoveOrThrow(neighbor.AdapterId);
                               });
                            }))
-               );
+               ).ConfigureAwait(false);
             } catch (Exception e) {
                Debug("Discovery threw!");
                Debug(e.ToString());
             }
             Debug("Ending discovery round!");
-            await ChannelsExtensions.ReadAsync(rateLimit);
+            await ChannelsExtensions.ReadAsync(rateLimit).ConfigureAwait(false);
          }
       }
 

@@ -64,24 +64,24 @@ namespace CampfireNet {
          var inboundChannel = neighbor.InboundChannel;
          try {
             while (true) {
-               var packetData = await inboundChannel.ReadAsync();
+               var packetData = await inboundChannel.ReadAsync().ConfigureAwait(false);
                var packet = serializer.ToObject(packetData);
                switch (packet.GetType().Name) {
                   case nameof(HavePacket):
                      DebugPrint("Got HAVE {0}", ((HavePacket)packet).MerkleRootHash);
-                     await haveChannel.WriteAsync((HavePacket)packet);
+                     await haveChannel.WriteAsync((HavePacket)packet).ConfigureAwait(false);
                      break;
                   case nameof(NeedPacket):
                      DebugPrint("Got NEED {0}", ((NeedPacket)packet).MerkleRootHash);
-                     await needChannel.WriteAsync((NeedPacket)packet);
+                     await needChannel.WriteAsync((NeedPacket)packet).ConfigureAwait(false);
                      break;
                   case nameof(GivePacket):
                      DebugPrint("Got GIVE {0}", ((GivePacket)packet).NodeHash);
-                     await giveChannel.WriteAsync((GivePacket)packet);
+                     await giveChannel.WriteAsync((GivePacket)packet).ConfigureAwait(false);
                      break;
                   case nameof(DonePacket):
                      DebugPrint("Got DONE");
-                     await doneChannel.WriteAsync((DonePacket)packet);
+                     await doneChannel.WriteAsync((DonePacket)packet).ConfigureAwait(false);
                      break;
                   default:
                      throw new InvalidStateException();
@@ -90,7 +90,7 @@ namespace CampfireNet {
          } catch (NotConnectedException) {
             disconnectLatchChannel.SetIsClosed(true);
             try {
-               await neighbor.SendAsync(new byte[0]);
+               await neighbor.SendAsync(new byte[0]).ConfigureAwait(false);
                throw new InvalidStateException();
             } catch (NotConnectedException) { }
          } finally {
@@ -104,13 +104,13 @@ namespace CampfireNet {
          try {
             while (true) {
                if (isGreater) {
-                  await SynchronizeRemoteToLocalAsync();
-                  await SynchronizeLocalToRemoteAsync();
+                  await SynchronizeRemoteToLocalAsync().ConfigureAwait(false);
+                  await SynchronizeLocalToRemoteAsync().ConfigureAwait(false);
                } else {
-                  await SynchronizeLocalToRemoteAsync();
-                  await SynchronizeRemoteToLocalAsync();
+                  await SynchronizeLocalToRemoteAsync().ConfigureAwait(false);
+                  await SynchronizeRemoteToLocalAsync().ConfigureAwait(false);
                }
-               await rateLimit.ReadAsync();
+               await rateLimit.ReadAsync().ConfigureAwait(false);
             }
          } catch (NotConnectedException) {
             disconnectLatchChannel.SetIsClosed(true);
@@ -174,9 +174,9 @@ namespace CampfireNet {
 
       private async Task SynchronizeRemoteToLocalAsync() {
          DebugPrint("Enter Remote to Local");
-         var have = await haveChannel.ReadAsync();
+         var have = await haveChannel.ReadAsync().ConfigureAwait(false);
          DebugPrint("Have is {0}", have.MerkleRootHash);
-         var isRemoteRootSyncedLocally = await IsRemoteObjectHeldLocally(have.MerkleRootHash);
+         var isRemoteRootSyncedLocally = await IsRemoteObjectHeldLocally(have.MerkleRootHash).ConfigureAwait(false);
          DebugPrint("IRRSL {0}", isRemoteRootSyncedLocally);
 
          if (!isRemoteRootSyncedLocally) {
@@ -187,7 +187,7 @@ namespace CampfireNet {
             while (neededHashes.Count != 0) {
                var hashesReadLocally = new HashSet<string>();
                foreach (var hash in neededHashes) {
-                  var localNode = await localMerkleTree.GetNodeAsync(hash);
+                  var localNode = await localMerkleTree.GetNodeAsync(hash).ConfigureAwait(false);
                   if (localNode != null) {
                      nodesToImport.Add(Tuple.Create(hash, localNode));
                      hashesReadLocally.Add(hash);
@@ -207,29 +207,29 @@ namespace CampfireNet {
                      continue;
                   }
 
-                  var give = await giveChannel.ReadAsync();
+                  var give = await giveChannel.ReadAsync().ConfigureAwait(false);
                   nodesToImport.Add(Tuple.Create(give.NodeHash, give.Node));
                   //                  Console.WriteLine("RECV GIVE " + give.NodeHash);
 
-                  if (!await IsRemoteObjectHeldLocally(give.Node.LeftHash)) {
+                  if (!await IsRemoteObjectHeldLocally(give.Node.LeftHash).ConfigureAwait(false)) {
                      neededHashes.AddLast(give.Node.LeftHash);
                   }
 
-                  if (!await IsRemoteObjectHeldLocally(give.Node.RightHash)) {
+                  if (!await IsRemoteObjectHeldLocally(give.Node.RightHash).ConfigureAwait(false)) {
                      neededHashes.AddLast(give.Node.RightHash);
                   }
                }
             }
 
             //            Console.WriteLine("IMPORT");
-            await remoteMerkleTree.ImportAsync(have.MerkleRootHash, nodesToImport);
+            await remoteMerkleTree.ImportAsync(have.MerkleRootHash, nodesToImport).ConfigureAwait(false);
             foreach (var tuple in nodesToImport) {
                var node = tuple.Item2;
-               if (node.Descendents == 0 && await localMerkleTree.GetNodeAsync(tuple.Item1) == null) {
+               if (node.Descendents == 0 && await localMerkleTree.GetNodeAsync(tuple.Item1).ConfigureAwait(false) == null) {
                   var isDataNode = node.TypeTag == MerkleNodeTypeTag.Data;
                   BroadcastMessage message = isDataNode ? broadcastMessageSerializer.Deserialize(node.Contents) : null;
 
-                  var insertionResult = await localMerkleTree.TryInsertAsync(tuple.Item2);
+                  var insertionResult = await localMerkleTree.TryInsertAsync(tuple.Item2).ConfigureAwait(false);
                   if (insertionResult.Item1 && isDataNode) {
                      BroadcastReceived?.Invoke(new BroadcastReceivedEventArgs(neighbor, message));
                   }
@@ -238,16 +238,16 @@ namespace CampfireNet {
          }
 
          DebugPrint("SEND DONE");
-         await neighbor.SendAsync(serializer.ToByteArray(new DonePacket()));
+         await neighbor.SendAsync(serializer.ToByteArray(new DonePacket())).ConfigureAwait(false);
       }
 
       private async Task SynchronizeLocalToRemoteAsync() {
          DebugPrint("Enter Local to Remote");
 
-         var localRootHash = await localMerkleTree.GetRootHashAsync() ?? CampfireNetHash.ZERO_HASH_BASE64;
+         var localRootHash = await localMerkleTree.GetRootHashAsync().ConfigureAwait(false) ?? CampfireNetHash.ZERO_HASH_BASE64;
          var havePacket = new HavePacket { MerkleRootHash = localRootHash };
          DebugPrint("SEND HAVE {0}", havePacket.MerkleRootHash);
-         await neighbor.SendAsync(serializer.ToByteArray(havePacket));
+         await neighbor.SendAsync(serializer.ToByteArray(havePacket)).ConfigureAwait(false);
 
          bool done = false;
          while (!done) {
@@ -258,7 +258,7 @@ namespace CampfireNet {
                ChannelsExtensions.Case(needChannel, async need => {
 //                  Console.WriteLine("RECV NEED " + need.MerkleRootHash);
 
-                  var node = await localMerkleTree.GetNodeAsync(need.MerkleRootHash);
+                  var node = await localMerkleTree.GetNodeAsync(need.MerkleRootHash).ConfigureAwait(false);
                   var give = new GivePacket {
                      NodeHash = need.MerkleRootHash,
                      Node = node
@@ -275,7 +275,7 @@ namespace CampfireNet {
          if (hash == CampfireNetHash.ZERO_HASH_BASE64) {
             return true;
          }
-         return await remoteMerkleTree.GetNodeAsync(hash) != null;
+         return await remoteMerkleTree.GetNodeAsync(hash).ConfigureAwait(false) != null;
       }
    }
 }

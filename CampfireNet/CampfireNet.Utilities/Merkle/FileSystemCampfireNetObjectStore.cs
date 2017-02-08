@@ -22,7 +22,7 @@ namespace CampfireNet.Utilities.Merkle {
                int offset = 0;
                while (offset < length) {
                   var bytesRemaining = length - offset;
-                  offset += await fs.ReadAsync(buffer, offset, bytesRemaining);
+                  offset += await fs.ReadAsync(buffer, offset, bytesRemaining).ConfigureAwait(false);
                }
                return Tuple.Create(true, buffer);
             }
@@ -36,7 +36,7 @@ namespace CampfireNet.Utilities.Merkle {
          Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
          using (var fs = File.OpenWrite(filePath)) {
-            await fs.WriteAsync(contents, 0, contents.Length);
+            await fs.WriteAsync(contents, 0, contents.Length).ConfigureAwait(false);
          }
       }
 
@@ -51,7 +51,7 @@ namespace CampfireNet.Utilities.Merkle {
 
          // todo: handle race
          using (var fs = File.Open(filePath, FileMode.CreateNew, FileAccess.Write, FileShare.None)) {
-            await fs.WriteAsync(contents, 0, contents.Length);
+            await fs.WriteAsync(contents, 0, contents.Length).ConfigureAwait(false);
             return true;
          }
       }
