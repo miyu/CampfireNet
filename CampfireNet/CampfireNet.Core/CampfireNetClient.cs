@@ -40,8 +40,6 @@ namespace CampfireNet {
          var rateLimit = ChannelFactory.Timer(5000, 5000);
          var connectedNeighborContextsByAdapterId = new ConcurrentDictionary<Guid, NeighborConnectionContext>();
          while (true) {
-            await ChannelsExtensions.ReadAsync(rateLimit);
-
             Console.WriteLine("Starting discovery round!");
             var neighbors = await bluetoothAdapter.DiscoverAsync();
             try {
@@ -75,6 +73,7 @@ namespace CampfireNet {
                Console.WriteLine(e);
             }
             Console.WriteLine("Ending discovery round!");
+            await ChannelsExtensions.ReadAsync(rateLimit);
          }
       }
 
