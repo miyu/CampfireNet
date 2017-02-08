@@ -1,3 +1,5 @@
+//#define CN_DEBUG
+
 using System;
 using System.Collections.Concurrent;
 using System.Linq;
@@ -40,20 +42,20 @@ namespace CampfireNet {
          var rateLimit = ChannelFactory.Timer(5000, 5000);
          var connectedNeighborContextsByAdapterId = new ConcurrentDictionary<Guid, NeighborConnectionContext>();
          while (true) {
-            Console.WriteLine("Starting discovery round!");
+            Debug("Starting discovery round!");
             var neighbors = await bluetoothAdapter.DiscoverAsync();
             try {
                await Task.WhenAll(
                   neighbors.Where(neighbor => !neighbor.IsConnected)
                            .Where(neighbor => !connectedNeighborContextsByAdapterId.ContainsKey(neighbor.AdapterId))
                            .Select(neighbor => ChannelsExtensions.Go(async () => {
-                              Console.WriteLine("Attempt to connect to: " + neighbor.AdapterId);
+                              Debug("Attempt to connect to: {0}", neighbor.AdapterId);
                               var connected = await neighbor.TryHandshakeAsync();
                               if (!connected) {
-                                 Console.WriteLine("Failed to connect to: " + neighbor.AdapterId);
+                                 Debug("Failed to connect to: {0}", neighbor.AdapterId);
                                  return;
                               }
-                              Console.WriteLine("Successfully connected to: " + neighbor.AdapterId);
+                              Debug("Successfully connected to: {0}", neighbor.AdapterId);
 
                               //                           Console.WriteLine("Discovered neighbor: " + neighbor.AdapterId);
                               var remoteMerkleTree = merkleTreeFactory.CreateForNeighbor(neighbor.AdapterId.ToString("N"));
@@ -61,7 +63,7 @@ namespace CampfireNet {
                               connectedNeighborContextsByAdapterId.AddOrThrow(neighbor.AdapterId, connectionContext);
                               connectionContext.BroadcastReceived += HandleBroadcastReceived;
                               connectionContext.Start(() => {
-                                 Console.WriteLine("Connection Context Torn Down: " + neighbor.AdapterId);
+                                 Debug("Connection Context Torn Down: {0}", neighbor.AdapterId);
 
                                  connectionContext.BroadcastReceived -= HandleBroadcastReceived;
                                  connectedNeighborContextsByAdapterId.RemoveOrThrow(neighbor.AdapterId);
@@ -69,10 +71,10 @@ namespace CampfireNet {
                            }))
                );
             } catch (Exception e) {
-               Console.WriteLine("Discovery threw!");
-               Console.WriteLine(e);
+               Debug("Discovery threw!");
+               Debug(e.ToString());
             }
-            Console.WriteLine("Ending discovery round!");
+            Debug("Ending discovery round!");
             await ChannelsExtensions.ReadAsync(rateLimit);
          }
       }
@@ -83,6 +85,12 @@ namespace CampfireNet {
       /// <param name="args"></param>
       private void HandleBroadcastReceived(BroadcastReceivedEventArgs args) {
          BroadcastReceived?.Invoke(args);
+      }
+
+      private void Debug(string s, params object[] args) {
+#if CN_DEBUG
+         Console.WriteLine(s, args);
+#endif
       }
    }
 }

@@ -55,10 +55,10 @@ namespace CampfireNet.Utilities.Merkle {
             var hash = CampfireNetHash.ComputeSha256Base64(objectData, 0, length);
             var isNewlyWritten = await store.TryWriteUniqueAsync(ns, hash, objectData);
             
-            var copy = await ReadMerkleNodeAsync(store, ns, hash);
-            if (copy.TypeTag != node.TypeTag || copy.LeftHash != node.LeftHash || copy.RightHash != node.RightHash || copy.Descendents != node.Descendents) {
-               throw new InvalidStateException();
-            }
+//            var copy = await ReadMerkleNodeAsync(store, ns, hash);
+//            if (copy.TypeTag != node.TypeTag || copy.LeftHash != node.LeftHash || copy.RightHash != node.RightHash || copy.Descendents != node.Descendents) {
+//               throw new InvalidStateException();
+//            }
             return Tuple.Create(isNewlyWritten, hash);
          }
       }

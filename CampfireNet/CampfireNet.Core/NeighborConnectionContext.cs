@@ -1,4 +1,4 @@
-#define NCC_DEBUG
+//#define CN_DEBUG
 
 using System;
 using System.Collections;
@@ -160,7 +160,7 @@ namespace CampfireNet {
       private static object g_printLock = new object();
 
       private void DebugPrint(string s, params object[] args) {
-#if NCC_DEBUG
+#if CN_DEBUG
          lock (g_printLock) {
             var colors = new ConsoleColor[] { ConsoleColor.Red, ConsoleColor.Green, ConsoleColor.Yellow, ConsoleColor.White };
             var color = colors[Math.Abs(bluetoothAdapter.AdapterId.GetHashCode()) % colors.Length];
