@@ -192,3 +192,4 @@ project.lock.json
 scriptcs_*
 
 *.userprefs
+.DS_Store

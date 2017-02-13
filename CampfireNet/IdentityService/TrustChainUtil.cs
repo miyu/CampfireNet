@@ -1,12 +1,14 @@
 ﻿using System;
 using System.Linq;
 using System.Security.Cryptography;
+using System.Text;
+
 
 namespace IdentityService
 {
 	public static class TrustChainUtil
 	{
-		public const int SIGNATURE_SIZE = 256;
+		public const int UNASSIGNED_DATA_SIZE = 254;
 
 		// data   [parent id][this id][held permissions][grantable permissions][parent sig]
 		// size   [256      ][256    ][1               ][1                    ][256       ]
@@ -67,7 +69,8 @@ namespace IdentityService
 
 			for (int i = 0; i < numNodes; i++)
 			{
-				Buffer.BlockCopy(nodes[i].FullData, 0, final, i * TrustChainNode.NODE_BLOCK_SIZE, TrustChainNode.NODE_BLOCK_SIZE);
+				Buffer.BlockCopy(nodes[i].FullData, 0, final, i * TrustChainNode.NODE_BLOCK_SIZE,
+								 TrustChainNode.NODE_BLOCK_SIZE);
 			}
 
 			return final;
@@ -76,28 +79,33 @@ namespace IdentityService
 		// generates a new trust chain based off an existing one and the new parameters
 		public static byte[] GenerateNewChain(TrustChainNode[] existing, byte[] parentId, byte[] childId,
 											  Permission heldPermissions, Permission grantablePermissions,
-											  RSAParameters privateKey)
+											  byte[] unassignedData, RSAParameters privateKey)
 		{
 			int numPrevNodes = existing?.Length ?? 0;
 
-			TrustChainNode newChild = CreateNode(parentId, childId, heldPermissions, grantablePermissions, privateKey);
+			TrustChainNode newChild = CreateNode(parentId, childId, heldPermissions, grantablePermissions,
+												 unassignedData, privateKey);
 			byte[] final = new byte[(numPrevNodes + 1) * TrustChainNode.NODE_BLOCK_SIZE];
 
 			for (int i = 0; i < numPrevNodes; i++)
 			{
-				Buffer.BlockCopy(existing[i].FullData, 0, final, i * TrustChainNode.NODE_BLOCK_SIZE, TrustChainNode.NODE_BLOCK_SIZE);
+				Buffer.BlockCopy(existing[i].FullData, 0, final, i * TrustChainNode.NODE_BLOCK_SIZE,
+								 TrustChainNode.NODE_BLOCK_SIZE);
 			}
 
-			Buffer.BlockCopy(newChild.FullData, 0, final, numPrevNodes * TrustChainNode.NODE_BLOCK_SIZE, TrustChainNode.NODE_BLOCK_SIZE);
+			Buffer.BlockCopy(newChild.FullData, 0, final, numPrevNodes * TrustChainNode.NODE_BLOCK_SIZE,
+							 TrustChainNode.NODE_BLOCK_SIZE);
 
 			return final;
 		}
 
 		// creates a TrustChainNode with the given parameters
 		public static TrustChainNode CreateNode(byte[] parentId, byte[] childId, Permission heldPermissions,
-												Permission grantablePermissions, RSAParameters privateKey)
+												Permission grantablePermissions, byte[] unassignedData,
+												RSAParameters privateKey)
 		{
-			return new TrustChainNode(parentId, childId, heldPermissions, grantablePermissions, privateKey);
+			return new TrustChainNode(parentId, childId, heldPermissions, grantablePermissions, unassignedData,
+									  privateKey);
 		}
 
 		public static bool ValidatePermissions(Permission superset, Permission subset)
@@ -149,14 +157,25 @@ namespace IdentityService
 		public const int THIS_ID_OFFSET = 256;
 		public const int HELD_PERMISSIONS_OFFSET = 512;
 		public const int GRANTABLE_PERMISSIONS_OFFSET = 513;
-		public const int PARENT_SIGNATURE_OFFSET = 514;
-		public const int NODE_BLOCK_SIZE = Identity.ASYM_KEY_SIZE_BYTES * 2 + sizeof(Permission) * 2 + TrustChainUtil.SIGNATURE_SIZE;
+		public const int UNASSIGNED_DATA_OFFSET = 514;
+		public const int PARENT_SIGNATURE_OFFSET = 768;
+		public const int NODE_BLOCK_SIZE = CryptoUtil.ASYM_KEY_SIZE_BYTES * 2 + sizeof(Permission) * 2 +
+													 TrustChainUtil.UNASSIGNED_DATA_SIZE + CryptoUtil.SIGNATURE_SIZE;
 
 		public byte[] ParentId { get; }
 		public byte[] ThisId { get; }
 		public Permission HeldPermissions { get; }
 		public Permission GrantablePermissions { get; }
+		public byte[] UnassignedData { get; }
 		public byte[] ParentSignature { get; }
+
+		public string Name
+		{
+			get
+			{
+				return Encoding.UTF8.GetString(UnassignedData, 1, UnassignedData[0]);
+			}
+		}
 
 		// everything but the signature (everything that was signed)
 		public byte[] Payload { get; }
@@ -172,18 +191,20 @@ namespace IdentityService
 			}
 
 			// initialize arrays
-			ParentId = new byte[Identity.ASYM_KEY_SIZE_BYTES];
-			ThisId = new byte[Identity.ASYM_KEY_SIZE_BYTES];
-			ParentSignature = new byte[TrustChainUtil.SIGNATURE_SIZE];
+			ParentId = new byte[CryptoUtil.ASYM_KEY_SIZE_BYTES];
+			ThisId = new byte[CryptoUtil.ASYM_KEY_SIZE_BYTES];
+			UnassignedData = new byte[TrustChainUtil.UNASSIGNED_DATA_SIZE];
+			ParentSignature = new byte[CryptoUtil.SIGNATURE_SIZE];
 			Payload = new byte[PARENT_SIGNATURE_OFFSET];
 			FullData = new byte[NODE_BLOCK_SIZE];
 
 			// populate single fields
-			Buffer.BlockCopy(rawData, PARENT_ID_OFFSET, ParentId, 0, Identity.ASYM_KEY_SIZE_BYTES);
-			Buffer.BlockCopy(rawData, THIS_ID_OFFSET, ThisId, 0, Identity.ASYM_KEY_SIZE_BYTES);
+			Buffer.BlockCopy(rawData, PARENT_ID_OFFSET, ParentId, 0, CryptoUtil.ASYM_KEY_SIZE_BYTES);
+			Buffer.BlockCopy(rawData, THIS_ID_OFFSET, ThisId, 0, CryptoUtil.ASYM_KEY_SIZE_BYTES);
 			HeldPermissions = (Permission)rawData[HELD_PERMISSIONS_OFFSET];
 			GrantablePermissions = (Permission)rawData[GRANTABLE_PERMISSIONS_OFFSET];
-			Buffer.BlockCopy(rawData, PARENT_SIGNATURE_OFFSET, ParentSignature, 0, TrustChainUtil.SIGNATURE_SIZE);
+			Buffer.BlockCopy(rawData, UNASSIGNED_DATA_OFFSET, UnassignedData, 0, TrustChainUtil.UNASSIGNED_DATA_SIZE);
+			Buffer.BlockCopy(rawData, PARENT_SIGNATURE_OFFSET, ParentSignature, 0, CryptoUtil.SIGNATURE_SIZE);
 
 			// populate combined fields
 			Buffer.BlockCopy(rawData, 0, Payload, 0, PARENT_SIGNATURE_OFFSET);
@@ -192,32 +213,35 @@ namespace IdentityService
 
 		// initializes node from given parameters
 		public TrustChainNode(byte[] parentId, byte[] thisId, Permission heldPermissions,
-							  Permission grantablePermissions, RSAParameters privateKey)
+							  Permission grantablePermissions, byte[] unassignedData, RSAParameters privateKey)
 		{
 			// initialize arrays
-			ParentId = new byte[Identity.ASYM_KEY_SIZE_BYTES];
-			ThisId = new byte[Identity.ASYM_KEY_SIZE_BYTES];
-			ParentSignature = new byte[TrustChainUtil.SIGNATURE_SIZE];
+			ParentId = new byte[CryptoUtil.ASYM_KEY_SIZE_BYTES];
+			ThisId = new byte[CryptoUtil.ASYM_KEY_SIZE_BYTES];
+			UnassignedData = new byte[TrustChainUtil.UNASSIGNED_DATA_SIZE];
+			ParentSignature = new byte[CryptoUtil.SIGNATURE_SIZE];
 			Payload = new byte[PARENT_SIGNATURE_OFFSET];
 			FullData = new byte[NODE_BLOCK_SIZE];
 
 			// populate single fields
-			Buffer.BlockCopy(parentId, 0, ParentId, 0, Identity.ASYM_KEY_SIZE_BYTES);
-			Buffer.BlockCopy(thisId, 0, ThisId, 0, Identity.ASYM_KEY_SIZE_BYTES);
+			Buffer.BlockCopy(parentId, 0, ParentId, 0, CryptoUtil.ASYM_KEY_SIZE_BYTES);
+			Buffer.BlockCopy(thisId, 0, ThisId, 0, CryptoUtil.ASYM_KEY_SIZE_BYTES);
 			HeldPermissions = heldPermissions;
 			GrantablePermissions = grantablePermissions;
+			Buffer.BlockCopy(unassignedData, 0, UnassignedData, 0, TrustChainUtil.UNASSIGNED_DATA_SIZE);
 
 			// populate payload
-			Buffer.BlockCopy(parentId, 0, Payload, PARENT_ID_OFFSET, Identity.ASYM_KEY_SIZE_BYTES);
-			Buffer.BlockCopy(thisId, 0, Payload, THIS_ID_OFFSET, Identity.ASYM_KEY_SIZE_BYTES);
+			Buffer.BlockCopy(parentId, 0, Payload, PARENT_ID_OFFSET, CryptoUtil.ASYM_KEY_SIZE_BYTES);
+			Buffer.BlockCopy(thisId, 0, Payload, THIS_ID_OFFSET, CryptoUtil.ASYM_KEY_SIZE_BYTES);
 			Payload[HELD_PERMISSIONS_OFFSET] = (byte)heldPermissions;
 			Payload[GRANTABLE_PERMISSIONS_OFFSET] = (byte)grantablePermissions;
+			Buffer.BlockCopy(unassignedData, 0, Payload, UNASSIGNED_DATA_OFFSET, TrustChainUtil.UNASSIGNED_DATA_SIZE);
 
 			// populate full data and signature
 			byte[] payloadSignature = CryptoUtil.Sign(Payload, privateKey);
-			Buffer.BlockCopy(payloadSignature, 0, ParentSignature, 0, TrustChainUtil.SIGNATURE_SIZE);
+			Buffer.BlockCopy(payloadSignature, 0, ParentSignature, 0, CryptoUtil.SIGNATURE_SIZE);
 			Buffer.BlockCopy(Payload, 0, FullData, 0, PARENT_SIGNATURE_OFFSET);
-			Buffer.BlockCopy(payloadSignature, 0, FullData, PARENT_SIGNATURE_OFFSET, TrustChainUtil.SIGNATURE_SIZE);
+			Buffer.BlockCopy(payloadSignature, 0, FullData, PARENT_SIGNATURE_OFFSET, CryptoUtil.SIGNATURE_SIZE);
 		}
 
 		// validates this node's signature
@@ -229,6 +253,7 @@ namespace IdentityService
 		public override string ToString()
 		{
 			string ret = "" +
+				$"Name: {Encoding.UTF8.GetString(UnassignedData, 1, UnassignedData[0])}\n" +
 				$"Parent ID ({ParentId.Length}): { ToHex(ParentId)}\n" +
 				$"This ID   ({ThisId.Length}): {ToHex(ThisId)}\n" +
 				$"Held permissions: {HeldPermissions}\n" +

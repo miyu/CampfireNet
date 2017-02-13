@@ -255,6 +255,7 @@ namespace AndroidTest.Droid
 				this.device = device;
 				this.server = server;
 
+
 				CreateSocket();
 
 				SetupLock();
