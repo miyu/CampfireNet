@@ -87,7 +87,7 @@ namespace IdentityService
 			{
 				TrustChainNode newChild = CreateNode(parentId, childId, heldPermissions, grantablePermissions,
 													 unassignedData, privateKey);
-
+				
 				foreach (var node in existing)
 				{
 					writer.Write(node.FullData);

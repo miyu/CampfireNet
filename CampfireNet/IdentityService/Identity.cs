@@ -78,7 +78,7 @@ namespace IdentityService
 				writer.Write(Encoding.UTF8.GetBytes(Name));
 			}
 
-			byte[] rootChain = TrustChainUtil.GenerateNewChain(null, PublicIdentity, PublicIdentity, Permission.All,
+			byte[] rootChain = TrustChainUtil.GenerateNewChain(new TrustChainNode[0], PublicIdentity, PublicIdentity, Permission.All,
 															   Permission.All, nameBytes, privateKey);
 			HeldPermissions = Permission.All;
 			GrantablePermissions = Permission.All;
