@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -81,22 +82,21 @@ namespace IdentityService
 											  Permission heldPermissions, Permission grantablePermissions,
 											  byte[] unassignedData, RSAParameters privateKey)
 		{
-			int numPrevNodes = existing?.Length ?? 0;
-
-			TrustChainNode newChild = CreateNode(parentId, childId, heldPermissions, grantablePermissions,
-												 unassignedData, privateKey);
-			byte[] final = new byte[(numPrevNodes + 1) * TrustChainNode.NODE_BLOCK_SIZE];
-
-			for (int i = 0; i < numPrevNodes; i++)
+			using (var buffer = new MemoryStream())
+			using (var writer = new BinaryWriter(buffer))
 			{
-				Buffer.BlockCopy(existing[i].FullData, 0, final, i * TrustChainNode.NODE_BLOCK_SIZE,
-								 TrustChainNode.NODE_BLOCK_SIZE);
+				TrustChainNode newChild = CreateNode(parentId, childId, heldPermissions, grantablePermissions,
+													 unassignedData, privateKey);
+
+				foreach (var node in existing)
+				{
+					writer.Write(node.FullData);
+				}
+
+				writer.Write(newChild.FullData);
+
+				return buffer.ToArray();
 			}
-
-			Buffer.BlockCopy(newChild.FullData, 0, final, numPrevNodes * TrustChainNode.NODE_BLOCK_SIZE,
-							 TrustChainNode.NODE_BLOCK_SIZE);
-
-			return final;
 		}
 
 		// creates a TrustChainNode with the given parameters

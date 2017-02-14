@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 
 namespace IdentityService
@@ -42,7 +43,7 @@ namespace IdentityService
 			return successAdded;
 		}
 
-		public void AddIdentities(TrustChainNode[] identities)
+		public void AddIdentities(IEnumerable<TrustChainNode> identities)
 		{
 			foreach (var identity in identities)
 			{

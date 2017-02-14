@@ -1,4 +1,5 @@
 ﻿using System;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -69,9 +70,14 @@ namespace IdentityService
 				throw new ArgumentException("Name too long");
 			}
 
-			byte[] nameBytes = new byte[TrustChainUtil.UNASSIGNED_DATA_SIZE];
-			nameBytes[0] = (byte)Name.Length;
-			Buffer.BlockCopy(Encoding.UTF8.GetBytes(Name), 0, nameBytes, 1, Name.Length);
+			var nameBytes = new byte[TrustChainUtil.UNASSIGNED_DATA_SIZE];
+			using (var ms = new MemoryStream(nameBytes))
+			using (var writer = new BinaryWriter(ms))
+			{
+				writer.Write((byte)Name.Length);
+				writer.Write(Encoding.UTF8.GetBytes(Name));
+			}
+
 			byte[] rootChain = TrustChainUtil.GenerateNewChain(null, PublicIdentity, PublicIdentity, Permission.All,
 															   Permission.All, nameBytes, privateKey);
 			HeldPermissions = Permission.All;
