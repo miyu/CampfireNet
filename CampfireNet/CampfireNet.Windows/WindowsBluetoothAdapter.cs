@@ -34,7 +34,7 @@ namespace CampfireNet.Windows {
       public Guid AdapterId => BuildDeviceAddressGuid(LocalAddress);
 
       public async Task<IReadOnlyList<IBluetoothNeighbor>> DiscoverAsync() {
-         var devices = await bluetoothClient.DiscoverDevicesInRangeAsync();
+         var devices = await bluetoothClient.DiscoverDevicesInRangeAsync().ConfigureAwait(false);
          var results = new List<IBluetoothNeighbor>();
          foreach (var device in devices) {
             var neighborId = BuildDeviceAddressGuid(device.DeviceAddress);
@@ -43,6 +43,7 @@ namespace CampfireNet.Windows {
                neighbor = new Neighbor(device.DeviceAddress, neighborId, device.DeviceName);
                neighborsById[neighborId] = neighbor;
             }
+            Console.WriteLine("Discovered " + (neighbor.Name ?? "[unknown]") + " " + neighbor.AdapterId + " " + neighbor.IsConnected);
             results.Add(neighbor);
          }
          return results;
@@ -90,14 +91,14 @@ namespace CampfireNet.Windows {
 
          public async Task<bool> TryHandshakeAsync() {
             try {
-               using (await synchronization.LockAsync()) {
+               using (await synchronization.LockAsync().ConfigureAwait(false)) {
                   Console.WriteLine("Attempting to connect to ID " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
 
                   bluetoothClient = new BluetoothClient();
                   bluetoothClient.Authenticate = false;
                   bluetoothClient.Encrypt = false;
 
-                  await bluetoothClient.ConnectAsync(address, CAMPFIRE_NET_SERVICE_CLASS);
+                  await bluetoothClient.ConnectAsync(address, CAMPFIRE_NET_SERVICE_CLASS).ConfigureAwait(false);
                   disconnectedChannel.SetIsClosed(false);
 
                   Console.WriteLine("Connected. Their Adapter ID is " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
@@ -108,11 +109,11 @@ namespace CampfireNet.Windows {
                      try {
                         while (!disconnectedChannel.IsClosed) {
                            Console.WriteLine("Reading BT Frame");
-                           var dataLengthBuffer = await ReadBytesAsync(networkStream, 4);
+                           var dataLengthBuffer = await ReadBytesAsync(networkStream, 4).ConfigureAwait(false);
                            var dataLength = BitConverter.ToInt32(dataLengthBuffer, 0);
                            Console.WriteLine("Got BT Frame Length: " + dataLength);
-                           var data = await ReadBytesAsync(networkStream, dataLength);
-                           await inboundChannel.WriteAsync(data);
+                           var data = await ReadBytesAsync(networkStream, dataLength).ConfigureAwait(false);
+                           await inboundChannel.WriteAsync(data).ConfigureAwait(false);
                         }
                      } catch (Exception e) {
                         Console.WriteLine(e);
@@ -129,12 +130,16 @@ namespace CampfireNet.Windows {
          }
 
          public async Task SendAsync(byte[] data) {
-            using (await synchronization.LockAsync()) {
+            using (await synchronization.LockAsync().ConfigureAwait(false)) {
+               Console.WriteLine("Sending to ID " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
+
                try {
                   var stream = bluetoothClient.GetStream();
-                  await stream.WriteAsync(BitConverter.GetBytes(data.Length), 0, 4);
-                  await stream.WriteAsync(data, 0, data.Length);
+                  await stream.WriteAsync(BitConverter.GetBytes(data.Length), 0, 4).ConfigureAwait(false);
+                  await stream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
+                  Console.WriteLine("Sent to ID " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
                } catch {
+                  Console.WriteLine("Failed to send to ID " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
                   Teardown();
                   throw new NotConnectedException();
                }
@@ -142,6 +147,7 @@ namespace CampfireNet.Windows {
          }
 
          private void Teardown() {
+            Console.WriteLine("Teardown connection to ID " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
             bluetoothClient?.Dispose();
             bluetoothClient = null;
             disconnectedChannel.SetIsClosed(true);
@@ -151,7 +157,12 @@ namespace CampfireNet.Windows {
             var buffer = new byte[count];
             int index = 0;
             while (index < count) {
-               index += await stream.ReadAsync(buffer, index, count - index);
+               var bytesRead = await stream.ReadAsync(buffer, index, count - index).ConfigureAwait(false);
+               if (bytesRead <= 0) {
+                  Console.WriteLine(nameof(WindowsBluetoothAdapter) + ": Bytes Read was " + bytesRead);
+                  throw new NotConnectedException();
+               }
+               index += bytesRead;
             }
             return buffer;
          }

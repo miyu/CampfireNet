@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Text;
 using System.Threading;
 using CampfireNet.IO;
@@ -14,6 +17,7 @@ namespace CampfireNet.Windows {
          using (var adapter = new WindowsBluetoothAdapter()) {
             var broadcastMessageSerializer = new BroadcastMessageSerializer();
             var objectStore = new InMemoryCampfireNetObjectStore();
+//            var objectStore = new FileSystemCampfireNetObjectStore(Path.Combine(Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName, "demo_store"));
             var clientMerkleTreeFactory = new ClientMerkleTreeFactory(broadcastMessageSerializer, objectStore);
             var client = new CampfireNetClient(adapter, broadcastMessageSerializer, clientMerkleTreeFactory);
             client.RunAsync().Forget();

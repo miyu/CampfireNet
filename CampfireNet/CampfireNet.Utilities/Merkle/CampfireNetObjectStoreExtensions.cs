@@ -31,7 +31,7 @@ namespace CampfireNet.Utilities.Merkle {
 
    public static class CampfireNetObjectStoreExtensions {
       public static async Task<MerkleNode> ReadMerkleNodeAsync(this ICampfireNetObjectStore store, string ns, string hash) {
-         var tryReadResult = await store.TryReadAsync(ns, hash);
+         var tryReadResult = await store.TryReadAsync(ns, hash).ConfigureAwait(false);
          var tryReadSucceeded = tryReadResult.Item1;
          if (!tryReadSucceeded) {
             return null;
@@ -53,12 +53,12 @@ namespace CampfireNet.Utilities.Merkle {
             var objectData = ms.GetBuffer();
             var length = (int)ms.Position;
             var hash = CampfireNetHash.ComputeSha256Base64(objectData, 0, length);
-            var isNewlyWritten = await store.TryWriteUniqueAsync(ns, hash, objectData);
+            var isNewlyWritten = await store.TryWriteUniqueAsync(ns, hash, objectData).ConfigureAwait(false);
             
-            var copy = await ReadMerkleNodeAsync(store, ns, hash);
-            if (copy.TypeTag != node.TypeTag || copy.LeftHash != node.LeftHash || copy.RightHash != node.RightHash || copy.Descendents != node.Descendents) {
-               throw new InvalidStateException();
-            }
+//            var copy = await ReadMerkleNodeAsync(store, ns, hash).ConfigureAwait(false);
+//            if (copy.TypeTag != node.TypeTag || copy.LeftHash != node.LeftHash || copy.RightHash != node.RightHash || copy.Descendents != node.Descendents) {
+//               throw new InvalidStateException();
+//            }
             return Tuple.Create(isNewlyWritten, hash);
          }
       }

@@ -24,7 +24,7 @@ namespace CampfireNet.Utilities.Channels {
          while (true) {
             Thread.MemoryBarrier();
 
-            await latch.WaitAsync(cancellationToken);
+            await latch.WaitAsync(cancellationToken).ConfigureAwait(false);
             if (acceptanceTest(true)) {
                return true;
             }

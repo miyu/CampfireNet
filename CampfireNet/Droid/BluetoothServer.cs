@@ -19,8 +19,8 @@ namespace AndroidTest.Droid {
 
       private async Task ListenerTaskStart() {
          while (true) {
-            var socket = await listener.AcceptAsync();
-            await inboundBluetoothSocketTable.GiveAsync(socket);
+            var socket = await listener.AcceptAsync().ConfigureAwait(false);
+            await inboundBluetoothSocketTable.GiveAsync(socket).ConfigureAwait(false);
          }
       }
 

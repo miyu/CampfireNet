@@ -41,7 +41,7 @@ namespace AndroidTest.Droid {
       public Guid AdapterId { get; }
 
       public async Task<IReadOnlyList<IBluetoothNeighbor>> DiscoverAsync() {
-         var devices = await bluetoothDiscoveryFacade.DiscoverPeersAsync();
+         var devices = await bluetoothDiscoveryFacade.DiscoverPeersAsync().ConfigureAwait(false);
          var neighbors = new List<IBluetoothNeighbor>();
          foreach (var device in devices) {
             var neighborId = MacUtilities.ConvertMacToGuid(device.Address);
@@ -80,7 +80,7 @@ namespace AndroidTest.Droid {
          public ReadableChannel<byte[]> InboundChannel => inboundChannel;
 
          private async Task HandshakeAsync() {
-            using (await synchronization.LockAsync()) {
+            using (await synchronization.LockAsync().ConfigureAwait(false)) {
                var isServer = androidBluetoothAdapter.AdapterId.CompareTo(AdapterId) > 0;
 
                // Michael's laptop is always the client as windows client doesn't understand being a server.
@@ -89,12 +89,12 @@ namespace AndroidTest.Droid {
                }
 
                if (isServer) {
-                  socket = await inboundBluetoothSocketTable.TakeAsyncOrTimeout(device);
+                  socket = await inboundBluetoothSocketTable.TakeAsyncOrTimeout(device).ConfigureAwait(false);
                } else {
                   socket = await Task.Factory.StartNew(
                      () => device.CreateInsecureRfcommSocketToServiceRecord(CampfireNetBluetoothConstants.APP_UUID),
-                     TaskCreationOptions.LongRunning);
-                     await socket.ConnectAsync();
+                     TaskCreationOptions.LongRunning).ConfigureAwait(false);
+                     await socket.ConnectAsync().ConfigureAwait(false);
                }
                disconnectedChannel.SetIsClosed(false);
 
@@ -104,10 +104,10 @@ namespace AndroidTest.Droid {
                   try {
                      while (!disconnectedChannel.IsClosed) {
                         Console.WriteLine("Reading BT Frame");
-                        var dataLengthBuffer = await ReadBytesAsync(networkStream, 4);
+                        var dataLengthBuffer = await ReadBytesAsync(networkStream, 4).ConfigureAwait(false);
                         var dataLength = BitConverter.ToInt32(dataLengthBuffer, 0);
-                        var data = await ReadBytesAsync(networkStream, dataLength);
-                        await inboundChannel.WriteAsync(data);
+                        var data = await ReadBytesAsync(networkStream, dataLength).ConfigureAwait(false);
+                        await inboundChannel.WriteAsync(data).ConfigureAwait(false);
                      }
                   } catch (Exception e) {
                      Console.WriteLine(e);
@@ -119,7 +119,7 @@ namespace AndroidTest.Droid {
 
          public async Task<bool> TryHandshakeAsync() {
             try {
-               await HandshakeAsync();
+               await HandshakeAsync().ConfigureAwait(false);
                return true;
             } catch (TimeoutException) {
                return false;
@@ -129,11 +129,11 @@ namespace AndroidTest.Droid {
          }
 
          public async Task SendAsync(byte[] data) {
-            using (await synchronization.LockAsync()) {
+            using (await synchronization.LockAsync().ConfigureAwait(false)) {
                try {
                   var stream = socket.OutputStream;
-                  await stream.WriteAsync(BitConverter.GetBytes(data.Length), 0, 4);
-                  await stream.WriteAsync(data, 0, data.Length);
+                  await stream.WriteAsync(BitConverter.GetBytes(data.Length), 0, 4).ConfigureAwait(false);
+                  await stream.WriteAsync(data, 0, data.Length).ConfigureAwait(false);
                } catch {
                   Teardown();
                   throw new NotConnectedException();
@@ -151,7 +151,7 @@ namespace AndroidTest.Droid {
             var buffer = new byte[count];
             int index = 0;
             while (index < count) {
-               var bytesRead = await stream.ReadAsync(buffer, index, count - index);
+               var bytesRead = await stream.ReadAsync(buffer, index, count - index).ConfigureAwait(false);
                index += bytesRead;
             }
             return buffer;

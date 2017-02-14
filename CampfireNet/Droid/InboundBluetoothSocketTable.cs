@@ -18,18 +18,18 @@ namespace AndroidTest.Droid
 		public async Task GiveAsync(BluetoothSocket socket)
 		{
 			Channel<BluetoothSocket> channel;
-			using (await synchronization.LockAsync())
+			using (await synchronization.LockAsync().ConfigureAwait(false))
 			{
 				var deviceId = MacUtilities.ConvertMacToGuid(socket.RemoteDevice.Address);
 				channel = pendingRequests.GetOrAdd(deviceId, add => ChannelFactory.Nonblocking<BluetoothSocket>());
-				await channel.WriteAsync(socket);
+				await channel.WriteAsync(socket).ConfigureAwait(false);
 			}
 		}
 
 		public async Task<BluetoothSocket> TakeAsyncOrTimeout(BluetoothDevice device)
 		{
 			Channel<BluetoothSocket> channel;
-			using (await synchronization.LockAsync())
+			using (await synchronization.LockAsync().ConfigureAwait(false))
 			{
 				var deviceId = MacUtilities.ConvertMacToGuid(device.Address);
 				channel = pendingRequests.GetOrAdd(deviceId, add => ChannelFactory.Nonblocking<BluetoothSocket>());
@@ -37,13 +37,13 @@ namespace AndroidTest.Droid
 			bool isTimeout = false;
 			BluetoothSocket result = null;
 			await new Select {
-				Case(ChannelFactory.Timeout(10000), () => {
-					isTimeout = true;
-				}),
-				Case(channel, x => {
-					result = x;
-				})
-			};
+			Case(ChannelFactory.Timeout(10000), () => {
+			   isTimeout = true;
+			}),
+			Case(channel, x => {
+			   result = x;
+			})
+		 }.ConfigureAwait(false);
 			if (isTimeout)
 			{
 				throw new TimeoutException();

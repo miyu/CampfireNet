@@ -63,7 +63,7 @@ namespace CampfireNet.Simulator {
       }
 
       public async Task<IReadOnlyList<IBluetoothNeighbor>> DiscoverAsync() {
-         await requestRateLimitSemaphore.WaitAsync();
+         await requestRateLimitSemaphore.WaitAsync().ConfigureAwait(false);
          var neighbors = new List<IBluetoothNeighbor>();
          foreach (var pair in agent.ActiveConnectionStates) {
             if (pair.Value.Connectedness == 1.0f) {
@@ -86,7 +86,7 @@ namespace CampfireNet.Simulator {
 
          public async Task<bool> TryHandshakeAsync() {
             try {
-               await HandshakeAsync();
+               await HandshakeAsync().ConfigureAwait(false);
                return true;
             } catch (TimeoutException) {
                return false;
@@ -116,13 +116,13 @@ namespace CampfireNet.Simulator {
          public int Count => inner.Count;
 
          public async Task EnqueueAsync(T item) {
-            using (await sync.LockAsync()) {
+            using (await sync.LockAsync().ConfigureAwait(false)) {
                inner.Enqueue(item);
             }
          }
 
          public async Task<Tuple<bool, T>> TryDequeueAsync() {
-            using (await sync.LockAsync()) {
+            using (await sync.LockAsync().ConfigureAwait(false)) {
                if (inner.IsEmpty) {
                   return Tuple.Create(false, default(T));
                } else {
@@ -160,13 +160,13 @@ namespace CampfireNet.Simulator {
 
          public async Task<T> ReadAsync(CancellationToken cancellationToken, Func<T, bool> acceptanceTest) {
             while (true) {
-               await available.ReadAsync(cancellationToken, x => true);
+               await available.ReadAsync(cancellationToken, x => true).ConfigureAwait(false);
                lock (queueSync) {
                   if (acceptanceTest(queue.Peek())) {
                      return queue.Dequeue();
                   }
                }
-               await available.WriteAsync(true, CancellationToken.None);
+               await available.WriteAsync(true, CancellationToken.None).ConfigureAwait(false);
             }
          }
 
@@ -178,9 +178,9 @@ namespace CampfireNet.Simulator {
                var now = DateTime.Now;
                var ready = getItemAvailableTime(message);
                if (now < ready) {
-                  await Task.Delay(ready - now);
+                  await Task.Delay(ready - now).ConfigureAwait(false);
                }
-               await available.WriteAsync(true, CancellationToken.None);
+               await available.WriteAsync(true, CancellationToken.None).ConfigureAwait(false);
             }).Forget();
          }
       }
@@ -220,7 +220,7 @@ namespace CampfireNet.Simulator {
             var pendingBeginConnect = (BeginConnectEvent)null;
 
             while (true) {
-               var adapterEvent = await adapterEventQueueChannel.ReadAsync(CancellationToken.None, x => true);
+               var adapterEvent = await adapterEventQueueChannel.ReadAsync(CancellationToken.None, x => true).ConfigureAwait(false);
                switch (adapterEvent.GetType().Name) {
                   case nameof(BeginConnectEvent):
                      var beginConnect = (BeginConnectEvent)adapterEvent;
@@ -263,13 +263,13 @@ namespace CampfireNet.Simulator {
                      var deltaBytesSent = (int)Math.Ceiling(connectivity.SignalQuality * send.Interval.TotalSeconds * SimulationBluetoothConstants.MAX_OUTBOUND_BYTES_PER_SECOND);
                      var bytesSent = send.BytesSent + deltaBytesSent;
                      if (bytesSent >= send.Payload.Length) {
-						await ChannelsExtensions.WriteAsync(GetOtherInboundChannelInternal(send.Initiator), send.Payload);
+						await ChannelsExtensions.WriteAsync(GetOtherInboundChannelInternal(send.Initiator), send.Payload).ConfigureAwait(false);
                         send.CompletionBox.SetResult(true);
                         break;
                      }
 
                      var nextEvent = new SendEvent(DateTime.Now + send.Interval, send.Interval, send.Initiator, send.CompletionBox, send.Payload, bytesSent);
-                     await adapterEventQueueChannel.WriteAsync(nextEvent, CancellationToken.None);
+                     await adapterEventQueueChannel.WriteAsync(nextEvent, CancellationToken.None).ConfigureAwait(false);
                      break;
                }
             }
@@ -278,18 +278,18 @@ namespace CampfireNet.Simulator {
          public async Task ConnectAsync(DeviceAgent sender) {
             var now = DateTime.Now;
             var connectEvent = new BeginConnectEvent(now + TimeSpan.FromMilliseconds(SimulationBluetoothConstants.BASE_HANDSHAKE_DELAY_MILLIS), sender);
-            await ChannelsExtensions.WriteAsync(adapterEventQueueChannel, connectEvent);
+            await ChannelsExtensions.WriteAsync(adapterEventQueueChannel, connectEvent).ConfigureAwait(false);
             var timeoutEvent = new TimeoutConnectEvent(now + TimeSpan.FromMilliseconds(SimulationBluetoothConstants.HANDSHAKE_TIMEOUT_MILLIS), connectEvent);
-            await ChannelsExtensions.WriteAsync(adapterEventQueueChannel, timeoutEvent);
-            await connectEvent.ResultBox.GetResultAsync();
+            await ChannelsExtensions.WriteAsync(adapterEventQueueChannel, timeoutEvent).ConfigureAwait(false);
+            await connectEvent.ResultBox.GetResultAsync().ConfigureAwait(false);
          }
 
          public async Task SendAsync(DeviceAgent sender, byte[] contents) {
             var interval = TimeSpan.FromMilliseconds(SimulationBluetoothConstants.SEND_TICK_INTERVAL);
             var completionBox = new AsyncBox<bool>();
             var sendEvent = new SendEvent(DateTime.Now + interval, interval, sender, completionBox, contents, 0);
-            await ChannelsExtensions.WriteAsync(adapterEventQueueChannel, sendEvent);
-            await completionBox.GetResultAsync();
+            await ChannelsExtensions.WriteAsync(adapterEventQueueChannel, sendEvent).ConfigureAwait(false);
+            await completionBox.GetResultAsync().ConfigureAwait(false);
          }
 
          public DeviceAgent GetOther(DeviceAgent self) => self == firstAgent ? secondAgent : firstAgent;
@@ -543,11 +543,33 @@ namespace CampfireNet.Simulator {
 
          if (Keyboard.GetState().IsKeyDown(Keys.A)) {
             epoch++;
-            epochAgentIndex = (int)(DateTime.Now.ToFileTime() % agents.Length);
+            epochAgentIndex = (int)(new Random(epochAgentIndex + 5).Next(0, agents.Length));
             agents[epochAgentIndex].Client.BroadcastAsync(
                new BroadcastMessage {
                   Data = BitConverter.GetBytes(epoch)
                }).Forget();
+         }
+
+         if (Keyboard.GetState().IsKeyDown(Keys.Z)) {
+            while (epoch < 5) {
+               epoch++;
+               epochAgentIndex = (int)(new Random(epochAgentIndex + 5).Next(0, agents.Length));
+               agents[epochAgentIndex].Client.BroadcastAsync(
+                  new BroadcastMessage {
+                     Data = BitConverter.GetBytes(epoch)
+                  }).Forget();
+            }
+         }
+
+         if (Keyboard.GetState().IsKeyDown(Keys.X)) {
+            while (epoch < 10) {
+               epoch++;
+               epochAgentIndex = (int)(new Random(epochAgentIndex + 5).Next(0, agents.Length));
+               agents[epochAgentIndex].Client.BroadcastAsync(
+                  new BroadcastMessage {
+                     Data = BitConverter.GetBytes(epoch)
+                  }).Forget();
+            }
          }
       }
 
@@ -575,7 +597,12 @@ namespace CampfireNet.Simulator {
 
          for (var i = 0; i < agents.Length; i++) {
             var lum = (epoch - agents[i].Value) * 240 / epoch;
-            var color = epoch == agents[i].Value ? Color.Red : new Color(lum, lum, lum);
+            var color = new Color(lum, lum, lum);
+            if (epoch == agents[i].Value && agents[i].Value > 0) color = Color.Red;
+            if (epoch == agents[i].Value + 1 && agents[i].Value > 0) color = Color.Lime;
+            if (epoch == agents[i].Value + 2 && agents[i].Value > 0) color = Color.MediumAquamarine;
+            if (epoch == agents[i].Value + 3 && agents[i].Value > 0) color = Color.Magenta;
+            if (epoch == agents[i].Value + 4 && agents[i].Value > 0) color = Color.Orange;
             DrawCenteredCircleWorld(agents[i].Position, configuration.AgentRadius, color);
          }
          //spriteBatch.DrawLine(new Vector2(0, 50), new Vector2(100, 50), Color.Red);

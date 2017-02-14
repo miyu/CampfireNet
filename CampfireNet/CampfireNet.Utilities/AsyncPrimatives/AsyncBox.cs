@@ -20,7 +20,7 @@ namespace CampfireNet.Utilities.AsyncPrimatives {
       }
 
       public async Task<T> GetResultAsync(CancellationToken cancellationToken = default(CancellationToken)) {
-         await tcs.Task;
+         await tcs.Task.ConfigureAwait(false);
          lock (synchronization) {
             return result;
          }
