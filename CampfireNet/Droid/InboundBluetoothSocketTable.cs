@@ -37,13 +37,13 @@ namespace AndroidTest.Droid
 			bool isTimeout = false;
 			BluetoothSocket result = null;
 			await new Select {
-			Case(ChannelFactory.Timeout(10000), () => {
-			   isTimeout = true;
-			}),
-			Case(channel, x => {
-			   result = x;
-			})
-		 };
+				Case(ChannelFactory.Timeout(10000), () => {
+					isTimeout = true;
+				}),
+				Case(channel, x => {
+					result = x;
+				})
+			};
 			if (isTimeout)
 			{
 				throw new TimeoutException();

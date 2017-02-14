@@ -116,7 +116,7 @@ namespace IdentityService
 		// static helper method to segment trust chain into an array of nodes
 		public static TrustChainNode[] SegmentChain(byte[] data)
 		{
-			if (data.Length % TrustChainNode.NODE_BLOCK_SIZE != 0 || data.Length == 0)
+			if (data == null || data.Length % TrustChainNode.NODE_BLOCK_SIZE != 0 || data.Length == 0)
 			{
 				throw new ArgumentException($"Data size is not multiple of block size ({data.Length} % {TrustChainNode.NODE_BLOCK_SIZE} != 0)");
 			}

@@ -33,6 +33,7 @@ namespace IdentityService
 		}
 
 		// adds the given identity to the known nodes, and returns true if the node was not already trusted
+		// TODO remove name crap
 		public bool AddIdentity(TrustChainNode identity, string name = "")
 		{
 			bool successAdded = identityTable.TryAdd(GetIdentityString(identity.ThisId), identity);

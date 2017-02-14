@@ -15,19 +15,15 @@ namespace IdentityService
 		public Permission GrantablePermissions { get; private set; }
 
 		public string Name { get; set; }
+		public byte[] PublicIdentity => privateKey.Modulus;
 
-		public byte[] PublicIdentity
-		{
-			get
-			{
-				return privateKey.Modulus;
-			}
-		}
 
-		// TODO change
-		public RSAParameters privateKey;
+		private RSAParameters privateKey;
 		private byte[] identityHash;
 		private IdentityManager identityManager;
+
+		// TODO remove
+		public RSAParameters privateKeyDebug => privateKey;
 
 		public Identity(IdentityManager identityManager, string name)
 		{
@@ -112,13 +108,12 @@ namespace IdentityService
 		// validates the given trust chain and adds the nodes to the list of known nodes, or returns false
 		public bool ValidateAndAdd(byte[] trustChain)
 		{
-			if (TrustChain == null || TrustChain.Length == 0)
-			{
-				throw new BadTrustChainException("This trust chain is empty, can't validate others");
-			}
-
 			TrustChainNode[] trustChainNodes = TrustChainUtil.SegmentChain(trustChain);
+			return ValidateAndAdd(trustChainNodes);
+		}
 
+		public bool ValidateAndAdd(TrustChainNode[] trustChainNodes)
+		{
 			bool validChain = TrustChainUtil.ValidateTrustChain(trustChainNodes);
 			if (!validChain)
 			{
@@ -143,8 +138,8 @@ namespace IdentityService
 		}
 
 		// () asymmetric encrypt
-		// <[sender hash][recipient hash]([message])[mac]>
-		//  [32         ][32            ] [msg len] [256]
+		// <[sender hash][recipient hash]([message])[signature]>
+		//  [32         ][32            ] [msg len] [256      ]
 		public byte[] EncodePacket(byte[] message, byte[] remoteModulus = null)
 		{
 			if (remoteModulus != null && remoteModulus.Length != CryptoUtil.ASYM_KEY_SIZE_BYTES)
@@ -184,7 +179,7 @@ namespace IdentityService
 		public byte[] DecodePacket(byte[] data)
 		{
 			// sanity checks
-			if (data.Length < 2 * CryptoUtil.HASH_SIZE + CryptoUtil.SIGNATURE_SIZE)
+			if (data == null || data.Length < 2 * CryptoUtil.HASH_SIZE + CryptoUtil.SIGNATURE_SIZE)
 			{
 				throw new CryptographicException("Invalid data packet");
 			}
