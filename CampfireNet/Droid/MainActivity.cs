@@ -15,7 +15,7 @@ namespace AndroidTest.Droid {
    [Activity(Label = "AndroidTest", MainLauncher = true, Icon = "@mipmap/icon")]
    public class MainActivity : Activity {
       private const int REQUEST_ENABLE_BT = 1;
-      private const int LOG_MESSAGE = 123;
+      internal const int LOG_MESSAGE = 123;
 
       private ArrayAdapter<string> logAdapter;
       private ListView log;

@@ -22,7 +22,7 @@ namespace AndroidTest.Droid
 			{
 				var deviceId = MacUtilities.ConvertMacToGuid(socket.RemoteDevice.Address);
 				channel = pendingRequests.GetOrAdd(deviceId, add => ChannelFactory.Nonblocking<BluetoothSocket>());
-				await channel.WriteAsync(socket).ConfigureAwait(false);
+				await ChannelsExtensions.WriteAsync(channel, socket).ConfigureAwait(false);
 			}
 		}
 
