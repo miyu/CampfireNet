@@ -39,13 +39,16 @@
     <Compile Include="IO\Packets\DonePacket.cs" />
     <Compile Include="IO\Packets\WirePacketSerializer.cs" />
     <Compile Include="IO\BroadcastMessageSerializer.cs" />
-    <Compile Include="IO\BroadcastMessage.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>
     <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
       <Project>{2B952A46-062B-4238-933F-923BC8E77FC9}</Project>
       <Name>CampfireNet.Utilities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\IdentityService\CampfireNet.Identities.csproj">
+      <Project>{1DB95B35-FDCE-4978-B038-6138FA7846E5}</Project>
+      <Name>CampfireNet.Identities</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>

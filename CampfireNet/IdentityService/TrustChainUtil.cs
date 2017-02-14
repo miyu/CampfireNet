@@ -5,7 +5,7 @@ using System.Security.Cryptography;
 using System.Text;
 
 
-namespace IdentityService
+namespace CampfireNet.Identities
 {
 	public static class TrustChainUtil
 	{

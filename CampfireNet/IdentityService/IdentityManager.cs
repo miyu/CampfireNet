@@ -3,9 +3,9 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Security.Cryptography;
 
-namespace IdentityService
+namespace CampfireNet.Identities
 {
-	class IdentityManager
+	public class IdentityManager
 	{
 		// keys are strings of public keys, formatted as:
 		//     ItentityService.getIdentityString(publicKey);

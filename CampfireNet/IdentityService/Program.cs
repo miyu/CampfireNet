@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Text;
-using IdentityService;
+using System.Linq;
+using System.Security.Cryptography;
 
-
-namespace CampfireNet.Simulator
+namespace CampfireNet.Identities
 {
-	class IdentityService
+	internal class Program
 	{
-		static void Main()
+		public static void Main()
 		{
 			Identity A = new Identity(new IdentityManager(), "A");
 			Identity B = new Identity(new IdentityManager(), "B");
@@ -62,55 +62,45 @@ namespace CampfireNet.Simulator
 
 			//Console.WriteLine($"Got '{received}' from alice");
 
-			byte[] encoded = B.EncodePacket(Encoding.UTF8.GetBytes("This is a broadcast test #415 (to B from D)"), D.PublicIdentity);
-
-			byte[] encodedBadSender = new byte[encoded.Length];
-			byte[] encodedBadRecipient = new byte[encoded.Length];
-			byte[] encodedBadMac = new byte[encoded.Length];
-
-			Buffer.BlockCopy(encoded, 0, encodedBadSender, 0, encoded.Length);
-			Buffer.BlockCopy(encoded, 0, encodedBadRecipient, 0, encoded.Length);
-			Buffer.BlockCopy(encoded, 0, encodedBadMac, 0, encoded.Length);
-
-			encodedBadSender[0] = 0;
-			encodedBadRecipient[32] = 0;
-			encodedBadMac[encoded.Length - 1] = 0;
-
+			var encoded = B.EncodePacket(Encoding.UTF8.GetBytes("This is a broadcast test #415 (to B from D)"), D.PublicIdentity);
+			encoded.SourceId[0]++;
 			try
 			{
-				byte[] tmp = D.DecodePacket(encodedBadSender);
+				byte[] tmp; 
+				D.TryDecodePayload(encoded, out tmp);
 			}
 			catch (Exception)
 			{
 				Console.WriteLine("Bad sender hash");
 			}
+			encoded.SourceId[0]--;
 
+			encoded.DestinationId[0]++;
+			{
+				byte[] tmp;
+				var us = D.TryDecodePayload(encoded, out tmp);
+				if (!us)
+					Console.WriteLine("Not us!");
+			}
+			encoded.DestinationId[0]--;
+
+			encoded.Signature[0]++;
 			try
 			{
-				byte[] tmp = D.DecodePacket(encodedBadRecipient);
-				if (tmp == null)
-				{
-					Console.WriteLine("Packet not for us");
-				}
+				byte[] tmp;
+				D.TryDecodePayload(encoded, out tmp);
 			}
-			catch (Exception)
-			{
-				Console.WriteLine("Bad receiver hash");
-			}
-
-			try
-			{
-				byte[] tmp = D.DecodePacket(encodedBadMac);
-			}
-			catch (Exception)
+			catch (CryptographicException)
 			{
 				Console.WriteLine("Bad mac");
 			}
+			encoded.Signature[0]--;
 
-			byte[] decoded = D.DecodePacket(encoded);
-
-			Console.WriteLine(BitConverter.ToString(encoded));
-			Console.WriteLine(Encoding.UTF8.GetString(decoded));
+			byte[] decoded;
+			if (D.TryDecodePayload(encoded, out decoded)) {
+				Console.WriteLine(BitConverter.ToString(encoded.Payload));
+				Console.WriteLine(Encoding.UTF8.GetString(decoded));
+			}
 		}
 	}
 }

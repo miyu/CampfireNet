@@ -1,7 +1,7 @@
 ﻿using System;
 
 
-namespace IdentityService
+namespace CampfireNet.Identities
 {
 	[Flags]
 	public enum Permission : byte

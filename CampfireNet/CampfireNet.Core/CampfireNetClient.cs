@@ -4,6 +4,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
+using CampfireNet.Identities;
 using CampfireNet.IO;
 using CampfireNet.IO.Transport;
 using CampfireNet.Utilities;
@@ -12,12 +13,14 @@ using CampfireNet.Utilities.Merkle;
 
 namespace CampfireNet {
    public class CampfireNetClient {
+      private readonly Identity identity;
       private readonly IBluetoothAdapter bluetoothAdapter;
       private readonly BroadcastMessageSerializer broadcastMessageSerializer;
       private readonly ClientMerkleTreeFactory merkleTreeFactory;
-      private readonly MerkleTree<BroadcastMessage> localMerkleTree;
+      private readonly MerkleTree<BroadcastMessageDto> localMerkleTree;
 
-      public CampfireNetClient(IBluetoothAdapter bluetoothAdapter, BroadcastMessageSerializer broadcastMessageSerializer, ClientMerkleTreeFactory merkleTreeFactory) {
+      public CampfireNetClient(Identity identity, IBluetoothAdapter bluetoothAdapter, BroadcastMessageSerializer broadcastMessageSerializer, ClientMerkleTreeFactory merkleTreeFactory) {
+         this.identity = identity;
          this.bluetoothAdapter = bluetoothAdapter;
          this.broadcastMessageSerializer = broadcastMessageSerializer;
          this.merkleTreeFactory = merkleTreeFactory;
@@ -27,7 +30,13 @@ namespace CampfireNet {
       public event BroadcastReceivedEventHandler BroadcastReceived;
       public Guid AdapterId => bluetoothAdapter.AdapterId;
 
-      public async Task BroadcastAsync(BroadcastMessage message) {
+      public async Task BroadcastAsync(byte[] data) {
+         var sender = identity.PublicIdentityHash;
+         var receiver = Identity.BROADCAST_ID;
+         var packet = identity.EncodePacket(data);
+         var broadcastMessage = new BroadcastMessageDto {
+         };
+
          var localInsertionResult = await localMerkleTree.TryInsertAsync(message).ConfigureAwait(false);
          if (localInsertionResult.Item1) {
             BroadcastReceived?.Invoke(new BroadcastReceivedEventArgs(null, message));
@@ -59,7 +68,7 @@ namespace CampfireNet {
 
                               //                           Console.WriteLine("Discovered neighbor: " + neighbor.AdapterId);
                               var remoteMerkleTree = merkleTreeFactory.CreateForNeighbor(neighbor.AdapterId.ToString("N"));
-                              var connectionContext = new NeighborConnectionContext(bluetoothAdapter, neighbor, broadcastMessageSerializer, localMerkleTree, remoteMerkleTree);
+                              var connectionContext = new NeighborConnectionContext(identity, bluetoothAdapter, neighbor, broadcastMessageSerializer, localMerkleTree, remoteMerkleTree);
                               connectedNeighborContextsByAdapterId.AddOrThrow(neighbor.AdapterId, connectionContext);
                               connectionContext.BroadcastReceived += HandleBroadcastReceived;
                               connectionContext.Start(() => {

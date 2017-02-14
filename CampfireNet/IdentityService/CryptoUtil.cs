@@ -1,9 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Security.Cryptography;
+using System.Linq;
 
 
-namespace IdentityService
+namespace CampfireNet.Identities
 {
 	public static class CryptoUtil
 	{
@@ -56,6 +57,13 @@ namespace IdentityService
 				Console.WriteLine(e);
 				return false;
 			}
+		}
+
+		public static bool Verify(BroadcastMessageDto broadcastMessage, byte[] modulus, byte[] signature) {
+			var data = broadcastMessage?.SourceId . Concat(broadcastMessage.DestinationId).
+			                           Concat(broadcastMessage . Payload )
+			                           . ToArray();
+			return Verify(data, modulus, signature);
 		}
 
 		public static bool Verify(byte[] data, byte[] modulus, byte[] signature)

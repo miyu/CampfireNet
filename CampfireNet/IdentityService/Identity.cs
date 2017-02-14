@@ -3,28 +3,17 @@ using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using CampfireNet.Utilities;
 
-
-namespace IdentityService
+namespace CampfireNet.Identities
 {
-	class Identity
+	public class Identity
 	{
 		public readonly static byte[] BROADCAST_ID = new byte[CryptoUtil.HASH_SIZE];
-
-		public TrustChainNode[] TrustChain { get; private set; }
-		public Permission HeldPermissions { get; private set; }
-		public Permission GrantablePermissions { get; private set; }
-
-		public string Name { get; set; }
-		public byte[] PublicIdentity => privateKey.Modulus;
-
 
 		private RSAParameters privateKey;
 		private byte[] identityHash;
 		private IdentityManager identityManager;
-
-		// TODO remove
-		public RSAParameters privateKeyDebug => privateKey;
 
 		public Identity(IdentityManager identityManager, string name)
 		{
@@ -40,6 +29,18 @@ namespace IdentityService
 			GrantablePermissions = Permission.None;
 			Name = name;
 		}
+
+		public TrustChainNode[] TrustChain { get; private set; }
+		public Permission HeldPermissions { get; private set; }
+		public Permission GrantablePermissions { get; private set; }
+
+		public string Name { get; set; }
+
+		public byte[] PublicIdentity => privateKey.Modulus;
+		public byte[] PublicIdentityHash => identityHash;
+		// TODO remove
+		public RSAParameters privateKeyDebug => privateKey;
+		public IdentityManager IdentityManager => identityManager;
 
 		// gives this identity a trust chain to use
 		public void AddTrustChain(byte[] trustChain)
@@ -146,7 +147,7 @@ namespace IdentityService
 		// () asymmetric encrypt
 		// <[sender hash][recipient hash]([message])[signature]>
 		//  [32         ][32            ] [msg len] [256      ]
-		public byte[] EncodePacket(byte[] message, byte[] remoteModulus = null)
+		public BroadcastMessageDto EncodePacket(byte[] message, byte[] remoteModulus = null)
 		{
 			if (remoteModulus != null && remoteModulus.Length != CryptoUtil.ASYM_KEY_SIZE_BYTES)
 			{
@@ -175,67 +176,55 @@ namespace IdentityService
 
 			byte[] signature = CryptoUtil.Sign(payload, privateKey);
 
-			byte[] finalPacket = new byte[payload.Length + CryptoUtil.SIGNATURE_SIZE];
-			Buffer.BlockCopy(payload, 0, finalPacket, 0, payload.Length);
-			Buffer.BlockCopy(signature, 0, finalPacket, payload.Length, CryptoUtil.SIGNATURE_SIZE);
+			//byte[] finalPacket = new byte[payload.Length + CryptoUtil.SIGNATURE_SIZE];
+			//Buffer.BlockCopy(payload, 0, finalPacket, 0, payload.Length);
+			//Buffer.BlockCopy(signature, 0, finalPacket, payload.Length, CryptoUtil.SIGNATURE_SIZE);
 
-			return finalPacket;
+			return new BroadcastMessageDto { 
+				SourceId = senderHash,
+				DestinationId = recipientHash,
+				Payload = processedMessage,
+				Signature = signature
+			};
 		}
 
-		public byte[] DecodePacket(byte[] data)
+		public bool IsSenderKnown(BroadcastMessageDto broadcastMessage) {
+			return identityManager.LookupIdentity(broadcastMessage.SourceId) != null;
+		}
+
+		public bool TryDecodePayload(BroadcastMessageDto broadcastMessage, out byte[] decryptedPayload)
 		{
-			// sanity checks
-			if (data == null || data.Length < 2 * CryptoUtil.HASH_SIZE + CryptoUtil.SIGNATURE_SIZE)
-			{
-				throw new CryptographicException("Invalid data packet");
+			var senderHash = broadcastMessage.SourceId;
+			var receiverHash = broadcastMessage.DestinationId;
+			var payload = broadcastMessage.Payload;
+			var signature = broadcastMessage.Signature;
+
+			bool unicast = receiverHash.SequenceEqual(identityHash);
+			bool broadcast = receiverHash.SequenceEqual(BROADCAST_ID);
+
+			if (!unicast && !broadcast) {
+				decryptedPayload = null;
+				return false;
 			}
 
-			int encryptedMessageSize = data.Length - 2 * CryptoUtil.HASH_SIZE - CryptoUtil.SIGNATURE_SIZE;
-
-			// split into payload and verify packet signature
-			byte[] payload = new byte[data.Length - CryptoUtil.SIGNATURE_SIZE];
-			byte[] signature = new byte[CryptoUtil.SIGNATURE_SIZE];
-			byte[] senderHash = new byte[CryptoUtil.HASH_SIZE];
-			byte[] recieverHash = new byte[CryptoUtil.HASH_SIZE];
-
-			Buffer.BlockCopy(data, 0, payload, 0, data.Length - CryptoUtil.SIGNATURE_SIZE);
-			Buffer.BlockCopy(data, data.Length - CryptoUtil.SIGNATURE_SIZE, signature, 0, CryptoUtil.SIGNATURE_SIZE);
-			Buffer.BlockCopy(data, 0, senderHash, 0, CryptoUtil.HASH_SIZE);
-			Buffer.BlockCopy(data, CryptoUtil.HASH_SIZE, recieverHash, 0, CryptoUtil.HASH_SIZE);
-
-			bool unicast = recieverHash.SequenceEqual(identityHash);
-			bool broadcast = recieverHash.SequenceEqual(BROADCAST_ID);
-			if (unicast || broadcast)
+			byte[] modulus;
+			TrustChainNode senderNode = identityManager.LookupIdentity(senderHash);
+			if (senderNode == null)
 			{
-				byte[] modulus;
-				TrustChainNode senderNode = identityManager.LookupIdentity(senderHash);
-				if (senderNode == null)
-				{
-					throw new CryptographicException("Sender hash not recognized");
-				}
-				else
-				{
-					modulus = senderNode.ThisId;
-				}
-
-				if (!CryptoUtil.Verify(payload, modulus, signature))
-				{
-					throw new CryptographicException("Could not verify message");
-				}
-
-				byte[] message = new byte[encryptedMessageSize];
-				Buffer.BlockCopy(data, 2 * CryptoUtil.HASH_SIZE, message, 0, encryptedMessageSize);
-				if (unicast)
-				{
-					message = CryptoUtil.AsymmetricDecrypt(message, privateKey);
-				}
-
-				return message;
+				throw new InvalidStateException("Sender hash not recognized");
 			}
 			else
 			{
-				return null;
+				modulus = senderNode.ThisId;
 			}
+
+			if (!CryptoUtil.Verify(broadcastMessage, modulus, signature))
+			{
+				throw new CryptographicException("Could not verify message");
+			}
+
+			decryptedPayload = broadcast ? payload : CryptoUtil.AsymmetricDecrypt(payload, privateKey);
+			return true;
 		}
 
 		// whether the given permissions can be granted by this node

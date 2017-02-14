@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using CampfireNet.Identities;
 using CampfireNet.IO;
 using CampfireNet.IO.Packets;
 using CampfireNet.IO.Transport;
@@ -22,32 +23,38 @@ namespace CampfireNet {
       private readonly DisconnectableChannel<GivePacket, NotConnectedException> giveChannel;
       private readonly DisconnectableChannel<DonePacket, NotConnectedException> doneChannel;
 
+      private readonly Identity identity;
       private readonly IBluetoothAdapter bluetoothAdapter;
       private readonly IBluetoothNeighbor neighbor;
 
       private readonly BroadcastMessageSerializer broadcastMessageSerializer;
 
-      private readonly MerkleTree<BroadcastMessage> localMerkleTree;
-      private readonly MerkleTree<BroadcastMessage> remoteMerkleTree;
+      private readonly MerkleTree<BroadcastMessageDto> localMerkleTree;
+      private readonly MerkleTree<BroadcastMessageDto> remoteMerkleTree;
 
       public NeighborConnectionContext(
+         Identity identity, 
          IBluetoothAdapter bluetoothAdapter,
          IBluetoothNeighbor neighbor,
          BroadcastMessageSerializer broadcastMessageSerializer,
-         MerkleTree<BroadcastMessage> localMerkleTree,
-         MerkleTree<BroadcastMessage> remoteMerkleTree
+         MerkleTree<BroadcastMessageDto> localMerkleTree,
+         MerkleTree<BroadcastMessageDto> remoteMerkleTree
       ) {
          this.haveChannel = new DisconnectableChannel<HavePacket, NotConnectedException>(disconnectLatchChannel, ChannelFactory.Nonblocking<HavePacket>());
          this.needChannel = new DisconnectableChannel<NeedPacket, NotConnectedException>(disconnectLatchChannel, ChannelFactory.Nonblocking<NeedPacket>());
          this.giveChannel = new DisconnectableChannel<GivePacket, NotConnectedException>(disconnectLatchChannel, ChannelFactory.Nonblocking<GivePacket>());
          this.doneChannel = new DisconnectableChannel<DonePacket, NotConnectedException>(disconnectLatchChannel, ChannelFactory.Nonblocking<DonePacket>());
 
+         this.identity = identity;
          this.bluetoothAdapter = bluetoothAdapter;
          this.neighbor = neighbor;
          this.broadcastMessageSerializer = broadcastMessageSerializer;
          this.localMerkleTree = localMerkleTree;
          this.remoteMerkleTree = remoteMerkleTree;
       }
+
+      public Identity Identity => identity;
+      public IdentityManager IdentityManager => identity.IdentityManager;
 
       public event BroadcastReceivedEventHandler BroadcastReceived;
 
@@ -227,7 +234,7 @@ namespace CampfireNet {
                var node = tuple.Item2;
                if (node.Descendents == 0 && await localMerkleTree.GetNodeAsync(tuple.Item1).ConfigureAwait(false) == null) {
                   var isDataNode = node.TypeTag == MerkleNodeTypeTag.Data;
-                  BroadcastMessage message = isDataNode ? broadcastMessageSerializer.Deserialize(node.Contents) : null;
+                  BroadcastMessageDto message = isDataNode ? broadcastMessageSerializer.Deserialize(node.Contents) : null;
 
                   var insertionResult = await localMerkleTree.TryInsertAsync(tuple.Item2).ConfigureAwait(false);
                   if (insertionResult.Item1 && isDataNode) {

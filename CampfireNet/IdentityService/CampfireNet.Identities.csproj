@@ -6,9 +6,9 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProjectGuid>{1DB95B35-FDCE-4978-B038-6138FA7846E5}</ProjectGuid>
     <OutputType>Exe</OutputType>
-    <RootNamespace>IdentityService</RootNamespace>
+    <RootNamespace>CampfireNet.Identities</RootNamespace>
     <AssemblyName>IdentityService</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
     <TargetFrameworkProfile />
@@ -51,9 +51,16 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="CryptoUtil.cs" />
+    <Compile Include="BroadcastMessageDto.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
+      <Project>{2B952A46-062B-4238-933F-923BC8E77FC9}</Project>
+      <Name>CampfireNet.Utilities</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
