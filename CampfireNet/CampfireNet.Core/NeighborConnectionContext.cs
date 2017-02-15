@@ -4,6 +4,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using CampfireNet.Identities;
 using CampfireNet.IO;
@@ -39,6 +40,8 @@ namespace CampfireNet {
       private readonly DisconnectableChannel<HavePacket, NotConnectedException> haveChannel;
       private readonly DisconnectableChannel<NeedPacket, NotConnectedException> needChannel;
       private readonly DisconnectableChannel<GivePacket, NotConnectedException> giveChannel;
+      private readonly DisconnectableChannel<WhoisPacket, NotConnectedException> whoisChannel;
+      private readonly DisconnectableChannel<IdentPacket, NotConnectedException> identChannel;
       private readonly DisconnectableChannel<DonePacket, NotConnectedException> doneChannel;
 
       private readonly Identity identity;
@@ -61,6 +64,8 @@ namespace CampfireNet {
          this.haveChannel = new DisconnectableChannel<HavePacket, NotConnectedException>(disconnectLatchChannel, ChannelFactory.Nonblocking<HavePacket>());
          this.needChannel = new DisconnectableChannel<NeedPacket, NotConnectedException>(disconnectLatchChannel, ChannelFactory.Nonblocking<NeedPacket>());
          this.giveChannel = new DisconnectableChannel<GivePacket, NotConnectedException>(disconnectLatchChannel, ChannelFactory.Nonblocking<GivePacket>());
+         this.whoisChannel = new DisconnectableChannel<WhoisPacket, NotConnectedException>(disconnectLatchChannel, ChannelFactory.Nonblocking<WhoisPacket>());
+         this.identChannel = new DisconnectableChannel<IdentPacket, NotConnectedException>(disconnectLatchChannel, ChannelFactory.Nonblocking<IdentPacket>());
          this.doneChannel = new DisconnectableChannel<DonePacket, NotConnectedException>(disconnectLatchChannel, ChannelFactory.Nonblocking<DonePacket>());
 
          this.identity = identity;
@@ -103,6 +108,14 @@ namespace CampfireNet {
                   case nameof(GivePacket):
                      DebugPrint("Got GIVE {0}", ((GivePacket)packet).NodeHash);
                      await giveChannel.WriteAsync((GivePacket)packet).ConfigureAwait(false);
+                     break;
+                  case nameof(WhoisPacket):
+                     DebugPrint("Got WHOIS {0}", ((WhoisPacket)packet).IdHash.ToHexString());
+                     await whoisChannel.WriteAsync((WhoisPacket)packet).ConfigureAwait(false);
+                     break;
+                  case nameof(IdentPacket):
+                     DebugPrint("Got IDENT {0}", ((IdentPacket)packet).Id.ToHexString());
+                     await identChannel.WriteAsync((IdentPacket)packet).ConfigureAwait(false);
                      break;
                   case nameof(DonePacket):
                      DebugPrint("Got DONE");
@@ -238,7 +251,35 @@ namespace CampfireNet {
                }
             }
 
-            //            Console.WriteLine("IMPORT");
+            var broadcastMessagesByNodeHash = nodesToImport.Where(n => n.Item2.TypeTag == MerkleNodeTypeTag.Data)
+                                                           .ToDictionary(
+                                                              n => n.Item1,
+                                                              n => broadcastMessageSerializer.Deserialize(n.Item2.Contents)
+                                                           );
+
+            var neededSourceIdHashes = broadcastMessagesByNodeHash.Select(kvp => kvp.Value.SourceIdHash)
+                                                                  .GroupBy(sourceIdHash => sourceIdHash.ToHexString())
+                                                                  .Select(g => new { Bytes = g.First(), Hex = g.Key })
+                                                                  .Where(pair => !IdentityManager.IsKnownIdentity(pair.Bytes))
+                                                                  .ToList();
+
+            foreach (var neededSourceId in neededSourceIdHashes) {
+               var whois = new WhoisPacket { IdHash = neededSourceId.Bytes };
+               DebugPrint("SEND WHOIS {0}", neededSourceId.Hex);
+               neighbor.SendAsync(serializer.ToByteArray(whois)).Forget();
+            }
+
+            foreach (var i in Enumerable.Range(0, neededSourceIdHashes.Count)) {
+               var ident = await identChannel.ReadAsync().ConfigureAwait(false);
+               Identity.ValidateAndAdd(ident.TrustChain);
+            }
+
+            foreach (var neededSourceId in neededSourceIdHashes) {
+               if (!IdentityManager.IsKnownIdentity(neededSourceId.Bytes)) {
+                  throw new InvalidStateException();
+               }
+            }
+
             await remoteMerkleTree.ImportAsync(have.MerkleRootHash, nodesToImport).ConfigureAwait(false);
             foreach (var tuple in nodesToImport) {
                var node = tuple.Item2;
@@ -248,7 +289,15 @@ namespace CampfireNet {
 
                   var insertionResult = await localMerkleTree.TryInsertAsync(tuple.Item2).ConfigureAwait(false);
                   if (insertionResult.Item1 && isDataNode) {
-                     //BroadcastReceived?.Invoke(new BroadcastReceivedEventArgs(neighbor, message));
+                     byte[] decryptedPayload;
+                     if (identity.TryDecodePayload(message, out decryptedPayload)) {
+                        BroadcastReceived?.Invoke(new BroadcastReceivedEventArgs(neighbor, new BroadcastMessage {
+                           SourceId = message.SourceIdHash,
+                           DestinationId = message.DestinationIdHash,
+                           DecryptedPayload = decryptedPayload,
+                           Dto = message
+                        }));
+                     }
                   }
                }
             }
@@ -283,6 +332,31 @@ namespace CampfireNet {
                   DebugPrint("SEND GIVE");
                   neighbor.SendAsync(serializer.ToByteArray(give)).Forget();
                   //                  Console.WriteLine("EMIT GIVE " + need.MerkleRootHash);
+               }),
+               ChannelsExtensions.Case(whoisChannel, whois => {
+                  // Ideally we send IDs one at a time. However, we are short on time so
+                  // we've gone with the simple implementation.
+                  var currentIdHash = whois.IdHash;
+                  var trustChain = new List<TrustChainNode>();
+                  while (true) {
+                     var node = IdentityManager.LookupIdentity(currentIdHash);
+                     trustChain.Add(node);
+
+                     if (node.ParentId.SequenceEqual(node.ThisId)) {
+                        break;
+                     }
+
+                     currentIdHash = node.ParentId;
+                  }
+                  trustChain.Reverse();
+
+                  DebugPrint("SEND IDENT");
+                  var ident = new IdentPacket {
+                     Id = trustChain.Last().ThisId,
+                     TrustChain = trustChain.ToArray()
+                  };
+                  neighbor.SendAsync(serializer.ToByteArray(ident)).Forget();
+                  Console.WriteLine("EMIT IDENT " + ident.Id.ToHexString());
                })
             }.ConfigureAwait(false);
          }

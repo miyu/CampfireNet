@@ -1,18 +1,13 @@
 ﻿using System;
-using System.Threading;
 using System.Linq;
 using CampfireNet.IO;
-using CampfireNet.IO.Transport;
-using CampfireNet.IO.Packets;
-using CampfireNet.Utilities;
 using CampfireNet.Utilities.Merkle;
 using System.Collections.Generic;
-using System.Text;
 using CampfireNet.Identities;
 using Microsoft.Xna.Framework;
 
 namespace CampfireNet.Simulator {
-	public class SimulatorConfiguration {
+   public class SimulatorConfiguration {
 		public int AgentCount { get; set; }
 		public int DisplayWidth { get; set; }
 		public int DisplayHeight { get; set; }
@@ -47,7 +42,7 @@ namespace CampfireNet.Simulator {
 		public static void Run() {
 //			ThreadPool.SetMaxThreads(8, 8);
 //			var configuration = SimulatorConfiguration.Build2P(1920, 1080);
-			var configuration = SimulatorConfiguration.Build(3, 1920, 1080);
+			var configuration = SimulatorConfiguration.Build(1, 1920, 1080);
 			var agents = ConstructAgents(configuration);
 			new SimulatorGame(configuration, agents).Run();
 		}
@@ -96,7 +91,14 @@ namespace CampfireNet.Simulator {
 
             var broadcastMessageSerializer = new BroadcastMessageSerializer();
             var merkleTreeFactory = new ClientMerkleTreeFactory(broadcastMessageSerializer, new InMemoryCampfireNetObjectStore());
-            var identity = (Identity)null;//new Identity(new IdentityManager(), $"Agent_{i}");
+            var identity = agent.CampfireNetIdentity = (Identity)new Identity(new IdentityManager(), $"Agent_{i}");
+            if (i == 0 || i == 1) {
+               agent.CampfireNetIdentity.GenerateRootChain();
+            } else {
+               var rootAgent = agents[i % 2];
+               agent.CampfireNetIdentity.AddTrustChain(rootAgent.CampfireNetIdentity.GenerateNewChain(identity.PublicIdentity, Permission.All, Permission.All, identity.Name));
+            }
+
             var client = agent.Client = new CampfireNetClient(identity, bluetoothAdapter, broadcastMessageSerializer, merkleTreeFactory);
             client.BroadcastReceived += e => {
                var epoch = BitConverter.ToInt32(e.Message.DecryptedPayload, 0);

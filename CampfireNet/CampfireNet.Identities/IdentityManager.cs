@@ -66,5 +66,9 @@ namespace CampfireNet.Identities
 		{
 			return LookupIdentity(GetIdentityString(publicKey));
 		}
-	}
+
+      public bool IsKnownIdentity(byte[] idOrIdHash) {
+         return LookupIdentity(GetIdentityString(idOrIdHash)) != null;
+      }
+   }
 }

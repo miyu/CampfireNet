@@ -154,5 +154,17 @@ namespace CampfireNet.Utilities {
             throw new InvalidStateException();
          }
       }
+
+
+      // http://stackoverflow.com/questions/311165/how-do-you-convert-byte-array-to-hexadecimal-string-and-vice-versa
+      public static string ToHexString(this byte[] a) {
+         var hex = new StringBuilder(a.Length * 2);
+         foreach (byte b in a)
+            hex.AppendFormat("{0:x2}", b);
+         return hex.ToString();
+      }
+
+      [Obsolete("Use ToHexString")]
+      public static string ToHex(this byte[] a) => ToHexString(a);
    }
 }

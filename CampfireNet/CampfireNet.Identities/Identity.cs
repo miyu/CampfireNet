@@ -133,12 +133,8 @@ namespace CampfireNet.Identities
 				return false;
 			}
 
-			for (int i = trustChainNodes.Length - 1; i >= 0; i--)
-			{
-				if (!identityManager.AddIdentity(trustChainNodes[i], Name))
-				{
-					break;
-				}
+			for (int i = 0; i < trustChainNodes.Length; i++) {
+			   identityManager.AddIdentity(trustChainNodes[i], Name);
 			}
 
 			return true;
@@ -186,10 +182,6 @@ namespace CampfireNet.Identities
 				Payload = processedMessage,
 				Signature = signature
 			};
-		}
-
-		public bool IsSenderKnown(BroadcastMessageDto broadcastMessage) {
-			return identityManager.LookupIdentity(broadcastMessage.SourceIdHash) != null;
 		}
 
 		public bool TryDecodePayload(BroadcastMessageDto broadcastMessage, out byte[] decryptedPayload)

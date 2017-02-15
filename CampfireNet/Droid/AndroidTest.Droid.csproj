@@ -189,25 +189,25 @@
     <Compile Include="..\CampfireNet.Utilities\Merkle\MerkleTree.cs">
       <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\MerkleTree.cs</Link>
     </Compile>
-    <Compile Include="..\IdentityService\BroadcastMessageDto.cs">
+    <Compile Include="..\CampfireNet.Identities\BroadcastMessageDto.cs">
       <Link>__hack_mac_references\CampfireNet.Identities\BroadcastMessageDto.cs</Link>
     </Compile>
-    <Compile Include="..\IdentityService\CryptoUtil.cs">
+    <Compile Include="..\CampfireNet.Identities\CryptoUtil.cs">
       <Link>__hack_mac_references\CampfireNet.Identities\CryptoUtil.cs</Link>
     </Compile>
-    <Compile Include="..\IdentityService\Identity.cs">
+    <Compile Include="..\CampfireNet.Identities\Identity.cs">
       <Link>__hack_mac_references\CampfireNet.Identities\Identity.cs</Link>
     </Compile>
-    <Compile Include="..\IdentityService\IdentityManager.cs">
+    <Compile Include="..\CampfireNet.Identities\IdentityManager.cs">
       <Link>__hack_mac_references\CampfireNet.Identities\IdentityManager.cs</Link>
     </Compile>
-    <Compile Include="..\IdentityService\Permission.cs">
+    <Compile Include="..\CampfireNet.Identities\Permission.cs">
       <Link>__hack_mac_references\CampfireNet.Identities\Permission.cs</Link>
     </Compile>
-    <Compile Include="..\IdentityService\Program.cs">
+    <Compile Include="..\CampfireNet.Identities\Program.cs">
       <Link>__hack_mac_references\CampfireNet.Identities\Program.cs</Link>
     </Compile>
-    <Compile Include="..\IdentityService\TrustChainUtil.cs">
+    <Compile Include="..\CampfireNet.Identities\TrustChainUtil.cs">
       <Link>__hack_mac_references\CampfireNet.Identities\TrustChainUtil.cs</Link>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -222,7 +222,7 @@
     <None Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
       <Link>__hack_mac_references\CampfireNet.Utilities\CampfireNet.Utilities.csproj</Link>
     </None>
-    <None Include="..\IdentityService\App.config">
+    <None Include="..\CampfireNet.Identities\App.config">
       <Link>__hack_mac_references\CampfireNet.Identities\App.config</Link>
     </None>
   </ItemGroup>

@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CampfireNet.Identities;
 using CampfireNet.IO;
 using CampfireNet.IO.Transport;
 using CampfireNet.Utilities;
@@ -25,6 +26,7 @@ namespace CampfireNet.Simulator {
    
    public class DeviceAgent {
       public Guid BluetoothAdapterId;
+      public Identity CampfireNetIdentity { get; set; }
       public Vector2 Position;
       public Vector2 Velocity;
       public ConcurrentDictionary<DeviceAgent, SimulationBluetoothConnectionState> ActiveConnectionStates = new ConcurrentDictionary<DeviceAgent, SimulationBluetoothConnectionState>();
