@@ -196,7 +196,7 @@ namespace AndroidTest.Droid {
          }
 
          private void OnReceive(Context context, Intent intent) {
-            intentChannel.Write(intent);
+            ChannelsExtensions.Write(intentChannel, intent);
          }
       }
    }

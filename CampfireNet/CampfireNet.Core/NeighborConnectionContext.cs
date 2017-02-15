@@ -108,27 +108,27 @@ namespace CampfireNet {
                switch (packet.GetType().Name) {
                   case nameof(HavePacket):
                      DebugPrint("Got HAVE {0}", ((HavePacket)packet).MerkleRootHash);
-                     await haveChannel.WriteAsync((HavePacket)packet).ConfigureAwait(false);
+                     await ChannelsExtensions.WriteAsync(haveChannel, (HavePacket)packet).ConfigureAwait(false);
                      break;
                   case nameof(NeedPacket):
                      DebugPrint("Got NEED {0}", ((NeedPacket)packet).MerkleRootHash);
-                     await needChannel.WriteAsync((NeedPacket)packet).ConfigureAwait(false);
+                     await ChannelsExtensions.WriteAsync(needChannel, (NeedPacket)packet).ConfigureAwait(false);
                      break;
                   case nameof(GivePacket):
                      DebugPrint("Got GIVE {0}", ((GivePacket)packet).NodeHash);
-                     await giveChannel.WriteAsync((GivePacket)packet).ConfigureAwait(false);
+                     await ChannelsExtensions.WriteAsync(giveChannel, (GivePacket)packet).ConfigureAwait(false);
                      break;
                   case nameof(WhoisPacket):
                      DebugPrint("Got WHOIS {0}", ((WhoisPacket)packet).IdHash.ToHexString());
-                     await whoisChannel.WriteAsync((WhoisPacket)packet).ConfigureAwait(false);
+                     await ChannelsExtensions.WriteAsync(whoisChannel, (WhoisPacket)packet).ConfigureAwait(false);
                      break;
                   case nameof(IdentPacket):
                      DebugPrint("Got IDENT {0}", ((IdentPacket)packet).Id.ToHexString());
-                     await identChannel.WriteAsync((IdentPacket)packet).ConfigureAwait(false);
+                     await ChannelsExtensions.WriteAsync(identChannel, (IdentPacket)packet).ConfigureAwait(false);
                      break;
                   case nameof(DonePacket):
                      DebugPrint("Got DONE");
-                     await doneChannel.WriteAsync((DonePacket)packet).ConfigureAwait(false);
+                     await ChannelsExtensions.WriteAsync(doneChannel, (DonePacket)packet).ConfigureAwait(false);
                      break;
                   default:
                      throw new InvalidStateException();
@@ -159,7 +159,7 @@ namespace CampfireNet {
                   await SynchronizeLocalToRemoteAsync().ConfigureAwait(false);
                   await SynchronizeRemoteToLocalAsync().ConfigureAwait(false);
                }
-               await rateLimit.ReadAsync().ConfigureAwait(false);
+               await ChannelsExtensions.ReadAsync(rateLimit).ConfigureAwait(false);
             }
          } catch (NotConnectedException) {
          } finally {
@@ -217,7 +217,7 @@ namespace CampfireNet {
 
       private async Task SynchronizeRemoteToLocalAsync() {
          DebugPrint("Enter Remote to Local");
-         var have = await haveChannel.ReadAsync().ConfigureAwait(false);
+         var have = await ChannelsExtensions.ReadAsync(haveChannel).ConfigureAwait(false);
          DebugPrint("Have is {0}", have.MerkleRootHash);
          var isRemoteRootSyncedLocally = await IsRemoteObjectHeldLocally(have.MerkleRootHash).ConfigureAwait(false);
          DebugPrint("IRRSL {0}", isRemoteRootSyncedLocally);
@@ -250,7 +250,7 @@ namespace CampfireNet {
                      continue;
                   }
 
-                  var give = await giveChannel.ReadAsync().ConfigureAwait(false);
+                  var give = await ChannelsExtensions.ReadAsync(giveChannel).ConfigureAwait(false);
                   nodesToImport.Add(Tuple.Create(give.NodeHash, give.Node));
 
                   if (!await IsRemoteObjectHeldLocally(give.Node.LeftHash).ConfigureAwait(false)) {
@@ -282,7 +282,7 @@ namespace CampfireNet {
             }
 
             foreach (var i in Enumerable.Range(0, neededSourceIdHashes.Count)) {
-               var ident = await identChannel.ReadAsync().ConfigureAwait(false);
+               var ident = await ChannelsExtensions.ReadAsync(identChannel).ConfigureAwait(false);
                Identity.ValidateAndAdd(ident.TrustChain);
             }
 
