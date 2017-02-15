@@ -37,7 +37,7 @@ namespace CampfireNet.Windows {
             //            var objectStore = new FileSystemCampfireNetObjectStore(Path.Combine(Directory.GetParent(Assembly.GetExecutingAssembly().Location).FullName, "demo_store"));
 
             var identity = new Identity(new IdentityManager(), "Windows_Client");
-            identity.AddTrustChain(rootIdentity.GenerateNewChain(identity.PublicIdentity, Permission.All, Permission.All, identity.Name));
+            identity.AddTrustChain(rootIdentity.GenerateNewChain(identity.PublicIdentity, Permission.None, Permission.None, identity.Name));
             Console.WriteLine($"I am {string.Join(" > ", identity.TrustChain.Select(n => n.ThisId.ToHexString()))}");
 
             var clientMerkleTreeFactory = new ClientMerkleTreeFactory(broadcastMessageSerializer, objectStore);

@@ -292,6 +292,27 @@ namespace CampfireNet {
                }
             }
 
+            foreach (var tuple in nodesToImport) {
+               var node = tuple.Item2;
+               if (node.Descendents == 0 && await localMerkleTree.GetNodeAsync(tuple.Item1).ConfigureAwait(false) == null) {
+                  var isDataNode = node.TypeTag == MerkleNodeTypeTag.Data;
+                  BroadcastMessageDto message = isDataNode ? broadcastMessageSerializer.Deserialize(node.Contents) : null;
+
+                  var sender = IdentityManager.LookupIdentity(message.SourceIdHash);
+                  if (message.DestinationIdHash.All(val => val == 0)) {
+                     if ((sender.HeldPermissions & Permission.Broadcast) == 0) {
+                        Console.WriteLine("Sender does not have broadcast permissions. Malicious peer!");
+                        throw new InvalidStateException();
+                     }
+                  } else {
+                     if ((sender.HeldPermissions & Permission.Unicast) == 0) {
+                        Console.WriteLine("Sender does not have unicast permissions. Malicious peer!");
+                        throw new InvalidStateException();
+                     }
+                  }
+               }
+            }
+
             await remoteMerkleTree.ImportAsync(have.MerkleRootHash, nodesToImport).ConfigureAwait(false);
             foreach (var tuple in nodesToImport) {
                var node = tuple.Item2;
