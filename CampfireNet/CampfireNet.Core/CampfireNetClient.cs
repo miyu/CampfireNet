@@ -1,4 +1,4 @@
-//#define CN_DEBUG
+#define CN_DEBUG
 
 using System;
 using System.Collections.Concurrent;
@@ -49,7 +49,11 @@ namespace CampfireNet {
       }
 
       public async Task RunAsync() {
-         DiscoverAsync().Forget();
+         try {
+            await DiscoverAsync();
+         } catch (Exception e) {
+            Console.WriteLine("Warning: RunAsync-DiscoverAsync exited!" + e);
+         }
       }
 
       public async Task DiscoverAsync() {
@@ -57,14 +61,16 @@ namespace CampfireNet {
          var connectedNeighborContextsByAdapterId = new ConcurrentDictionary<Guid, NeighborConnectionContext>();
          while (true) {
             Debug("Starting discovery round!");
+            var discoveryStartTime = DateTime.Now;
             var neighbors = await bluetoothAdapter.DiscoverAsync().ConfigureAwait(false);
+            var discoveryDurationSeconds = Math.Max(10, 3 * (DateTime.Now - discoveryStartTime).TotalSeconds);
             try {
                await Task.WhenAll(
                   neighbors.Where(neighbor => !neighbor.IsConnected)
                            .Where(neighbor => !connectedNeighborContextsByAdapterId.ContainsKey(neighbor.AdapterId))
                            .Select(neighbor => ChannelsExtensions.Go(async () => {
                               Debug("Attempt to connect to: {0}", neighbor.AdapterId);
-                              var connected = await neighbor.TryHandshakeAsync().ConfigureAwait(false);
+                              var connected = await neighbor.TryHandshakeAsync(discoveryDurationSeconds).ConfigureAwait(false);
                               if (!connected) {
                                  Debug("Failed to connect to: {0}", neighbor.AdapterId);
                                  return;
@@ -81,6 +87,7 @@ namespace CampfireNet {
 
                                  connectionContext.BroadcastReceived -= HandleBroadcastReceived;
                                  connectedNeighborContextsByAdapterId.RemoveOrThrow(neighbor.AdapterId);
+                                 neighbor.Disconnect();
                               });
                            }))
                ).ConfigureAwait(false);

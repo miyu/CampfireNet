@@ -1,4 +1,4 @@
-//#define CN_DEBUG
+#define CN_DEBUG
 
 using System;
 using System.Collections;
@@ -13,6 +13,7 @@ using CampfireNet.IO.Transport;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.Channels;
 using CampfireNet.Utilities.Merkle;
+using static CampfireNet.Utilities.Channels.ChannelsExtensions;
 
 namespace CampfireNet {
    public static class DebugConsole {
@@ -94,7 +95,15 @@ namespace CampfireNet {
          var inboundChannel = neighbor.InboundChannel;
          try {
             while (true) {
-               var packetData = await inboundChannel.ReadAsync().ConfigureAwait(false);
+               byte[] packetData = null;
+               bool quit = false;
+               await new Select {
+                  Case(ChannelFactory.Timeout(TimeSpan.FromSeconds(30)), () => quit = true),
+                  Case(inboundChannel, x => packetData = x)
+               }.ConfigureAwait(false);
+
+               if (quit) break;
+
                var packet = serializer.ToObject(packetData);
                switch (packet.GetType().Name) {
                   case nameof(HavePacket):
@@ -132,13 +141,15 @@ namespace CampfireNet {
                throw new InvalidStateException();
             } catch (NotConnectedException) { }
          } finally {
+            disconnectLatchChannel.SetIsClosed(true);
+            neighbor.Disconnect();
             DebugPrint("Router loop exiting");
          }
       }
 
       private async Task SynchronizationLoopTaskStart() {
          var isGreater = bluetoothAdapter.AdapterId.CompareTo(neighbor.AdapterId) > 0;
-         var rateLimit = ChannelFactory.Timer(1000); // ChannelFactory.Timer(5000, 3000);
+         var rateLimit = ChannelFactory.Timer(5000, 3000);
          try {
             while (true) {
                if (isGreater) {
@@ -151,9 +162,10 @@ namespace CampfireNet {
                await rateLimit.ReadAsync().ConfigureAwait(false);
             }
          } catch (NotConnectedException) {
-            disconnectLatchChannel.SetIsClosed(true);
          } finally {
             DebugPrint("Sync loop exiting");
+            disconnectLatchChannel.SetIsClosed(true);
+            neighbor.Disconnect();
          }
       }
 

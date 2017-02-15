@@ -89,7 +89,7 @@ namespace CampfireNet.Windows {
          public bool IsConnected => !disconnectedChannel.IsClosed;
          public ReadableChannel<byte[]> InboundChannel => inboundChannel;
 
-         public async Task<bool> TryHandshakeAsync() {
+         public async Task<bool> TryHandshakeAsync(double minTimeoutSeconds) {
             try {
                using (await synchronization.LockAsync().ConfigureAwait(false)) {
                   Console.WriteLine("Attempting to connect to ID " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
@@ -166,6 +166,8 @@ namespace CampfireNet.Windows {
             }
             return buffer;
          }
+
+         public void Disconnect() => Teardown();
       }
    }
 }

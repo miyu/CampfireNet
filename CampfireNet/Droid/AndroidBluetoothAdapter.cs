@@ -45,9 +45,9 @@ namespace AndroidTest.Droid {
          var devices = await bluetoothDiscoveryFacade.DiscoverPeersAsync().ConfigureAwait(false);
          var neighbors = new List<IBluetoothNeighbor>();
          foreach (var device in devices) {
-            if (device.Name == null || (!device.Name.Contains("CIA") && !device.Name.Contains("G920") && !device.Name.Contains("DESKTOP"))) {
-               continue;
-            }
+//            if (device.Name == null || (!device.Name.Contains("CIA") && !device.Name.Contains("G920") && !device.Name.Contains("DESKTOP"))) {
+//               continue;
+//            }
 
             var neighborId = MacUtilities.ConvertMacToGuid(device.Address);
             Neighbor neighbor;
@@ -84,7 +84,7 @@ namespace AndroidTest.Droid {
          public bool IsConnected => !disconnectedChannel.IsClosed;
          public ReadableChannel<byte[]> InboundChannel => inboundChannel;
 
-         private async Task HandshakeAsync() {
+         private async Task HandshakeAsync(double minTimeoutSeconds) {
             using (await synchronization.LockAsync().ConfigureAwait(false)) {
                var isServer = androidBluetoothAdapter.AdapterId.CompareTo(AdapterId) > 0;
 
@@ -115,7 +115,7 @@ namespace AndroidTest.Droid {
 
                   bool isTimeout = false;
                   await new Select {
-                     Case(ChannelFactory.Timer(5000), () => {
+                     Case(ChannelFactory.Timer(TimeSpan.FromSeconds(minTimeoutSeconds)), () => {
                         socket.Dispose();
                         isTimeout = true;
                      }),
@@ -148,9 +148,9 @@ namespace AndroidTest.Droid {
             }
          }
 
-         public async Task<bool> TryHandshakeAsync() {
+         public async Task<bool> TryHandshakeAsync(double minTimeoutSeconds) {
             try {
-               await HandshakeAsync().ConfigureAwait(false);
+               await HandshakeAsync(minTimeoutSeconds).ConfigureAwait(false);
                return true;
             } catch (TimeoutException) {
                return false;
@@ -179,13 +179,25 @@ namespace AndroidTest.Droid {
          }
 
          private async Task<byte[]> ReadBytesAsync(Stream stream, int count) {
-            var buffer = new byte[count];
-            int index = 0;
-            while (index < count) {
-               var bytesRead = await stream.ReadAsync(buffer, index, count - index).ConfigureAwait(false);
-               index += bytesRead;
+            try {
+               var buffer = new byte[count];
+               int index = 0;
+               while (index < count) {
+                  var bytesRead = await stream.ReadAsync(buffer, index, count - index).ConfigureAwait(false);
+                  if (bytesRead == 0) {
+                     throw new Exception();
+                  }
+                  index += bytesRead;
+               }
+               return buffer;
+            } catch (Exception e) {
+               Teardown();
+               throw new NotConnectedException(e);
             }
-            return buffer;
+         }
+
+         public void Disconnect() {
+            Teardown();
          }
       }
    }
