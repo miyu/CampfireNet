@@ -12,6 +12,9 @@
   <ItemGroup>
     <PackageReference Include="32feet.NET" Version="3.5.0.0" />
     <PackageReference Include="System.Console" Version="4.3.0" />
+    <PackageReference Include="System.Security.Cryptography.Algorithms" Version="4.3.0" />
+    <PackageReference Include="System.Security.Cryptography.Cng" Version="4.3.0" />
+    <PackageReference Include="System.Security.Cryptography.Csp" Version="4.3.0" />
   </ItemGroup>
 
   <ItemGroup>

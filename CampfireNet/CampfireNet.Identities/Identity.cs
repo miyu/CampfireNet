@@ -15,22 +15,21 @@ namespace CampfireNet.Identities
 		private byte[] identityHash;
 		private IdentityManager identityManager;
 
-		public Identity(IdentityManager identityManager, string name)
-		{
-			// generate new public and private keys
-			var rsa = new RSACryptoServiceProvider(CryptoUtil.ASYM_KEY_SIZE_BITS);
-			privateKey = rsa.ExportParameters(true);
-			identityHash = CryptoUtil.GetHash(privateKey.Modulus);
+	   public Identity(IdentityManager identityManager, string name) : this(new RSACryptoServiceProvider(CryptoUtil.ASYM_KEY_SIZE_BITS), identityManager, name) { }
 
-			this.identityManager = identityManager;
+	   public Identity(RSACryptoServiceProvider rsa, IdentityManager identityManager, string name) {
+         privateKey = rsa.ExportParameters(true);
+         identityHash = CryptoUtil.GetHash(privateKey.Modulus);
 
-			TrustChain = null;
-			HeldPermissions = Permission.None;
-			GrantablePermissions = Permission.None;
-			Name = name;
-		}
+         this.identityManager = identityManager;
 
-		public TrustChainNode[] TrustChain { get; private set; }
+         TrustChain = null;
+         HeldPermissions = Permission.None;
+         GrantablePermissions = Permission.None;
+         Name = name;
+      }
+
+	   public TrustChainNode[] TrustChain { get; private set; }
 		public Permission HeldPermissions { get; private set; }
 		public Permission GrantablePermissions { get; private set; }
 

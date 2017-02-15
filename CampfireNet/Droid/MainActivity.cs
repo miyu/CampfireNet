@@ -9,6 +9,7 @@ using Android.OS;
 using CampfireNet;
 using CampfireNet.Identities;
 using CampfireNet.IO;
+using CampfireNet.Security;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.Merkle;
 
@@ -75,8 +76,13 @@ namespace AndroidTest.Droid {
          bluetoothServer.Start();
          var campfireNetBluetoothAdapter = new AndroidBluetoothAdapter(ApplicationContext, nativeBluetoothAdapter, bluetoothDiscoveryFacade, inboundBluetoothSocketTable);
 
-         var identity = new Identity(new IdentityManager(), "IdentityName");
-         identity.GenerateRootChain();
+         var rootRsa = __HackPrivateKeyUtilities.DeserializePrivateKey(__HackPrivateKeyUtilities.__HACK_ROOT_PRIVATE_KEY);
+         var rootIdentity = new Identity(rootRsa, new IdentityManager(), "hack_root");
+         rootIdentity.GenerateRootChain();
+
+         var identity = new Identity(new IdentityManager(), "SomeAndroidIdentityName");
+         identity.AddTrustChain(rootIdentity.GenerateNewChain(identity.PublicIdentity, Permission.All, Permission.All, identity.Name));
+//         identity.GenerateRootChain();
 
          var broadcastMessageSerializer = new BroadcastMessageSerializer();
          var objectStore = new InMemoryCampfireNetObjectStore();
