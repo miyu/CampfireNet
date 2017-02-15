@@ -110,7 +110,7 @@ namespace AndroidTest.Droid {
 
                   Go(async () => {
                      await socket.ConnectAsync().ConfigureAwait(false);
-                     await connectedChannel.WriteAsync(true);
+                     await ChannelsExtensions.WriteAsync(connectedChannel, true);
                   }).Forget();
 
                   bool isTimeout = false;
@@ -138,7 +138,7 @@ namespace AndroidTest.Droid {
                         var dataLengthBuffer = await ReadBytesAsync(networkStream, 4).ConfigureAwait(false);
                         var dataLength = BitConverter.ToInt32(dataLengthBuffer, 0);
                         var data = await ReadBytesAsync(networkStream, dataLength).ConfigureAwait(false);
-                        await inboundChannel.WriteAsync(data).ConfigureAwait(false);
+                        await ChannelsExtensions.WriteAsync(inboundChannel, data).ConfigureAwait(false);
                      }
                   } catch (Exception e) {
                      Console.WriteLine(e);
