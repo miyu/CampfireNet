@@ -11,6 +11,7 @@ using CampfireNet.Identities;
 using CampfireNet.IO;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.Merkle;
+using Java.IO;
 
 namespace AndroidTest.Droid {
    [Activity(Label = "AndroidTest", MainLauncher = true, Icon = "@mipmap/icon")]
