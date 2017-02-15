@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
 using System.Threading;
 using System.Threading.Tasks;
@@ -10,9 +11,11 @@ using CampfireNet.Simulator;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.AsyncPrimatives;
 using CampfireNet.Utilities.Channels;
+using CampfireNet.Utilities.Collections;
 using InTheHand.Net;
 using InTheHand.Net.Bluetooth;
 using InTheHand.Net.Sockets;
+using static CampfireNet.Utilities.Channels.ChannelsExtensions;
 
 namespace CampfireNet.Windows {
    public class WindowsBluetoothAdapter : IBluetoothAdapter, IDisposable {
@@ -51,23 +54,41 @@ namespace CampfireNet.Windows {
 
       public async Task<IReadOnlyList<IBluetoothNeighbor>> DiscoverAsync() {
          var devices = await bluetoothClient.DiscoverDevicesInRangeAsync().ConfigureAwait(false);
-         var results = new List<IBluetoothNeighbor>();
-         foreach (var device in devices) {
+         var neighbors = new ConcurrentSet<IBluetoothNeighbor>();
+         await Task.WhenAll(devices.Select(device => Go(async () => {
             var neighborId = BuildDeviceAddressGuid(device.DeviceAddress);
+            var serviceRecordsChannel = ChannelFactory.Nonblocking<ServiceRecord[]>();
+            Go(async () => {
+               try {
+                  await serviceRecordsChannel.WriteAsync(await device.GetServiceRecordsAsync(CAMPFIRE_NET_SERVICE_CLASS));
+               } catch (Exception e) {
+                  Console.WriteLine($"At SR Fetch {neighborId}: {e}");
+                  await serviceRecordsChannel.WriteAsync(new ServiceRecord[0]);
+               }
+            }).Forget();
 
-            Neighbor neighbor;
-            if (!neighborsById.TryGetValue(neighborId, out neighbor)) {
-               neighbor = new Neighbor(device.DeviceAddress, neighborId, device.DeviceName);
-               neighborsById[neighborId] = neighbor;
-            }
-            Console.WriteLine("Discovered " + (neighbor.Name ?? "[unknown]") + " " + neighbor.AdapterId + " " + neighbor.IsConnected);
-            
-            foreach (var x in device.InstalledServices) {
-               Console.WriteLine(x);
-            }
-            results.Add(neighbor);
-         }
-         return results;
+            await new Select {
+               Case(ChannelFactory.Timeout(TimeSpan.FromSeconds(15)), () => {
+                  Console.WriteLine("Timeout discovering services from " + (device.DeviceName ?? "[unknown]") + " " + neighborId + " as no CampfireNet service record");
+               }),
+               Case(serviceRecordsChannel, records => {
+                  if (!records.Any()) {
+                     Console.WriteLine("Skipping " + (device.DeviceName ?? "[unknown]") + " " + neighborId + " as no CampfireNet service record");
+                     return;
+                  }
+
+                  Neighbor neighbor;
+                  if (!neighborsById.TryGetValue(neighborId, out neighbor)) {
+                     neighbor = new Neighbor(device.DeviceAddress, neighborId, device.DeviceName);
+                     neighborsById[neighborId] = neighbor;
+                  }
+                  neighbors.TryAdd(neighbor);
+                  Console.WriteLine("Discovered " + (neighbor.Name ?? "[unknown]") + " " + neighbor.AdapterId + " " + neighbor.IsConnected);
+               })
+            }.ConfigureAwait(false);
+         }))).ConfigureAwait(false);
+
+         return neighbors.ToList();
       }
 
       public void Dispose() {
