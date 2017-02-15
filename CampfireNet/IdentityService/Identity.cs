@@ -181,21 +181,21 @@ namespace CampfireNet.Identities
 			//Buffer.BlockCopy(signature, 0, finalPacket, payload.Length, CryptoUtil.SIGNATURE_SIZE);
 
 			return new BroadcastMessageDto { 
-				SourceId = senderHash,
-				DestinationId = recipientHash,
+				SourceIdHash = senderHash,
+				DestinationIdHash = recipientHash,
 				Payload = processedMessage,
 				Signature = signature
 			};
 		}
 
 		public bool IsSenderKnown(BroadcastMessageDto broadcastMessage) {
-			return identityManager.LookupIdentity(broadcastMessage.SourceId) != null;
+			return identityManager.LookupIdentity(broadcastMessage.SourceIdHash) != null;
 		}
 
 		public bool TryDecodePayload(BroadcastMessageDto broadcastMessage, out byte[] decryptedPayload)
 		{
-			var senderHash = broadcastMessage.SourceId;
-			var receiverHash = broadcastMessage.DestinationId;
+			var senderHash = broadcastMessage.SourceIdHash;
+			var receiverHash = broadcastMessage.DestinationIdHash;
 			var payload = broadcastMessage.Payload;
 			var signature = broadcastMessage.Signature;
 

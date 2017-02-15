@@ -30,16 +30,21 @@ namespace CampfireNet {
       public event BroadcastReceivedEventHandler BroadcastReceived;
       public Guid AdapterId => bluetoothAdapter.AdapterId;
 
-      public async Task BroadcastAsync(byte[] data) {
-         var sender = identity.PublicIdentityHash;
-         var receiver = Identity.BROADCAST_ID;
-         var packet = identity.EncodePacket(data);
-         var broadcastMessage = new BroadcastMessageDto {
-         };
+      public async Task BroadcastAsync(byte[] payload) {
+         var messageDto = identity.EncodePacket(payload, null);
 
-         var localInsertionResult = await localMerkleTree.TryInsertAsync(message).ConfigureAwait(false);
+         var localInsertionResult = await localMerkleTree.TryInsertAsync(messageDto).ConfigureAwait(false);
          if (localInsertionResult.Item1) {
-            BroadcastReceived?.Invoke(new BroadcastReceivedEventArgs(null, message));
+            // "Decrypt the message"
+            BroadcastReceived?.Invoke(new BroadcastReceivedEventArgs(
+               null,
+               new BroadcastMessage {
+                  SourceId = identity.PublicIdentity,
+                  DestinationId = Identity.BROADCAST_ID,
+                  DecryptedPayload = payload,
+                  Dto = messageDto
+               }
+            ));
          }
       }
 

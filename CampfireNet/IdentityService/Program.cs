@@ -63,7 +63,7 @@ namespace CampfireNet.Identities
 			//Console.WriteLine($"Got '{received}' from alice");
 
 			var encoded = B.EncodePacket(Encoding.UTF8.GetBytes("This is a broadcast test #415 (to B from D)"), D.PublicIdentity);
-			encoded.SourceId[0]++;
+			encoded.SourceIdHash[0]++;
 			try
 			{
 				byte[] tmp; 
@@ -73,16 +73,16 @@ namespace CampfireNet.Identities
 			{
 				Console.WriteLine("Bad sender hash");
 			}
-			encoded.SourceId[0]--;
+			encoded.SourceIdHash[0]--;
 
-			encoded.DestinationId[0]++;
+			encoded.DestinationIdHash[0]++;
 			{
 				byte[] tmp;
 				var us = D.TryDecodePayload(encoded, out tmp);
 				if (!us)
 					Console.WriteLine("Not us!");
 			}
-			encoded.DestinationId[0]--;
+			encoded.DestinationIdHash[0]--;
 
 			encoded.Signature[0]++;
 			try

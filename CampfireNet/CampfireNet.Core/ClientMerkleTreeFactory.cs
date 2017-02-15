@@ -1,3 +1,4 @@
+using CampfireNet.Identities;
 using CampfireNet.IO;
 using CampfireNet.IO.Packets;
 using CampfireNet.Utilities.Merkle;
@@ -12,12 +13,12 @@ namespace CampfireNet {
          this.objectStore = objectStore;
       }
 
-      public MerkleTree<BroadcastMessage> CreateForLocal() {
-         return new MerkleTree<BroadcastMessage>("local", broadcastMessageSerializer, objectStore);
+      public MerkleTree<BroadcastMessageDto> CreateForLocal() {
+         return new MerkleTree<BroadcastMessageDto>("local", broadcastMessageSerializer, objectStore);
       }
 
-      public MerkleTree<BroadcastMessage> CreateForNeighbor(string id) {
-         return new MerkleTree<BroadcastMessage>(id, broadcastMessageSerializer, objectStore);
+      public MerkleTree<BroadcastMessageDto> CreateForNeighbor(string id) {
+         return new MerkleTree<BroadcastMessageDto>(id, broadcastMessageSerializer, objectStore);
       }
    }
 }

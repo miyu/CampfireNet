@@ -74,6 +74,7 @@ namespace AndroidTest.Droid {
          bluetoothServer.Start();
          var campfireNetBluetoothAdapter = new AndroidBluetoothAdapter(ApplicationContext, nativeBluetoothAdapter, bluetoothDiscoveryFacade, inboundBluetoothSocketTable);
 
+         var identity = new Identity();
          var broadcastMessageSerializer = new BroadcastMessageSerializer();
          var objectStore = new InMemoryCampfireNetObjectStore();
          var clientMerkleTreeFactory = new ClientMerkleTreeFactory(broadcastMessageSerializer, objectStore);

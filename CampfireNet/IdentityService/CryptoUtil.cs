@@ -60,7 +60,7 @@ namespace CampfireNet.Identities
 		}
 
 		public static bool Verify(BroadcastMessageDto broadcastMessage, byte[] modulus, byte[] signature) {
-			var data = broadcastMessage?.SourceId . Concat(broadcastMessage.DestinationId).
+			var data = broadcastMessage?.SourceIdHash . Concat(broadcastMessage.DestinationIdHash).
 			                           Concat(broadcastMessage . Payload )
 			                           . ToArray();
 			return Verify(data, modulus, signature);

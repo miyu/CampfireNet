@@ -216,7 +216,6 @@ namespace CampfireNet {
 
                   var give = await giveChannel.ReadAsync().ConfigureAwait(false);
                   nodesToImport.Add(Tuple.Create(give.NodeHash, give.Node));
-                  //                  Console.WriteLine("RECV GIVE " + give.NodeHash);
 
                   if (!await IsRemoteObjectHeldLocally(give.Node.LeftHash).ConfigureAwait(false)) {
                      neededHashes.AddLast(give.Node.LeftHash);
@@ -238,7 +237,7 @@ namespace CampfireNet {
 
                   var insertionResult = await localMerkleTree.TryInsertAsync(tuple.Item2).ConfigureAwait(false);
                   if (insertionResult.Item1 && isDataNode) {
-                     BroadcastReceived?.Invoke(new BroadcastReceivedEventArgs(neighbor, message));
+                     //BroadcastReceived?.Invoke(new BroadcastReceivedEventArgs(neighbor, message));
                   }
                }
             }
