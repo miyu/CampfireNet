@@ -32,6 +32,8 @@ namespace CampfireNet.Windows {
          listener.Encrypt = false;
 
          new Thread(() => {
+            listener.Start();
+
             while (true) {
                var client = listener.AcceptBluetoothClient();
                Console.WriteLine("Warning: Windows client doesn't support accepting!");
@@ -52,12 +54,17 @@ namespace CampfireNet.Windows {
          var results = new List<IBluetoothNeighbor>();
          foreach (var device in devices) {
             var neighborId = BuildDeviceAddressGuid(device.DeviceAddress);
+
             Neighbor neighbor;
             if (!neighborsById.TryGetValue(neighborId, out neighbor)) {
                neighbor = new Neighbor(device.DeviceAddress, neighborId, device.DeviceName);
                neighborsById[neighborId] = neighbor;
             }
             Console.WriteLine("Discovered " + (neighbor.Name ?? "[unknown]") + " " + neighbor.AdapterId + " " + neighbor.IsConnected);
+            
+            foreach (var x in device.InstalledServices) {
+               Console.WriteLine(x);
+            }
             results.Add(neighbor);
          }
          return results;
