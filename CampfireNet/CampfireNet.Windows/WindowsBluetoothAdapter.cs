@@ -2,6 +2,7 @@ using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using CampfireNet.IO;
 using CampfireNet.IO.Transport;
@@ -20,10 +21,23 @@ namespace CampfireNet.Windows {
       private readonly BluetoothClient bluetoothClient = new BluetoothClient();
       private readonly ConcurrentDictionary<Guid, Neighbor> neighborsById = new ConcurrentDictionary<Guid, Neighbor>();
       private readonly BluetoothWin32Authentication bluetoothWin32Authentication;
+      private readonly BluetoothListener listener;
 
       public WindowsBluetoothAdapter() {
          // set win32 bluetooth stack auth callback that to always confirms inbound conns
          bluetoothWin32Authentication = new BluetoothWin32Authentication(Handler);
+
+         listener = new BluetoothListener(CAMPFIRE_NET_SERVICE_CLASS);
+         listener.Authenticate = false;
+         listener.Encrypt = false;
+
+         new Thread(() => {
+            while (true) {
+               var client = listener.AcceptBluetoothClient();
+               Console.WriteLine("Warning: Windows client doesn't support accepting!");
+               Console.WriteLine($"Got {client.RemoteMachineName} {client.RemoteEndPoint}");
+            }
+         }).Start();
       }
 
       private void Handler(object sender, BluetoothWin32AuthenticationEventArgs e) {

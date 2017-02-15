@@ -9,7 +9,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>CampfireNet.Windows</RootNamespace>
     <AssemblyName>CampfireNet.Windows</AssemblyName>
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.6.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile />
   </PropertyGroup>
@@ -38,6 +38,9 @@
       <HintPath>..\packages\32feet.NET.3.5.0.0\lib\net\InTheHand.Net.Personal.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Console, Version=4.0.1.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Console.4.3.0\lib\net46\System.Console.dll</HintPath>
+    </Reference>
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -60,6 +63,10 @@
     <ProjectReference Include="..\CampfireNet.Core\CampfireNet.Core.csproj">
       <Project>{74987653-09DA-4274-BEC8-759F95BC9836}</Project>
       <Name>CampfireNet.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CampfireNet.Identities\CampfireNet.Identities.csproj">
+      <Project>{0db822bc-fad9-496b-ac8e-f880b02a4590}</Project>
+      <Name>CampfireNet.Identities</Name>
     </ProjectReference>
     <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
       <Project>{2B952A46-062B-4238-933F-923BC8E77FC9}</Project>
