@@ -236,7 +236,7 @@ namespace CampfireNet.Utilities.Channels {
                }
             }
          } finally {
-            Trace.Assert(context.state == WriterContext<T>.kStateCancelled ||
+            Debug.Assert(context.state == WriterContext<T>.kStateCancelled ||
                          context.state == WriterContext<T>.kStateCompleted);
          }
       }

@@ -1,74 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+<Project Sdk="Microsoft.NET.Sdk" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{2B952A46-062B-4238-933F-923BC8E77FC9}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>CampfireNet.Utilities</RootNamespace>
-    <AssemblyName>CampfireNet.Utilities</AssemblyName>
-    <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile />
-    <TargetFrameworkVersion>v4.6.1</TargetFrameworkVersion>
+    <TargetFramework>netstandard1.6</TargetFramework>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="System" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Compile Include="AsyncPrimatives\AsyncAutoResetLatch.cs" />
-    <Compile Include="AsyncPrimatives\AsyncBox.cs" />
-    <Compile Include="AsyncPrimatives\AsyncCountdownLatch.cs" />
-    <Compile Include="AsyncPrimatives\AsyncLatch.cs" />
-    <Compile Include="AsyncPrimatives\AsyncLock.cs" />
-    <Compile Include="AsyncPrimatives\AsyncSemaphore.cs" />
-    <Compile Include="AsyncPrimatives\AsyncSpinner.cs" />
-    <Compile Include="Channels\BinaryLatchChannel.cs" />
-    <Compile Include="Channels\Channel.cs" />
-    <Compile Include="Channels\ChannelFactory.cs" />
-    <Compile Include="Channels\ChannelsExtensions.cs" />
-    <Compile Include="Channels\DisconnectableChannel.cs" />
-    <Compile Include="Channels\NonblockingChannel.cs" />
-    <Compile Include="Collections\ConcurrentSet.cs" />
-    <Compile Include="DargonCommonsExtensions.Collections.cs" />
-    <Compile Include="DargonCommonsExtensions.cs" />
-    <Compile Include="InvalidStateException.cs" />
-    <Compile Include="Merkle\CampfireNetHash.cs" />
-    <Compile Include="Merkle\CampfireNetObjectStoreExtensions.cs" />
-    <Compile Include="Merkle\FileSystemCampfireNetObjectStore.cs" />
-    <Compile Include="Merkle\ICampfireNetObjectStore.cs" />
-    <Compile Include="Merkle\IItemOperations.cs" />
-    <Compile Include="Merkle\MerkleNode.cs" />
-    <Compile Include="Merkle\MerkleNodeTypeTag.cs" />
-    <Compile Include="Merkle\MerkleTree.cs" />
-    <Compile Include="PriorityQueue.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-  </ItemGroup>
-  <ItemGroup />
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+
 </Project>

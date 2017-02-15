@@ -275,9 +275,5 @@ namespace CampfireNet.Identities
 		public BadTrustChainException() : base() { }
 		public BadTrustChainException(string message) : base(message) { }
 		public BadTrustChainException(string message, Exception inner) : base(message, inner) { }
-
-		public BadTrustChainException(System.Runtime.Serialization.SerializationInfo info,
-									  System.Runtime.Serialization.StreamingContext context)
-		{ }
 	}
 }

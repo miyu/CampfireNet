@@ -22,7 +22,7 @@ namespace CampfireNet.Utilities.Channels {
 
       public async Task<bool> ReadAsync(CancellationToken cancellationToken, Func<bool, bool> acceptanceTest) {
          while (true) {
-            Thread.MemoryBarrier();
+            Interlocked.MemoryBarrier();
 
             await latch.WaitAsync(cancellationToken).ConfigureAwait(false);
             if (acceptanceTest(true)) {

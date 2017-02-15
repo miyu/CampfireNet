@@ -18,9 +18,5 @@ namespace CampfireNet.Identities
 		public InvalidPermissionException() : base() { }
 		public InvalidPermissionException(string message) : base(message) { }
 		public InvalidPermissionException(string message, Exception inner) : base(message, inner) { }
-
-		public InvalidPermissionException(System.Runtime.Serialization.SerializationInfo info,
-										  System.Runtime.Serialization.StreamingContext context)
-		{ }
 	}
 }

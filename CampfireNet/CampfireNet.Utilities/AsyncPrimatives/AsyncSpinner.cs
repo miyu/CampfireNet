@@ -27,7 +27,12 @@ namespace CampfireNet.Utilities.AsyncPrimatives {
          if (NextSpinWillYield) {
             await Task.Yield();
          } else {
-            Thread.SpinWait(count << 4);
+            // Ideally just Thread.SpinWait(count << 4);
+            // but we're using pcl... so sadface
+            var spinner = new SpinWait();
+            for (int i = 0; i < count; i++) {
+               spinner.SpinOnce();
+            }
          }
       }
    }

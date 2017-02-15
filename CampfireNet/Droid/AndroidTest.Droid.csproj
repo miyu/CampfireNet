@@ -49,6 +49,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="System.Core" />
     <Reference Include="Mono.Android" />
+    <Reference Include="System.Security" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AndroidBluetoothAdapter.cs" />
@@ -63,14 +64,167 @@
     <Compile Include="MacUtilities.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="BluetoothTest.cs" />
     <Compile Include="ChatServer.cs" />
+    <Compile Include="..\CampfireNet.Core\BroadcastReceivedEventArgs.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\BroadcastReceivedEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\CampfireNetClient.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\CampfireNetClient.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\ClientMerkleTreeFactory.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\ClientMerkleTreeFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\NeighborConnectionContext.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\NeighborConnectionContext.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\BroadcastMessage.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\BroadcastMessage.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\BroadcastMessageSerializer.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\BroadcastMessageSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\NotConnectedException.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\NotConnectedException.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Packets\DonePacket.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\DonePacket.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Packets\GivePacket.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\GivePacket.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Packets\HavePacket.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\HavePacket.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Packets\NeedPacket.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\NeedPacket.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Packets\PacketType.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\PacketType.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Packets\WirePacketSerializer.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\WirePacketSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Transport\IBluetoothAdapter.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Transport\IBluetoothAdapter.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Transport\IBluetoothNeighbor.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Transport\IBluetoothNeighbor.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\DargonCommonsExtensions.Collections.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\DargonCommonsExtensions.Collections.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\DargonCommonsExtensions.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\DargonCommonsExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\InvalidStateException.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\InvalidStateException.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\PriorityQueue.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\PriorityQueue.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\AsyncPrimatives\AsyncAutoResetLatch.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\AsyncPrimatives\AsyncAutoResetLatch.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\AsyncPrimatives\AsyncBox.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\AsyncPrimatives\AsyncBox.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\AsyncPrimatives\AsyncCountdownLatch.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\AsyncPrimatives\AsyncCountdownLatch.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\AsyncPrimatives\AsyncLatch.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\AsyncPrimatives\AsyncLatch.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\AsyncPrimatives\AsyncLock.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\AsyncPrimatives\AsyncLock.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\AsyncPrimatives\AsyncSemaphore.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\AsyncPrimatives\AsyncSemaphore.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\AsyncPrimatives\AsyncSpinner.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\AsyncPrimatives\AsyncSpinner.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Channels\BinaryLatchChannel.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Channels\BinaryLatchChannel.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Channels\Channel.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Channels\Channel.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Channels\ChannelFactory.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Channels\ChannelFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Channels\ChannelsExtensions.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Channels\ChannelsExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Channels\DisconnectableChannel.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Channels\DisconnectableChannel.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Channels\NonblockingChannel.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Channels\NonblockingChannel.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Collections\ConcurrentSet.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Collections\ConcurrentSet.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\CampfireNetHash.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\CampfireNetHash.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\CampfireNetObjectStoreExtensions.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\CampfireNetObjectStoreExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\FileSystemCampfireNetObjectStore.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\FileSystemCampfireNetObjectStore.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\ICampfireNetObjectStore.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\ICampfireNetObjectStore.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\IItemOperations.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\IItemOperations.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\MerkleNode.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\MerkleNode.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\MerkleNodeTypeTag.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\MerkleNodeTypeTag.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\MerkleTree.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\MerkleTree.cs</Link>
+    </Compile>
+    <Compile Include="..\IdentityService\BroadcastMessageDto.cs">
+      <Link>__hack_mac_references\CampfireNet.Identities\BroadcastMessageDto.cs</Link>
+    </Compile>
+    <Compile Include="..\IdentityService\CryptoUtil.cs">
+      <Link>__hack_mac_references\CampfireNet.Identities\CryptoUtil.cs</Link>
+    </Compile>
+    <Compile Include="..\IdentityService\Identity.cs">
+      <Link>__hack_mac_references\CampfireNet.Identities\Identity.cs</Link>
+    </Compile>
+    <Compile Include="..\IdentityService\IdentityManager.cs">
+      <Link>__hack_mac_references\CampfireNet.Identities\IdentityManager.cs</Link>
+    </Compile>
+    <Compile Include="..\IdentityService\Permission.cs">
+      <Link>__hack_mac_references\CampfireNet.Identities\Permission.cs</Link>
+    </Compile>
+    <Compile Include="..\IdentityService\Program.cs">
+      <Link>__hack_mac_references\CampfireNet.Identities\Program.cs</Link>
+    </Compile>
+    <Compile Include="..\IdentityService\TrustChainUtil.cs">
+      <Link>__hack_mac_references\CampfireNet.Identities\TrustChainUtil.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />
     <None Include="Properties\AndroidManifest.xml" />
     <None Include="Assets\AboutAssets.txt" />
+    <None Include="..\CampfireNet.Core\CampfireNet.Core.csproj">
+      <Link>__hack_mac_references\CampfireNet.Core\CampfireNet.Core.csproj</Link>
+    </None>
+    <None Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
+      <Link>__hack_mac_references\CampfireNet.Utilities\CampfireNet.Utilities.csproj</Link>
+    </None>
+    <None Include="..\IdentityService\App.config">
+      <Link>__hack_mac_references\CampfireNet.Identities\App.config</Link>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\Main.axml" />
@@ -87,14 +241,10 @@
       <Project>{FD4B66A8-03DC-43B1-AAB9-C6451A401963}</Project>
       <Name>AndroidTest</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CampfireNet.Core\CampfireNet.Core.csproj">
-      <Project>{74987653-09da-4274-bec8-759f95bc9836}</Project>
-      <Name>CampfireNet.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
-      <Project>{2b952a46-062b-4238-933f-923bc8e77fc9}</Project>
-      <Name>CampfireNet.Utilities</Name>
-    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="__hack_mac_references\" />
+    <Folder Include="__hack_mac_references\CampfireNet.Identities\" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <ProjectExtensions>

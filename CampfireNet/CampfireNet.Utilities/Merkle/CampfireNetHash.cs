@@ -8,7 +8,7 @@ using System.Threading;
 namespace CampfireNet.Utilities.Merkle {
    public static class CampfireNetHash {
       // Regardless of their documentation SHA256 is not thread safe.
-      private static readonly ThreadLocal<SHA256> sha256 = new ThreadLocal<SHA256>(() => new SHA256Managed());
+      private static readonly ThreadLocal<SHA256> sha256 = new ThreadLocal<SHA256>(() => SHA256.Create());
 
       public const int RAW_BYTE_COUNT = 32;
       public const int BASE64_BYTE_COUNT = 48;

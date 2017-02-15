@@ -27,7 +27,7 @@ namespace CampfireNet.Identities
 				using (var rsa = new RSACryptoServiceProvider())
 				{
 					rsa.ImportParameters(privateKey);
-					return rsa.SignData(data, new SHA256Cng());
+               return rsa.SignData(data, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 				}
 			}
 			catch (CryptographicException e)
@@ -49,7 +49,7 @@ namespace CampfireNet.Identities
 				using (var rsa = new RSACryptoServiceProvider())
 				{
 					rsa.ImportParameters(publicKey);
-					return rsa.VerifyData(data, new SHA256Cng(), signature);
+               return rsa.VerifyData(data, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 				}
 			}
 			catch (CryptographicException e)
@@ -81,7 +81,7 @@ namespace CampfireNet.Identities
 					parameters.Modulus = modulus;
 					parameters.Exponent = RSA_EXPONENT;
 					rsa.ImportParameters(parameters);
-					return rsa.VerifyData(data, new SHA256Cng(), signature);
+					return rsa.VerifyData(data, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
 				}
 			}
 			catch (CryptographicException e)
@@ -98,7 +98,7 @@ namespace CampfireNet.Identities
 				throw new CryptographicException("Bad key size");
 			}
 
-			using (var aes = new AesManaged())
+			using (var aes = Aes.Create())
 			{
 				aes.Key = key;
 				aes.IV = iv;
@@ -132,7 +132,7 @@ namespace CampfireNet.Identities
 				throw new CryptographicException("Bad key size");
 			}
 
-			using (var aes = new AesManaged())
+			using (var aes = Aes.Create())
 			{
 				aes.Key = key;
 				aes.IV = iv;

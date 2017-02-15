@@ -7,6 +7,7 @@ using Android.Content;
 using Android.Widget;
 using Android.OS;
 using CampfireNet;
+using CampfireNet.Identities;
 using CampfireNet.IO;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.Merkle;
@@ -74,25 +75,23 @@ namespace AndroidTest.Droid {
          bluetoothServer.Start();
          var campfireNetBluetoothAdapter = new AndroidBluetoothAdapter(ApplicationContext, nativeBluetoothAdapter, bluetoothDiscoveryFacade, inboundBluetoothSocketTable);
 
-         var identity = new Identity();
+         var identity = new Identity(new IdentityManager(), "IdentityName");
          var broadcastMessageSerializer = new BroadcastMessageSerializer();
          var objectStore = new InMemoryCampfireNetObjectStore();
          var clientMerkleTreeFactory = new ClientMerkleTreeFactory(broadcastMessageSerializer, objectStore);
-         var client = new CampfireNetClient(campfireNetBluetoothAdapter, broadcastMessageSerializer, clientMerkleTreeFactory);
+         var client = new CampfireNetClient(identity, campfireNetBluetoothAdapter, broadcastMessageSerializer, clientMerkleTreeFactory);
 
          var sync = new object();
          client.BroadcastReceived += e => {
             lock (sync) {
-               var s = Encoding.UTF8.GetString(e.Message.Data, 0, e.Message.Data.Length);
+               var s = Encoding.UTF8.GetString(e.Message.DecryptedPayload, 0, e.Message.DecryptedPayload.Length);
                uiDispatchHandler.ObtainMessage(LOG_MESSAGE, "RECV: " + s).SendToTarget();
             }
          };
 
          sendTextButton.Click += (s, e) => {
             var text = inputText.Text;
-            client.BroadcastAsync(new BroadcastMessage {
-               Data = Encoding.UTF8.GetBytes(text)
-            }).Forget();
+            client.BroadcastAsync(Encoding.UTF8.GetBytes(text)).Forget();
          };
 
          client.RunAsync().Forget();
