@@ -414,10 +414,7 @@ namespace CampfireNet.Simulator {
 
          epoch++;
          epochAgentIndex = agents.Length / 2;
-         agents[epochAgentIndex].Client.BroadcastAsync(
-            new BroadcastMessage {
-               Data = BitConverter.GetBytes(epoch)
-            }).Forget();
+         agents[epochAgentIndex].Client.BroadcastAsync(BitConverter.GetBytes(epoch)).Forget();
 
          //for (int i = 0; i < agents.Count; i++) {
          //   agents[i].Position = new Vector2(320 + 50 * (i % 14), 80 + 70 * i / 14);
@@ -544,20 +541,14 @@ namespace CampfireNet.Simulator {
          if (Keyboard.GetState().IsKeyDown(Keys.A)) {
             epoch++;
             epochAgentIndex = (int)(new Random(epochAgentIndex + 5).Next(0, agents.Length));
-            agents[epochAgentIndex].Client.BroadcastAsync(
-               new BroadcastMessage {
-                  Data = BitConverter.GetBytes(epoch)
-               }).Forget();
+            agents[epochAgentIndex].Client.BroadcastAsync(BitConverter.GetBytes(epoch)).Forget();
          }
 
          if (Keyboard.GetState().IsKeyDown(Keys.Z)) {
             while (epoch < 5) {
                epoch++;
                epochAgentIndex = (int)(new Random(epochAgentIndex + 5).Next(0, agents.Length));
-               agents[epochAgentIndex].Client.BroadcastAsync(
-                  new BroadcastMessage {
-                     Data = BitConverter.GetBytes(epoch)
-                  }).Forget();
+               agents[epochAgentIndex].Client.BroadcastAsync(BitConverter.GetBytes(epoch)).Forget();
             }
          }
 
@@ -565,10 +556,7 @@ namespace CampfireNet.Simulator {
             while (epoch < 10) {
                epoch++;
                epochAgentIndex = (int)(new Random(epochAgentIndex + 5).Next(0, agents.Length));
-               agents[epochAgentIndex].Client.BroadcastAsync(
-                  new BroadcastMessage {
-                     Data = BitConverter.GetBytes(epoch)
-                  }).Forget();
+               agents[epochAgentIndex].Client.BroadcastAsync(BitConverter.GetBytes(epoch)).Forget();
             }
          }
       }

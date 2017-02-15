@@ -8,6 +8,7 @@ using CampfireNet.Utilities;
 using CampfireNet.Utilities.Merkle;
 using System.Collections.Generic;
 using System.Text;
+using CampfireNet.Identities;
 using Microsoft.Xna.Framework;
 
 namespace CampfireNet.Simulator {
@@ -95,9 +96,10 @@ namespace CampfireNet.Simulator {
 
             var broadcastMessageSerializer = new BroadcastMessageSerializer();
             var merkleTreeFactory = new ClientMerkleTreeFactory(broadcastMessageSerializer, new InMemoryCampfireNetObjectStore());
-            var client = agent.Client = new CampfireNetClient(bluetoothAdapter, broadcastMessageSerializer, merkleTreeFactory);
+            var identity = (Identity)null;//new Identity(new IdentityManager(), $"Agent_{i}");
+            var client = agent.Client = new CampfireNetClient(identity, bluetoothAdapter, broadcastMessageSerializer, merkleTreeFactory);
             client.BroadcastReceived += e => {
-               var epoch = BitConverter.ToInt32(e.Message.Data, 0);
+               var epoch = BitConverter.ToInt32(e.Message.DecryptedPayload, 0);
 //               Console.WriteLine($"{client.AdapterId:n} recv {epoch}");
                agent.Value = Math.Max(agent.Value, epoch);
             };

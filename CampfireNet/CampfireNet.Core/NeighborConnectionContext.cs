@@ -1,4 +1,4 @@
-#define CN_DEBUG
+//#define CN_DEBUG
 
 using System;
 using System.Collections;
