@@ -1,4 +1,4 @@
-//#define CN_DEBUG
+#define CN_DEBUG
 
 using System;
 using System.Collections;
@@ -14,6 +14,24 @@ using CampfireNet.Utilities.Channels;
 using CampfireNet.Utilities.Merkle;
 
 namespace CampfireNet {
+   public static class DebugConsole {
+      private static readonly object g_printLock = new object();
+
+      public static void WriteLine(string s, ConsoleColor? foreground, ConsoleColor? background, params object[] args) {
+#if CN_DEBUG
+         lock (g_printLock) {
+            var fc = Console.ForegroundColor;
+            var bc = Console.BackgroundColor;
+            Console.ForegroundColor = foreground ?? fc;
+            Console.BackgroundColor = background ?? bc;
+            Console.WriteLine(s, args);
+            Console.ForegroundColor = fc;
+            Console.BackgroundColor = bc;
+         }
+#endif
+      }
+   }
+
    public class NeighborConnectionContext {
       private readonly WirePacketSerializer serializer = new WirePacketSerializer();
 
@@ -107,7 +125,7 @@ namespace CampfireNet {
 
       private async Task SynchronizationLoopTaskStart() {
          var isGreater = bluetoothAdapter.AdapterId.CompareTo(neighbor.AdapterId) > 0;
-         var rateLimit = ChannelFactory.Timer(5000, 3000);
+         var rateLimit = ChannelFactory.Timer(1000); // ChannelFactory.Timer(5000, 3000);
          try {
             while (true) {
                if (isGreater) {
@@ -167,16 +185,9 @@ namespace CampfireNet {
       private static object g_printLock = new object();
 
       private void DebugPrint(string s, params object[] args) {
-#if CN_DEBUG
-         lock (g_printLock) {
-            var colors = new ConsoleColor[] { ConsoleColor.Red, ConsoleColor.Green, ConsoleColor.Yellow, ConsoleColor.White };
-            var color = colors[Math.Abs(bluetoothAdapter.AdapterId.GetHashCode()) % colors.Length];
-            var cc = Console.ForegroundColor;
-            Console.ForegroundColor = color;
-            Console.WriteLine(bluetoothAdapter.AdapterId.ToString("n") + " => " + neighbor.AdapterId.ToString("n") + " " + s, args);
-            Console.ForegroundColor = cc;
-         }
-#endif
+         var colors = new ConsoleColor[] { ConsoleColor.Red, ConsoleColor.Green, ConsoleColor.Yellow, ConsoleColor.White };
+         var color = colors[Math.Abs(bluetoothAdapter.AdapterId.GetHashCode()) % colors.Length];
+         DebugConsole.WriteLine(bluetoothAdapter.AdapterId.ToString("n") + " => " + neighbor.AdapterId.ToString("n") + " " + s, color, ConsoleColor.Black, args);
       }
 
       private async Task SynchronizeRemoteToLocalAsync() {

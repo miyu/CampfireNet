@@ -14,6 +14,10 @@ using CampfireNet.Utilities.Merkle;
 namespace CampfireNet.Windows {
 	public static class Program {
 		public static void Main() {
+         Console.WriteLine("Enter key to begin");
+		   Console.ReadLine();
+		   Console.Clear();
+
          using (var adapter = new WindowsBluetoothAdapter()) {
             var broadcastMessageSerializer = new BroadcastMessageSerializer();
             var objectStore = new InMemoryCampfireNetObjectStore();
@@ -24,7 +28,9 @@ namespace CampfireNet.Windows {
 
             client.BroadcastReceived += e => {
                var s = Encoding.UTF8.GetString(e.Message.Data, 0, e.Message.Data.Length);
-               Console.WriteLine("RECV: " + s);
+               DebugConsole.WriteLine(new string(' ', Console.BufferWidth - 1), ConsoleColor.White, ConsoleColor.Red);
+               DebugConsole.WriteLine(("RECV: " + s).PadRight(Console.BufferWidth - 1), ConsoleColor.White, ConsoleColor.Red);
+               DebugConsole.WriteLine(new string(' ', Console.BufferWidth - 1), ConsoleColor.White, ConsoleColor.Red);
             };
 
             Console.WriteLine("My adapter id is: " + adapter.AdapterId + " AKA " + string.Join(" ", adapter.AdapterId.ToByteArray()));
