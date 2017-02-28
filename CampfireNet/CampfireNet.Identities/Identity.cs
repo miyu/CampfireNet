@@ -156,8 +156,8 @@ namespace CampfireNet.Identities
 		}
 
 		// () asymmetric encrypt
-		// <[sender hash][recipient hash]([message])[signature]>
-		//  [32         ][32            ] [msg len] [256      ]
+		// <[sender hash][recipient hash]([sender hash][message])[signature]>
+		//  [32         ][32            ] [32         ][msg len] [256      ]
 		public BroadcastMessageDto EncodePacket(byte[] message, byte[] remoteModulus = null)
 		{
 			if (remoteModulus != null && remoteModulus.Length != CryptoUtil.ASYM_KEY_SIZE_BYTES)
@@ -177,7 +177,10 @@ namespace CampfireNet.Identities
 			else
 			{
 				recipientHash = CryptoUtil.GetHash(remoteModulus);
-				processedMessage = CryptoUtil.AsymmetricEncrypt(message, remoteModulus);
+				byte[] senderAndMessage = new byte[CryptoUtil.HASH_SIZE + message.Length];
+				Buffer.BlockCopy(senderHash, 0, senderAndMessage, 0, CryptoUtil.HASH_SIZE);
+				Buffer.BlockCopy(message, 0, senderAndMessage, CryptoUtil.HASH_SIZE, message.Length);
+				processedMessage = CryptoUtil.AsymmetricEncrypt(senderAndMessage, remoteModulus);
 			}
 
 			byte[] payload = new byte[2 * CryptoUtil.HASH_SIZE + processedMessage.Length];
@@ -228,7 +231,25 @@ namespace CampfireNet.Identities
 				throw new CryptographicException("Could not verify message");
 			}
 
-			decryptedPayload = broadcast ? payload : CryptoUtil.AsymmetricDecrypt(payload, privateKey);
+			if (broadcast)
+			{
+				decryptedPayload = payload;
+				return true;
+			}
+
+			byte[] decryptedSenderAndMessage = broadcast ? payload : CryptoUtil.AsymmetricDecrypt(payload, privateKey);
+			byte[] decryptedSenderHash = new byte[CryptoUtil.HASH_SIZE];
+
+			Buffer.BlockCopy(decryptedSenderAndMessage, 0, decryptedSenderHash, 0, CryptoUtil.HASH_SIZE);
+
+			if (!decryptedSenderHash.SequenceEqual(senderHash))
+			{
+				throw new CryptographicException("Sender hash does not equal sender hash in message");
+			}
+
+			var messageSize = decryptedSenderAndMessage.Length - CryptoUtil.HASH_SIZE;
+			decryptedPayload = new byte[messageSize];
+			Buffer.BlockCopy(decryptedSenderAndMessage, CryptoUtil.HASH_SIZE, decryptedPayload, 0, messageSize);
 			return true;
 		}
 
