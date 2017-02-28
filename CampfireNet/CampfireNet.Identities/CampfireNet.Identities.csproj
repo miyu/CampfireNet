@@ -2,7 +2,7 @@
 
   <PropertyGroup>
     <TargetFramework>netstandard1.5</TargetFramework>
-    <OutputType>Exe</OutputType>
+    <RootNamespace>CampfireNet.Identities</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>

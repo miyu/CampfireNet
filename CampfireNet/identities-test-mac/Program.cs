@@ -5,9 +5,9 @@ using System.Security.Cryptography;
 
 namespace CampfireNet.Identities
 {
-	internal class Program
+	public class Program
 	{
-		public static void Main()
+		public static void Main(string[] args)
 		{
 			Identity A = new Identity(new IdentityManager(), "A");
 			Identity B = new Identity(new IdentityManager(), "B");
