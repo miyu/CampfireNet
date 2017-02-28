@@ -3,12 +3,9 @@ using System.Text;
 using System.Linq;
 using System.Security.Cryptography;
 
-namespace CampfireNet.Identities
-{
-	public class Program
-	{
-		public static void Main(string[] args)
-		{
+namespace CampfireNet.Identities {
+	public class Program {
+		public static void Main(string[] args) {
 			Identity A = new Identity(new IdentityManager(), "A");
 			Identity B = new Identity(new IdentityManager(), "B");
 			//Identity C = new Identity(new IdentityManager(), "C");
@@ -63,43 +60,26 @@ namespace CampfireNet.Identities
 			//Console.WriteLine($"Got '{received}' from alice");
 
 			var encoded = B.EncodePacket(Encoding.UTF8.GetBytes("This is a broadcast test #415 (to B from D)"), D.PublicIdentity);
-			encoded.SourceIdHash[0]++;
-			try
-			{
-				byte[] tmp; 
-				D.TryDecodePayload(encoded, out tmp);
-			}
-			catch (Exception)
-			{
-				Console.WriteLine("Bad sender hash");
-			}
-			encoded.SourceIdHash[0]--;
 
-			encoded.DestinationIdHash[0]++;
-			{
-				byte[] tmp;
-				var us = D.TryDecodePayload(encoded, out tmp);
-				if (!us)
-					Console.WriteLine("Not us!");
-			}
-			encoded.DestinationIdHash[0]--;
+			byte[] fakePayload = new byte[2 * CryptoUtil.HASH_SIZE + CryptoUtil.ASYM_KEY_SIZE_BYTES];
+			Buffer.BlockCopy(A.PublicIdentityHash, 0, fakePayload, 0, CryptoUtil.HASH_SIZE);
+			Buffer.BlockCopy(D.PublicIdentityHash, 0, fakePayload, CryptoUtil.HASH_SIZE, CryptoUtil.HASH_SIZE);
+			Buffer.BlockCopy(encoded.Payload, 0, fakePayload, 2 * CryptoUtil.HASH_SIZE, CryptoUtil.ASYM_KEY_SIZE_BYTES);
 
-			encoded.Signature[0]++;
-			try
-			{
-				byte[] tmp;
-				D.TryDecodePayload(encoded, out tmp);
-			}
-			catch (CryptographicException)
-			{
-				Console.WriteLine("Bad mac");
-			}
-			encoded.Signature[0]--;
+			byte[] fakeSignature = CryptoUtil.Sign(fakePayload, A.privateKeyDebug);
+
+			BroadcastMessageDto fake = new BroadcastMessageDto();
+			fake.SourceIdHash = A.PublicIdentityHash;
+			fake.DestinationIdHash = D.PublicIdentityHash;
+			fake.Payload = encoded.Payload;
+			fake.Signature = fakeSignature;
 
 			byte[] decoded;
-			if (D.TryDecodePayload(encoded, out decoded)) {
-				Console.WriteLine(BitConverter.ToString(encoded.Payload));
+			if (D.TryDecodePayload(fake, out decoded)) {
+				Console.WriteLine(BitConverter.ToString(fake.Payload));
 				Console.WriteLine(Encoding.UTF8.GetString(decoded));
+			} else {
+				Console.WriteLine("Not our packet");
 			}
 		}
 	}
