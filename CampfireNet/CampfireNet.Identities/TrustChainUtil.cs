@@ -87,7 +87,7 @@ namespace CampfireNet.Identities
 			{
 				TrustChainNode newChild = CreateNode(parentId, childId, heldPermissions, grantablePermissions,
 													 unassignedData, privateKey);
-				
+
 				foreach (var node in existing)
 				{
 					writer.Write(node.FullData);
@@ -118,7 +118,7 @@ namespace CampfireNet.Identities
 		{
 			if (data == null || data.Length % TrustChainNode.NODE_BLOCK_SIZE != 0 || data.Length == 0)
 			{
-				throw new ArgumentException($"Data size is not multiple of block size ({data.Length} % {TrustChainNode.NODE_BLOCK_SIZE} != 0)");
+				throw new CryptographicException($"Data size is not multiple of block size ({data.Length} % {TrustChainNode.NODE_BLOCK_SIZE} != 0)");
 			}
 
 			int numNodes = data.Length / TrustChainNode.NODE_BLOCK_SIZE;
@@ -147,6 +147,13 @@ namespace CampfireNet.Identities
 			ret += "\n----END CHAIN OF TRUST----";
 
 			return ret;
+		}
+
+		public static void SaveTrustChainToFile(TrustChainNode[] trustChain, string filename)
+		{
+			var data = SerializeTrustChain(trustChain);
+
+			File.WriteAllBytes(filename, data);
 		}
 	}
 

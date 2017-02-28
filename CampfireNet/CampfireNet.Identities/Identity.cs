@@ -30,6 +30,19 @@ namespace CampfireNet.Identities
 			Name = name;
 		}
 
+		public Identity(IdentityManager identityManager, RSAParameters privateKey, string name)
+		{
+			this.privateKey = privateKey;
+			identityHash = CryptoUtil.GetHash(privateKey.Modulus);
+
+			this.identityManager = identityManager;
+
+			TrustChain = null;
+			HeldPermissions = Permission.None;
+			GrantablePermissions = Permission.None;
+			Name = name;
+		}
+
 		public TrustChainNode[] TrustChain { get; private set; }
 		public Permission HeldPermissions { get; private set; }
 		public Permission GrantablePermissions { get; private set; }
@@ -80,7 +93,7 @@ namespace CampfireNet.Identities
 			}
 
 			byte[] rootChain = TrustChainUtil.GenerateNewChain(new TrustChainNode[0], PublicIdentity, PublicIdentity, Permission.All,
-															   Permission.All, nameBytes, privateKey);
+												   Permission.All, nameBytes, privateKey);
 			HeldPermissions = Permission.All;
 			GrantablePermissions = Permission.All;
 			AddTrustChain(rootChain);
@@ -88,7 +101,7 @@ namespace CampfireNet.Identities
 
 		// generates a trust chain to pass to another client
 		public byte[] GenerateNewChain(byte[] childId, Permission heldPermissions, Permission grantablePermissions,
-									   string name)
+								string name)
 		{
 			bool canGrant = CanGrantPermissions(heldPermissions, grantablePermissions);
 
@@ -104,7 +117,7 @@ namespace CampfireNet.Identities
 				Buffer.BlockCopy(Encoding.UTF8.GetBytes(name), 0, nameBytes, 1, name.Length);
 
 				return TrustChainUtil.GenerateNewChain(TrustChain, PublicIdentity, childId, heldPermissions,
-													   grantablePermissions, nameBytes, privateKey);
+											  grantablePermissions, nameBytes, privateKey);
 			}
 			else
 			{
@@ -133,8 +146,9 @@ namespace CampfireNet.Identities
 				return false;
 			}
 
-			for (int i = 0; i < trustChainNodes.Length; i++) {
-			   identityManager.AddIdentity(trustChainNodes[i], Name);
+			for (int i = 0; i < trustChainNodes.Length; i++)
+			{
+				identityManager.AddIdentity(trustChainNodes[i], Name);
 			}
 
 			return true;
@@ -172,11 +186,8 @@ namespace CampfireNet.Identities
 
 			byte[] signature = CryptoUtil.Sign(payload, privateKey);
 
-			//byte[] finalPacket = new byte[payload.Length + CryptoUtil.SIGNATURE_SIZE];
-			//Buffer.BlockCopy(payload, 0, finalPacket, 0, payload.Length);
-			//Buffer.BlockCopy(signature, 0, finalPacket, payload.Length, CryptoUtil.SIGNATURE_SIZE);
-
-			return new BroadcastMessageDto { 
+			return new BroadcastMessageDto
+			{
 				SourceIdHash = senderHash,
 				DestinationIdHash = recipientHash,
 				Payload = processedMessage,
@@ -194,7 +205,8 @@ namespace CampfireNet.Identities
 			bool unicast = receiverHash.SequenceEqual(identityHash);
 			bool broadcast = receiverHash.SequenceEqual(BROADCAST_ID);
 
-			if (!unicast && !broadcast) {
+			if (!unicast && !broadcast)
+			{
 				decryptedPayload = null;
 				return false;
 			}
@@ -219,12 +231,18 @@ namespace CampfireNet.Identities
 			return true;
 		}
 
+		public void SaveKey(string path)
+		{
+			byte[] data = CryptoUtil.SerializeKey(privateKey);
+			File.WriteAllBytes(path, data);
+		}
+
 		// whether the given permissions can be granted by this node
 		public bool CanGrantPermissions(Permission heldPermissions, Permission grantablePermissions)
 		{
 			return HeldPermissions.HasFlag(Permission.Invite) &&
-				   TrustChainUtil.ValidatePermissions(GrantablePermissions, heldPermissions) &&
-				   TrustChainUtil.ValidatePermissions(heldPermissions, grantablePermissions);
+				  TrustChainUtil.ValidatePermissions(GrantablePermissions, heldPermissions) &&
+				  TrustChainUtil.ValidatePermissions(heldPermissions, grantablePermissions);
 		}
 	}
 }

@@ -1,11 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" android:versionCode="1" android:versionName="1.0" package="com.campfire.androidtest">
 	<uses-sdk android:minSdkVersion="15" />
-	<application android:label="AndroidTest" android:theme="@android:style/Theme.Black.NoTitleBar"></application>
+	<application android:label="AndroidTest" android:theme="@android:style/Theme.Black.NoTitleBar">
+	</application>
 	<uses-permission android:name="android.permission.BLUETOOTH" />
 	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
 	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 	<receiver android:name=".MainActivity$Receiver">
 		<intent-filter>
 			<action android:name="android.bluetooth.device.action.PAIRING_REQUEST" />
