@@ -86,7 +86,7 @@ namespace CampfireNet.Simulator {
 
          public Guid AdapterId => connectionContext.GetOther(self).BluetoothAdapterId;
 
-         public async Task<bool> TryHandshakeAsync() {
+         public async Task<bool> TryHandshakeAsync(double minTimeoutSeconds) {
             try {
                await HandshakeAsync().ConfigureAwait(false);
                return true;
@@ -105,6 +105,8 @@ namespace CampfireNet.Simulator {
 
          public bool IsConnected => connectionContext.GetIsConnected(self);
          public ReadableChannel<byte[]> InboundChannel => connectionContext.GetInboundChannel(self);
+
+         public void Disconnect() => connectionContext.Disconnect();
       }
 
       public class AsyncPriorityQueue<T> {
@@ -301,6 +303,10 @@ namespace CampfireNet.Simulator {
          public ReadableChannel<byte[]> GetOtherInboundChannel(DeviceAgent self) => GetOtherInboundChannelInternal(self);
 
          public bool GetIsConnected(DeviceAgent self) => self == firstAgent ? !firstDisconnectChannel.IsClosed : !secondDisconnectChannel.IsClosed;
+
+         public void Disconnect() {
+//            throw new NotImplementedException();
+         }
       }
 
       public abstract class AdapterEvent {

@@ -21,6 +21,7 @@ namespace AndroidTest.Droid
 			using (await synchronization.LockAsync().ConfigureAwait(false))
 			{
 				var deviceId = MacUtilities.ConvertMacToGuid(socket.RemoteDevice.Address);
+            Console.WriteLine("INBOUND CONNECTION FROM " + deviceId + " aka " + (socket.RemoteDevice.Name ?? "[unknown]"));
 				channel = pendingRequests.GetOrAdd(deviceId, add => ChannelFactory.Nonblocking<BluetoothSocket>());
 				await ChannelsExtensions.WriteAsync(channel, socket).ConfigureAwait(false);
 			}

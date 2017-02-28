@@ -217,6 +217,9 @@
     <Compile Include="..\CampfireNet.Core\IO\Packets\WhoisPacket.cs">
       <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\WhoisPacket.cs</Link>
     </Compile>
+    <Compile Include="..\CampfireNet.Core\Security\__HackPrivateKeyUtilities.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\Security\__HackPrivateKeyUtilities.cs</Link>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\AboutResources.txt" />

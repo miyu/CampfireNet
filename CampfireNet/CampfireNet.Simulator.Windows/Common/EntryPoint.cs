@@ -96,7 +96,7 @@ namespace CampfireNet.Simulator {
                agent.CampfireNetIdentity.GenerateRootChain();
             } else {
                var rootAgent = agents[i % 2];
-               agent.CampfireNetIdentity.AddTrustChain(rootAgent.CampfireNetIdentity.GenerateNewChain(identity.PublicIdentity, Permission.All, Permission.All, identity.Name));
+               agent.CampfireNetIdentity.AddTrustChain(rootAgent.CampfireNetIdentity.GenerateNewChain(identity.PublicIdentity, Permission.All, Permission.None, identity.Name));
             }
 
             var client = agent.Client = new CampfireNetClient(identity, bluetoothAdapter, broadcastMessageSerializer, merkleTreeFactory);

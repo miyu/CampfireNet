@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Threading.Tasks;
 using InTheHand.Net;
+using InTheHand.Net.Bluetooth;
 using InTheHand.Net.Sockets;
 
 namespace CampfireNet.Simulator {
@@ -15,6 +16,10 @@ namespace CampfireNet.Simulator {
 
       public static Task ConnectAsync(this BluetoothClient client, BluetoothAddress address, Guid service) {
          return Task.Factory.FromAsync(client.BeginConnect, client.EndConnect, address, service, null);
+      }
+
+      public static Task<ServiceRecord[]> GetServiceRecordsAsync(this BluetoothDeviceInfo deviceInfo, Guid serviceGuid) {
+         return Task.Factory.FromAsync(deviceInfo.BeginGetServiceRecords, deviceInfo.EndGetServiceRecords, serviceGuid, null);
       }
    }
 }

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Sockets;
+using System.Threading;
 using System.Threading.Tasks;
 using CampfireNet.IO;
 using CampfireNet.IO.Transport;
@@ -9,9 +11,11 @@ using CampfireNet.Simulator;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.AsyncPrimatives;
 using CampfireNet.Utilities.Channels;
+using CampfireNet.Utilities.Collections;
 using InTheHand.Net;
 using InTheHand.Net.Bluetooth;
 using InTheHand.Net.Sockets;
+using static CampfireNet.Utilities.Channels.ChannelsExtensions;
 
 namespace CampfireNet.Windows {
    public class WindowsBluetoothAdapter : IBluetoothAdapter, IDisposable {
@@ -20,10 +24,25 @@ namespace CampfireNet.Windows {
       private readonly BluetoothClient bluetoothClient = new BluetoothClient();
       private readonly ConcurrentDictionary<Guid, Neighbor> neighborsById = new ConcurrentDictionary<Guid, Neighbor>();
       private readonly BluetoothWin32Authentication bluetoothWin32Authentication;
+      private readonly BluetoothListener listener;
 
       public WindowsBluetoothAdapter() {
          // set win32 bluetooth stack auth callback that to always confirms inbound conns
          bluetoothWin32Authentication = new BluetoothWin32Authentication(Handler);
+
+         listener = new BluetoothListener(CAMPFIRE_NET_SERVICE_CLASS);
+         listener.Authenticate = false;
+         listener.Encrypt = false;
+
+         new Thread(() => {
+            listener.Start();
+
+            while (true) {
+               var client = listener.AcceptBluetoothClient();
+               Console.WriteLine("Warning: Windows client doesn't support accepting!");
+               Console.WriteLine($"Got {client.RemoteMachineName} {client.RemoteEndPoint}");
+            }
+         }).Start();
       }
 
       private void Handler(object sender, BluetoothWin32AuthenticationEventArgs e) {
@@ -35,18 +54,41 @@ namespace CampfireNet.Windows {
 
       public async Task<IReadOnlyList<IBluetoothNeighbor>> DiscoverAsync() {
          var devices = await bluetoothClient.DiscoverDevicesInRangeAsync().ConfigureAwait(false);
-         var results = new List<IBluetoothNeighbor>();
-         foreach (var device in devices) {
+         var neighbors = new ConcurrentSet<IBluetoothNeighbor>();
+         await Task.WhenAll(devices.Select(device => Go(async () => {
             var neighborId = BuildDeviceAddressGuid(device.DeviceAddress);
-            Neighbor neighbor;
-            if (!neighborsById.TryGetValue(neighborId, out neighbor)) {
-               neighbor = new Neighbor(device.DeviceAddress, neighborId, device.DeviceName);
-               neighborsById[neighborId] = neighbor;
-            }
-            Console.WriteLine("Discovered " + (neighbor.Name ?? "[unknown]") + " " + neighbor.AdapterId + " " + neighbor.IsConnected);
-            results.Add(neighbor);
-         }
-         return results;
+            var serviceRecordsChannel = ChannelFactory.Nonblocking<ServiceRecord[]>();
+            Go(async () => {
+               try {
+                  await serviceRecordsChannel.WriteAsync(await device.GetServiceRecordsAsync(CAMPFIRE_NET_SERVICE_CLASS));
+               } catch (Exception e) {
+                  Console.WriteLine($"At SR Fetch {neighborId}: {e}");
+                  await serviceRecordsChannel.WriteAsync(new ServiceRecord[0]);
+               }
+            }).Forget();
+
+            await new Select {
+               Case(ChannelFactory.Timeout(TimeSpan.FromSeconds(15)), () => {
+                  Console.WriteLine("Timeout discovering services from " + (device.DeviceName ?? "[unknown]") + " " + neighborId + " as no CampfireNet service record");
+               }),
+               Case(serviceRecordsChannel, records => {
+                  if (!records.Any()) {
+                     Console.WriteLine("Skipping " + (device.DeviceName ?? "[unknown]") + " " + neighborId + " as no CampfireNet service record");
+                     return;
+                  }
+
+                  Neighbor neighbor;
+                  if (!neighborsById.TryGetValue(neighborId, out neighbor)) {
+                     neighbor = new Neighbor(device.DeviceAddress, neighborId, device.DeviceName);
+                     neighborsById[neighborId] = neighbor;
+                  }
+                  neighbors.TryAdd(neighbor);
+                  Console.WriteLine("Discovered " + (neighbor.Name ?? "[unknown]") + " " + neighbor.AdapterId + " " + neighbor.IsConnected);
+               })
+            }.ConfigureAwait(false);
+         }))).ConfigureAwait(false);
+
+         return neighbors.ToList();
       }
 
       public void Dispose() {
@@ -89,7 +131,7 @@ namespace CampfireNet.Windows {
          public bool IsConnected => !disconnectedChannel.IsClosed;
          public ReadableChannel<byte[]> InboundChannel => inboundChannel;
 
-         public async Task<bool> TryHandshakeAsync() {
+         public async Task<bool> TryHandshakeAsync(double minTimeoutSeconds) {
             try {
                using (await synchronization.LockAsync().ConfigureAwait(false)) {
                   Console.WriteLine("Attempting to connect to ID " + AdapterId + " AKA " + string.Join(" ", AdapterId.ToByteArray()));
@@ -166,6 +208,8 @@ namespace CampfireNet.Windows {
             }
             return buffer;
          }
+
+         public void Disconnect() => Teardown();
       }
    }
 }

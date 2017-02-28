@@ -1,15 +1,16 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using Android.Bluetooth;
 using CampfireNet.Utilities;
 
 namespace AndroidTest.Droid {
    public class BluetoothServer {
-      private readonly BluetoothServerSocket listener;
+      private readonly BluetoothAdapter adapter;
       private readonly InboundBluetoothSocketTable inboundBluetoothSocketTable;
       private Task listenerTask;
 
-      private BluetoothServer(BluetoothServerSocket listener, InboundBluetoothSocketTable inboundBluetoothSocketTable) {
-         this.listener = listener;
+      private BluetoothServer(BluetoothAdapter adapter, InboundBluetoothSocketTable inboundBluetoothSocketTable) {
+         this.adapter = adapter;
          this.inboundBluetoothSocketTable = inboundBluetoothSocketTable;
       }
 
@@ -19,14 +20,25 @@ namespace AndroidTest.Droid {
 
       private async Task ListenerTaskStart() {
          while (true) {
-            var socket = await listener.AcceptAsync().ConfigureAwait(false);
-            await inboundBluetoothSocketTable.GiveAsync(socket).ConfigureAwait(false);
+            try {
+               using (var listener = adapter.ListenUsingInsecureRfcommWithServiceRecord(CampfireNetBluetoothConstants.NAME, CampfireNetBluetoothConstants.APP_UUID)) {
+                  while (true) {
+                     var socket = await listener.AcceptAsync().ConfigureAwait(false);
+                     await inboundBluetoothSocketTable.GiveAsync(socket).ConfigureAwait(false);
+                  }
+               }
+            } catch (Exception e) {
+               Console.WriteLine("Listener caught: " + e);
+               await Task.Delay(TimeSpan.FromSeconds(5));
+               while (!adapter.IsEnabled) {
+                  await Task.Delay(TimeSpan.FromSeconds(5));
+               }
+            }
          }
       }
 
       public static BluetoothServer Create(BluetoothAdapter adapter, InboundBluetoothSocketTable inboundBluetoothSocketTable) {
-         var serverSocket = adapter.ListenUsingInsecureRfcommWithServiceRecord(CampfireNetBluetoothConstants.NAME, CampfireNetBluetoothConstants.APP_UUID);
-         return new BluetoothServer(serverSocket, inboundBluetoothSocketTable);
+         return new BluetoothServer(adapter, inboundBluetoothSocketTable);
       }
    }
 }

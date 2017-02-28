@@ -9,7 +9,8 @@ namespace CampfireNet.IO.Transport
 		Guid AdapterId { get; }
 		bool IsConnected { get; }
 		ReadableChannel<byte[]> InboundChannel { get; }
-		Task<bool> TryHandshakeAsync();
+		Task<bool> TryHandshakeAsync(double minTimeoutSeconds);
 		Task SendAsync(byte[] data);
+	   void Disconnect();
 	}
 }
