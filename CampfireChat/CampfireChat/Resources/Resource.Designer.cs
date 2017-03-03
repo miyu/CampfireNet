@@ -1711,6 +1711,12 @@ namespace CampfireChat
 			// aapt resource value: 0x7f06005b
 			public const int MyButton = 2131099739;
 			
+			// aapt resource value: 0x7f060057
+			public const int Names = 2131099735;
+			
+			// aapt resource value: 0x7f060058
+			public const int Preview = 2131099736;
+			
 			// aapt resource value: 0x7f060073
 			public const int Settings = 2131099763;
 			
@@ -1797,9 +1803,6 @@ namespace CampfireChat
 			
 			// aapt resource value: 0x7f060060
 			public const int cancel_action = 2131099744;
-			
-			// aapt resource value: 0x7f060057
-			public const int chat_image = 2131099735;
 			
 			// aapt resource value: 0x7f06003f
 			public const int checkbox = 2131099711;
@@ -2019,9 +2022,6 @@ namespace CampfireChat
 			
 			// aapt resource value: 0x7f060035
 			public const int textSpacerNoTitle = 2131099701;
-			
-			// aapt resource value: 0x7f060058
-			public const int text_preview = 2131099736;
 			
 			// aapt resource value: 0x7f060067
 			public const int time = 2131099751;

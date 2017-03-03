@@ -13,9 +13,10 @@ namespace CampfireChat
 		private RecyclerView chatlistRecyclerView;
 		private RecyclerView.Adapter chatlistAdapter;
 		private RecyclerView.LayoutManager chatlistLayoutManager;
+
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
-			string[] testData = { "Hello", "Nice", "Baby", "Rain", "Love", "Air", "Shoes", "Hair", "Perfume", "Obfuscation", "Clock", "Game", "Scroll", "Lion", "Chrome", "Tresure", "Charm" };
+			ChatEntry[] testEnries = createTestData();
 
 			base.OnCreate(savedInstanceState);
 			SetContentView(Resource.Layout.Main);
@@ -29,7 +30,7 @@ namespace CampfireChat
 			chatlistLayoutManager = new LinearLayoutManager(this);
 			chatlistRecyclerView.SetLayoutManager(chatlistLayoutManager);
 
-			chatlistAdapter = new ChatlistAdapter(testData);
+			chatlistAdapter = new ChatlistAdapter(testEnries);
 			chatlistRecyclerView.SetAdapter(chatlistAdapter);
 		}
 
@@ -54,6 +55,40 @@ namespace CampfireChat
 					break;
 			}
 			return base.OnOptionsItemSelected(item);
+		}
+
+		public ChatEntry[] createTestData()
+		{
+			string[] testData = { "Preview of a long message that goes beyond the lines",
+				"Preview of a really really long message that really goes beyond the lines and is sure to overflow",
+				"text here", "more longish text here", "Love", "Air", "Shoes", "Hair", "Perfume",
+				"Obfuscation", "Clock", "Game", "Scroll", "Lion", "Chrome", "Tresure", "Charm" };
+
+			string[][] testNames = new string[5][];
+			testNames[0] = new string[] { "Name1Test" };
+			testNames[1] = new string[] { "Name2Test1", "Name2Test2" };
+			testNames[2] = new string[] { "Name3Test1", "Name3Test2", "Name3Test3" };
+			testNames[3] = new string[] { "Name4Test1", "Name4Test2", "Name4Test3", "Name4Test4" };
+			testNames[4] = new string[] { "Name5Test1", "Name5Test2", "Name5Test3", "Name5Test4", "Name5Test5" };
+
+			ChatEntry[] entries = new ChatEntry[testData.Length];
+
+			for (var i = 0; i < entries.Length; i++)
+			{
+				string[] names;
+				if (i < testNames.Length)
+				{
+					names = testNames[i];
+				}
+				else
+				{
+					names = new string[] { "default" };
+				}
+
+				entries[i] = new ChatEntry(names, testData[i]);
+			}
+
+			return entries;
 		}
 	}
 
