@@ -12,27 +12,27 @@ using Android.Widget;
 
 namespace CampfireChat
 {
-    [Activity(Label = "Settings", ParentActivity = typeof(MainActivity))]
-    public class SettingsActivity : Activity
-    {
-        protected override void OnCreate(Bundle bundle)
-        {
-            base.OnCreate(bundle);
-            SetContentView(Resource.Layout.Settings);
-            var toolbar = FindViewById<Toolbar>(Resource.Id.toolbar);
-            SetActionBar(toolbar);
-            this.ActionBar.SetDisplayHomeAsUpEnabled(true);
-        }
+	[Activity(Label = "Settings", ParentActivity = typeof(MainActivity))]
+	public class SettingsActivity : Activity
+	{
+		protected override void OnCreate(Bundle savedInstanceState)
+		{
+			base.OnCreate(savedInstanceState);
+			SetContentView(Resource.Layout.Settings);
+			var toolbar = FindViewById<Toolbar>(Resource.Id.Toolbar);
+			SetActionBar(toolbar);
+			this.ActionBar.SetDisplayHomeAsUpEnabled(true);
+		}
 
-        public override bool OnCreateOptionsMenu(IMenu menu)
-        {
-            MenuInflater.Inflate(Resource.Menu.settings_menu, menu);
-            return base.OnCreateOptionsMenu(menu);
-        }
+		public override bool OnCreateOptionsMenu(IMenu menu)
+		{
+			MenuInflater.Inflate(Resource.Menu.settings_menu, menu);
+			return base.OnCreateOptionsMenu(menu);
+		}
 
-        public override bool OnOptionsItemSelected(IMenuItem item)
-        {
-            return base.OnOptionsItemSelected(item);
-        }
-    }
+		public override bool OnOptionsItemSelected(IMenuItem item)
+		{
+			return base.OnOptionsItemSelected(item);
+		}
+	}
 }

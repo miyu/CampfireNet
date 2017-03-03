@@ -1,13 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-  <item
-       android:id="@+id/settings"
-       android:icon="@drawable/ic_settings_white_24dp"
-       android:showAsAction="ifRoom"
-       android:title="Settings"/>
-  <item
-       android:id="@+id/menu_add"
-       android:icon="@drawable/ic_add_white_24dp"
-       android:showAsAction="ifRoom"
-       android:title="NewChat" />
+﻿<?xml version="1.0" encoding="utf-8"?>
+<menu
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<item
+		android:id="@+id/Settings"
+		android:icon="@drawable/ic_settings_white_48dp"
+		android:showAsAction="ifRoom"
+		android:title="Settings" />
+	<item
+		android:id="@+id/AddChatRoom"
+		android:icon="@drawable/ic_add_white_48dp"
+		android:showAsAction="ifRoom"
+		android:title="New Chat" />
 </menu>

@@ -21,6 +21,7 @@
     <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
+    <AndroidTlsProvider></AndroidTlsProvider>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>True</DebugSymbols>
@@ -105,6 +106,8 @@
     <AndroidResource Include="Resources\layout\Settings.axml">
       <SubType>Designer</SubType>
     </AndroidResource>
+    <AndroidResource Include="Resources\drawable\ic_settings_white_48dp.png" />
+    <AndroidResource Include="Resources\drawable\ic_add_white_48dp.png" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\Main.axml">
@@ -130,28 +133,13 @@
     <AndroidResource Include="Resources\values\color.xml" />
   </ItemGroup>
   <ItemGroup>
-    <AndroidResource Include="Resources\drawable\ic_group_white_24dp.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="Resources\drawable\ic_settings_white_24dp.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="Resources\drawable\ic_add_white_24dp.png" />
-  </ItemGroup>
-  <ItemGroup>
     <AndroidResource Include="Resources\menu\new_chat_menu.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="Resources\drawable\ic_search_white_24dp.png" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\menu\main_menu.xml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\menu\settings_menu.xml" />
-  </ItemGroup>
-  <ItemGroup>
-    <AndroidResource Include="Resources\drawable\ic_arrow_back_white_24dp.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

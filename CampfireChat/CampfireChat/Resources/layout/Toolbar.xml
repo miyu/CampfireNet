@@ -1,7 +1,7 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?>
 <Toolbar xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/toolbar"
+    android:id="@+id/Toolbar"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:minHeight="?android:attr/actionBarSize"
-    android:background="?android:attr/colorPrimary"/>
+    android:background="?android:attr/colorPrimary" />

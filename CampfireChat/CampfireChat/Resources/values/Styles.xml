@@ -1,11 +1,19 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
-  <style name="CampTheme" parent="@android:style/Theme.Material.Light.DarkActionBar">
-    <item name="android:windowNoTitle">true</item>
-    <item name="android:windowActionBar">false</item>
-    <item name="android:colorPrimary">#3498db</item>
-    <item name="android:windowBackground">@color/background_color</item>
-    <item name="android:textColorPrimary">#ffffff</item>
-    <item name="android:homeAsUpIndicator">@drawable/ic_arrow_back_white_24dp</item>
-  </style>
+	<style
+		name="CampTheme"
+		parent="@android:style/Theme.Material.Light.DarkActionBar">
+		<item
+			name="android:windowNoTitle">true</item>
+		<item
+			name="android:windowActionBar">false</item>
+		<item
+			name="android:colorPrimary">#3498db</item>
+		<item
+			name="android:windowBackground">@color/background_color</item>
+		<item
+			name="android:textColorPrimary">#ffffff</item>
+		<item
+			name="android:homeAsUpIndicator">@drawable/abc_ic_ab_back_material</item>
+	</style>
 </resources>

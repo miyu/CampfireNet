@@ -1,9 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8" ?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-  <item
-       android:id="@+id/menu_search"
-       android:icon="@drawable/ic_search_white_24dp"
-       android:showAsAction="ifRoom|collapseActionView"
-       android:actionViewClass="android.widget.SearchView"
-       android:title="SearchFriends"/>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<menu
+	xmlns:android="http://schemas.android.com/apk/res/android">
+	<item
+		android:id="@+id/AddFriends"
+		android:icon="@drawable/abc_ic_search_api_material"
+		android:showAsAction="ifRoom|collapseActionView"
+		android:actionViewClass="android.widget.SearchView"
+		android:title="Search Friends" />
 </menu>

@@ -3,13 +3,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true">
-  <include
-      android:id="@+id/toolbar"
-      layout="@layout/toolbar" />
-  <Button
-      android:id="@+id/MyButton"
-      android:layout_below="@+id/toolbar"
-      android:layout_width="match_parent"
-      android:layout_height="wrap_content"
-      android:text="@string/Hello" />
+    <include
+        android:id="@+id/Toolbar"
+        layout="@layout/Toolbar" />
+    <Button
+        android:id="@+id/MyButton"
+        android:layout_below="@+id/Toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="@string/Hello" />
 </RelativeLayout>
