@@ -6,5 +6,6 @@
     <item name="android:colorPrimary">#3498db</item>
     <item name="android:windowBackground">@color/background_color</item>
     <item name="android:textColorPrimary">#ffffff</item>
+    <item name="android:homeAsUpIndicator">@drawable/ic_arrow_back_white_24dp</item>
   </style>
 </resources>

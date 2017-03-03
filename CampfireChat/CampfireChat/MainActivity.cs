@@ -41,8 +41,18 @@ namespace CampfireChat
 
         public override bool OnOptionsItemSelected(IMenuItem item)
         {
-            var intent = new Intent(this, typeof(NewChatActivity));
-            StartActivity(intent);
+            Intent intent;
+            switch(item.ItemId)
+            {
+                case Resource.Id.settings:
+                    intent = new Intent(this, typeof(SettingsActivity));
+                    StartActivity(intent);
+                    break;
+                case Resource.Id.menu_add:
+                    intent = new Intent(this, typeof(NewChatActivity));
+                    StartActivity(intent);
+                    break;
+            }
             return base.OnOptionsItemSelected(item);
         }
     }

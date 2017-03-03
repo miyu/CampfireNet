@@ -1645,52 +1645,55 @@ namespace CampfireChat
 			public const int ic_add_white_24dp = 2130837587;
 			
 			// aapt resource value: 0x7f020054
-			public const int ic_group_white_24dp = 2130837588;
+			public const int ic_arrow_back_white_24dp = 2130837588;
 			
 			// aapt resource value: 0x7f020055
-			public const int ic_search_white_24dp = 2130837589;
+			public const int ic_group_white_24dp = 2130837589;
 			
 			// aapt resource value: 0x7f020056
-			public const int ic_settings_white_24dp = 2130837590;
+			public const int ic_search_white_24dp = 2130837590;
 			
 			// aapt resource value: 0x7f020057
-			public const int Icon = 2130837591;
+			public const int ic_settings_white_24dp = 2130837591;
 			
 			// aapt resource value: 0x7f020058
-			public const int notification_action_background = 2130837592;
+			public const int Icon = 2130837592;
 			
 			// aapt resource value: 0x7f020059
-			public const int notification_bg = 2130837593;
+			public const int notification_action_background = 2130837593;
 			
 			// aapt resource value: 0x7f02005a
-			public const int notification_bg_low = 2130837594;
+			public const int notification_bg = 2130837594;
 			
 			// aapt resource value: 0x7f02005b
-			public const int notification_bg_low_normal = 2130837595;
+			public const int notification_bg_low = 2130837595;
 			
 			// aapt resource value: 0x7f02005c
-			public const int notification_bg_low_pressed = 2130837596;
+			public const int notification_bg_low_normal = 2130837596;
 			
 			// aapt resource value: 0x7f02005d
-			public const int notification_bg_normal = 2130837597;
+			public const int notification_bg_low_pressed = 2130837597;
 			
 			// aapt resource value: 0x7f02005e
-			public const int notification_bg_normal_pressed = 2130837598;
+			public const int notification_bg_normal = 2130837598;
 			
 			// aapt resource value: 0x7f02005f
-			public const int notification_icon_background = 2130837599;
-			
-			// aapt resource value: 0x7f020062
-			public const int notification_template_icon_bg = 2130837602;
-			
-			// aapt resource value: 0x7f020063
-			public const int notification_template_icon_low_bg = 2130837603;
+			public const int notification_bg_normal_pressed = 2130837599;
 			
 			// aapt resource value: 0x7f020060
-			public const int notification_tile_bg = 2130837600;
+			public const int notification_icon_background = 2130837600;
+			
+			// aapt resource value: 0x7f020063
+			public const int notification_template_icon_bg = 2130837603;
+			
+			// aapt resource value: 0x7f020064
+			public const int notification_template_icon_low_bg = 2130837604;
 			
 			// aapt resource value: 0x7f020061
-			public const int notify_panel_notification_icon_bg = 2130837601;
+			public const int notification_tile_bg = 2130837601;
+			
+			// aapt resource value: 0x7f020062
+			public const int notify_panel_notification_icon_bg = 2130837602;
 			
 			static Drawable()
 			{
@@ -1876,11 +1879,11 @@ namespace CampfireChat
 			// aapt resource value: 0x7f060062
 			public const int media_actions = 2131099746;
 			
-			// aapt resource value: 0x7f060073
-			public const int menu_add = 2131099763;
-			
 			// aapt resource value: 0x7f060074
-			public const int menu_search = 2131099764;
+			public const int menu_add = 2131099764;
+			
+			// aapt resource value: 0x7f060075
+			public const int menu_search = 2131099765;
 			
 			// aapt resource value: 0x7f06001d
 			public const int middle = 2131099677;
@@ -1969,6 +1972,9 @@ namespace CampfireChat
 			// aapt resource value: 0x7f060056
 			public const int select_dialog_listview = 2131099734;
 			
+			// aapt resource value: 0x7f060073
+			public const int settings = 2131099763;
+			
 			// aapt resource value: 0x7f060040
 			public const int shortcut = 2131099712;
 			
@@ -1980,6 +1986,9 @@ namespace CampfireChat
 			
 			// aapt resource value: 0x7f060012
 			public const int showTitle = 2131099666;
+			
+			// aapt resource value: 0x7f060076
+			public const int space = 2131099766;
 			
 			// aapt resource value: 0x7f060030
 			public const int spacer = 2131099696;
@@ -2239,10 +2248,13 @@ namespace CampfireChat
 			public const int select_dialog_singlechoice_material = 2130903087;
 			
 			// aapt resource value: 0x7f030030
-			public const int support_simple_spinner_dropdown_item = 2130903088;
+			public const int Settings = 2130903088;
 			
 			// aapt resource value: 0x7f030031
-			public const int toolbar = 2130903089;
+			public const int support_simple_spinner_dropdown_item = 2130903089;
+			
+			// aapt resource value: 0x7f030032
+			public const int toolbar = 2130903090;
 			
 			static Layout()
 			{
@@ -2262,6 +2274,9 @@ namespace CampfireChat
 			
 			// aapt resource value: 0x7f0c0001
 			public const int new_chat_menu = 2131492865;
+			
+			// aapt resource value: 0x7f0c0002
+			public const int settings_menu = 2131492866;
 			
 			static Menu()
 			{

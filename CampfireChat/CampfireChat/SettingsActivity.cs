@@ -12,13 +12,13 @@ using Android.Widget;
 
 namespace CampfireChat
 {
-    [Activity(Label = "New Message", ParentActivity = typeof(MainActivity))]
-    public class NewChatActivity : Activity
+    [Activity(Label = "Settings", ParentActivity = typeof(MainActivity))]
+    public class SettingsActivity : Activity
     {
         protected override void OnCreate(Bundle bundle)
         {
             base.OnCreate(bundle);
-            SetContentView(Resource.Layout.Main);
+            SetContentView(Resource.Layout.Settings);
             var toolbar = FindViewById<Toolbar>(Resource.Id.toolbar);
             SetActionBar(toolbar);
             this.ActionBar.SetDisplayHomeAsUpEnabled(true);
@@ -26,7 +26,7 @@ namespace CampfireChat
 
         public override bool OnCreateOptionsMenu(IMenu menu)
         {
-            MenuInflater.Inflate(Resource.Menu.new_chat_menu, menu);
+            MenuInflater.Inflate(Resource.Menu.settings_menu, menu);
             return base.OnCreateOptionsMenu(menu);
         }
 
