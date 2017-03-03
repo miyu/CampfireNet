@@ -4,6 +4,6 @@
        android:id="@+id/menu_search"
        android:icon="@drawable/ic_search_white_24dp"
        android:showAsAction="ifRoom|collapseActionView"
-       android:actionViewClass="android.support.v7.widget.SearchView"
+       android:actionViewClass="android.widget.SearchView"
        android:title="SearchFriends"/>
 </menu>

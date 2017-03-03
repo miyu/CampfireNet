@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content">
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="8dp">
+      <ImageView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:id="@+id/chat_image"
+          android:scaleType="centerCrop" />
+      <TextView
+          android:layout_width="match_parent"
+          android:layout_height="wrap_content"
+          android:textAppearance="?android:attr/textAppearanceMedium"
+          android:textColor="#333333"
+          android:text="Caption"
+          android:id="@+id/text_preview"
+          android:layout_gravity="center_horizontal"
+          android:layout_marginLeft="4dp" />
+    </RelativeLayout>
+</FrameLayout>
