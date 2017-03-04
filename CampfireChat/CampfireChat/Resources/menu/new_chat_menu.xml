@@ -2,9 +2,9 @@
 <menu
 	xmlns:android="http://schemas.android.com/apk/res/android">
 	<item
-		android:id="@+id/AddFriends"
+		android:id="@+id/SearchFriend"
 		android:icon="@drawable/abc_ic_search_api_material"
 		android:showAsAction="ifRoom|collapseActionView"
 		android:actionViewClass="android.widget.SearchView"
-		android:title="Search Friends" />
+		android:title="Search Friend" />
 </menu>

@@ -6,10 +6,86 @@
     <include
         android:id="@+id/Toolbar"
         layout="@layout/Toolbar" />
-    <Button
-        android:id="@+id/MyButton"
-        android:layout_below="@+id/Toolbar"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/Hello" />
+        android:orientation="horizontal"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:id="@+id/BecomeRoot"
+        android:layout_below="@id/Toolbar"
+        android:clickable="true">
+        <ImageView
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:layout_marginTop="5dip"
+            android:layout_marginBottom="5dip"
+            android:layout_marginLeft="5dip"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_settings_input_antenna_white_48dp"
+            android:adjustViewBounds="true" />
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left|center_vertical"
+            android:textSize="28sp"
+            android:layout_marginLeft="10dip"
+            android:text="Create a Network" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_below="@id/BecomeRoot"
+        android:id="@+id/LoadChain"
+        android:clickable="true">
+        <ImageView
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:layout_marginTop="5dip"
+            android:layout_marginBottom="5dip"
+            android:layout_marginLeft="5dip"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_open_in_new_white_48dp" />
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left|center_vertical"
+            android:textSize="28sp"
+            android:layout_marginLeft="10dip"
+            android:text="Load Trust Chain" />
+    </LinearLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginLeft="20dp"
+        android:layout_marginRight="20dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:layout_below="@id/LoadChain"
+        android:id="@+id/Invite"
+        android:clickable="true">
+        <ImageView
+            android:layout_width="40dip"
+            android:layout_height="40dip"
+            android:layout_marginTop="5dip"
+            android:layout_marginBottom="5dip"
+            android:layout_marginLeft="5dip"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_person_add_white_48dp" />
+        <TextView
+            android:layout_width="fill_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="left|center_vertical"
+            android:textSize="28sp"
+            android:layout_marginLeft="10dip"
+            android:text="Invite a friend" />
+    </LinearLayout>
 </RelativeLayout>

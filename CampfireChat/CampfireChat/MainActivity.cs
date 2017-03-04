@@ -16,7 +16,7 @@ namespace CampfireChat
 
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
-			ChatEntry[] testEnries = createTestData();
+			ChatEntry[] testEntries = createTestData();
 
 			base.OnCreate(savedInstanceState);
 			SetContentView(Resource.Layout.Main);
@@ -30,7 +30,7 @@ namespace CampfireChat
 			chatlistLayoutManager = new LinearLayoutManager(this);
 			chatlistRecyclerView.SetLayoutManager(chatlistLayoutManager);
 
-			chatlistAdapter = new ChatlistAdapter(testEnries);
+			chatlistAdapter = new ChatlistAdapter(testEntries);
 			chatlistRecyclerView.SetAdapter(chatlistAdapter);
 		}
 
