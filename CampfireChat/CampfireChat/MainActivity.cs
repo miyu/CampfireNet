@@ -1,4 +1,5 @@
-﻿using Android.App;
+﻿
+using Android.App;
 using Android.Widget;
 using Android.OS;
 using Android.Views;
@@ -31,7 +32,15 @@ namespace CampfireChat
 			chatlistRecyclerView.SetLayoutManager(chatlistLayoutManager);
 
 			chatlistAdapter = new ChatlistAdapter(testEnries);
+			((ChatlistAdapter)chatlistAdapter).ItemClick += OnItemClick;
 			chatlistRecyclerView.SetAdapter(chatlistAdapter);
+		}
+
+		private void OnItemClick(object sender, Title title)
+		{
+			Intent intent = new Intent(this, typeof(ChatActivity));
+			intent.PutExtra("title", title.TitleString);
+			StartActivity(intent);
 		}
 
 		public override bool OnCreateOptionsMenu(IMenu menu)

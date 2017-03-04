@@ -91,6 +91,7 @@
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsActivity.cs" />
+    <Compile Include="ChatActivity.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="GettingStarted.Xamarin" />
@@ -108,6 +109,8 @@
     </AndroidResource>
     <AndroidResource Include="Resources\drawable\ic_settings_white_48dp.png" />
     <AndroidResource Include="Resources\drawable\ic_add_white_48dp.png" />
+    <AndroidResource Include="Resources\menu\chat_menu.xml" />
+    <AndroidResource Include="Resources\layout\Chat.axml" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\Main.axml">
