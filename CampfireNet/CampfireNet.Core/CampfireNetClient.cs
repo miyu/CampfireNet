@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using CampfireNet.Identities;
 using CampfireNet.IO;
 using CampfireNet.IO.Transport;
+using CampfireNet.Security;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.Channels;
 using CampfireNet.Utilities.Merkle;
@@ -19,44 +20,60 @@ namespace CampfireNet {
 		private readonly ClientMerkleTreeFactory merkleTreeFactory;
 		private readonly MerkleTree<BroadcastMessageDto> localMerkleTree;
 
-		private int messageNum;
-
 		public CampfireNetClient(Identity identity, IBluetoothAdapter bluetoothAdapter, BroadcastMessageSerializer broadcastMessageSerializer, ClientMerkleTreeFactory merkleTreeFactory) {
 			this.identity = identity;
 			this.bluetoothAdapter = bluetoothAdapter;
 			this.broadcastMessageSerializer = broadcastMessageSerializer;
 			this.merkleTreeFactory = merkleTreeFactory;
 			this.localMerkleTree = merkleTreeFactory.CreateForLocal();
-			messageNum = 0;
 		}
 
-		public event BroadcastReceivedEventHandler BroadcastReceived;
+		public event MessageReceivedEventHandler BroadcastSent;
+		public event MessageReceivedEventHandler BroadcastReceived;
+		public event MessageReceivedEventHandler UnicastSent;
+		public event MessageReceivedEventHandler UnicastReceived;
 		public Guid AdapterId => bluetoothAdapter.AdapterId;
 
 		public async Task BroadcastAsync(byte[] payload) {
-			var numberedMessage = new byte[4 + payload.Length];
-			var messageNumBytes = BitConverter.GetBytes(messageNum);
-			Buffer.BlockCopy(messageNumBytes, 0, numberedMessage, 0, 4);
-			Buffer.BlockCopy(payload, 0, numberedMessage, 4, payload.Length);
-
-			messageNum++;
-
-			var messageDto = identity.EncodePacket(numberedMessage, null);
+			var messageDto = identity.EncodePacket(payload, null);
 
 			var localInsertionResult = await localMerkleTree.TryInsertAsync(messageDto).ConfigureAwait(false);
 			if (localInsertionResult.Item1) {
-				// "Decrypt the message"
-				BroadcastReceived?.Invoke(new BroadcastReceivedEventArgs(
+            // "Decrypt the message"
+            BroadcastSent?.Invoke(new MessageReceivedEventArgs(
 					null,
 					new BroadcastMessage {
 						SourceId = identity.PublicIdentity,
 						DestinationId = Identity.BROADCAST_ID,
-						DecryptedPayload = numberedMessage,
+						DecryptedPayload = payload,
 						Dto = messageDto
 					}
 				));
 			}
 		}
+
+      public async Task UnicastAsync(byte[] destinationId, byte[] payload) {
+         if (destinationId.Length != CryptoUtil.HASH_SIZE) {
+            throw new ArgumentException($"Expected DestinationId to be of size {CryptoUtil.HASH_SIZE}");
+         }
+
+         var trustChainNode = identity.IdentityManager.LookupIdentity(destinationId);
+
+         var messageDto = identity.EncodePacket(payload, trustChainNode.ThisId);
+         var localInsertionResult = await localMerkleTree.TryInsertAsync(messageDto).ConfigureAwait(false);
+         if (localInsertionResult.Item1) {
+            // "Decrypt the message"
+            UnicastSent?.Invoke(new MessageReceivedEventArgs(
+               null,
+               new BroadcastMessage {
+                  SourceId = identity.PublicIdentity,
+                  DestinationId = Identity.BROADCAST_ID,
+                  DecryptedPayload = payload,
+                  Dto = messageDto
+               }
+            ));
+         }
+      }
 
 		public async Task RunAsync() {
 			try {
@@ -114,8 +131,12 @@ namespace CampfireNet {
 		/// Dispatches BroadcastReceived from neighbor object to client subscribers
 		/// </summary>
 		/// <param name="args"></param>
-		private void HandleBroadcastReceived(BroadcastReceivedEventArgs args) {
-			BroadcastReceived?.Invoke(args);
+		private void HandleBroadcastReceived(MessageReceivedEventArgs args) {
+         if (args.Message.DestinationId.SequenceEqual(Identity.BROADCAST_ID)) {
+            BroadcastReceived?.Invoke(args);
+         } else {
+            UnicastReceived?.Invoke(args);
+         }
 		}
 
 		private void Debug(string s, params object[] args) {
