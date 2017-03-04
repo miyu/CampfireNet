@@ -111,6 +111,7 @@
     <AndroidResource Include="Resources\drawable\ic_add_white_48dp.png" />
     <AndroidResource Include="Resources\menu\chat_menu.xml" />
     <AndroidResource Include="Resources\layout\Chat.axml" />
+    <AndroidResource Include="Resources\drawable\ic_send_white_48dp.png" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\Main.axml">

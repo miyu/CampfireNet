@@ -8,19 +8,34 @@
         layout="@layout/Toolbar" />
     <android.support.v7.widget.RecyclerView
         android:id="@+id/Messages"
+        android:background="#eeeeee"
         android:scrollbars="vertical"
         android:layout_width="match_parent"
         android:layout_height="fill_parent"
         android:layout_below="@id/Toolbar" />
-    <EditText
-        android:id="@+id/Input"
+    <RelativeLayout
+        android:background="#ffffff"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:hint="Write a message here"
-        android:inputType="textCapSentences|textMultiLine"
-        android:maxLength="2000"
-        android:maxLines="4"
-        android:textColor="#222222"
-        android:layout_alignParentBottom="true" />
+        android:fitsSystemWindows="true"
+        android:layout_alignParentBottom="true">
+        <EditText
+            android:id="@+id/Input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Write a message here"
+            android:inputType="textCapSentences|textMultiLine"
+            android:maxLength="2000"
+            android:maxLines="4"
+            android:textColor="#222222"
+            android:layout_toLeftOf="@+id/SendMessage" />
+        <Button
+            android:id="@+id/SendMessage"
+            android:text="Send"
+            android:color="#333333"
+            android:layout_alignParentRight="true"
+            android:layout_height="wrap_content"
+            android:layout_width="wrap_content" />
+    </RelativeLayout>
 </RelativeLayout>
