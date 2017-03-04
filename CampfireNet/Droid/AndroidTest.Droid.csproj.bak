@@ -1,0 +1,266 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{25F45252-8991-4985-A7F9-4866BA8E09F2}</ProjectGuid>
+    <ProjectTypeGuids>{EFBA0AD7-5A72-4C68-AF49-83D382785DCF};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <OutputType>Library</OutputType>
+    <RootNamespace>AndroidTest.Droid</RootNamespace>
+    <AssemblyName>AndroidTest.Droid</AssemblyName>
+    <TargetFrameworkVersion>v6.0</TargetFrameworkVersion>
+    <AndroidApplication>True</AndroidApplication>
+    <AndroidResgenFile>Resources\Resource.designer.cs</AndroidResgenFile>
+    <AndroidResgenClass>Resource</AndroidResgenClass>
+    <AndroidManifest>Properties\AndroidManifest.xml</AndroidManifest>
+    <MonoAndroidResourcePrefix>Resources</MonoAndroidResourcePrefix>
+    <MonoAndroidAssetsPrefix>Assets</MonoAndroidAssetsPrefix>
+    <AndroidUseLatestPlatformSdk>true</AndroidUseLatestPlatformSdk>
+    <AndroidTlsProvider>
+    </AndroidTlsProvider>
+    <AndroidUseSharedRuntime>false</AndroidUseSharedRuntime>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>True</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug</OutputPath>
+    <DefineConstants>DEBUG;</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AndroidLinkMode>None</AndroidLinkMode>
+    <AndroidSupportedAbis>armeabi;armeabi-v7a;x86;arm64-v8a</AndroidSupportedAbis>
+    <EmbedAssembliesIntoApk>true</EmbedAssembliesIntoApk>
+    <Debugger>Xamarin</Debugger>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release</OutputPath>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <AndroidManagedSymbols>true</AndroidManagedSymbols>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Mono.Android" />
+    <Reference Include="mscorlib" />
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Security" />
+    <Reference Include="System.ServiceModel.Internals" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="AndroidBluetoothAdapter.cs" />
+    <Compile Include="BluetoothDiscoveryFacade.cs" />
+    <Compile Include="AndroidBluetoothFacade.cs" />
+    <Compile Include="AutomaticPairingService.cs" />
+    <Compile Include="BluetoothServer.cs" />
+    <Compile Include="CampfireNetBluetoothConstants.cs" />
+    <Compile Include="InboundBluetoothSocketTable.cs" />
+    <Compile Include="LambdaBroadcastReceiver.cs" />
+    <Compile Include="LambdaHandler.cs" />
+    <Compile Include="MacUtilities.cs" />
+    <Compile Include="MainActivity.cs" />
+    <Compile Include="Resources\Resource.designer.cs" />
+    <Compile Include="BluetoothTest.cs" />
+    <Compile Include="ChatServer.cs" />
+    <Compile Include="..\CampfireNet.Core\BroadcastReceivedEventArgs.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\BroadcastReceivedEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\CampfireNetClient.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\CampfireNetClient.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\ClientMerkleTreeFactory.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\ClientMerkleTreeFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\NeighborConnectionContext.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\NeighborConnectionContext.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\BroadcastMessage.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\BroadcastMessage.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\BroadcastMessageSerializer.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\BroadcastMessageSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\NotConnectedException.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\NotConnectedException.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Packets\DonePacket.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\DonePacket.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Packets\GivePacket.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\GivePacket.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Packets\HavePacket.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\HavePacket.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Packets\NeedPacket.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\NeedPacket.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Packets\PacketType.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\PacketType.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Packets\WirePacketSerializer.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\WirePacketSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Transport\IBluetoothAdapter.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Transport\IBluetoothAdapter.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Transport\IBluetoothNeighbor.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Transport\IBluetoothNeighbor.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\DargonCommonsExtensions.Collections.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\DargonCommonsExtensions.Collections.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\DargonCommonsExtensions.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\DargonCommonsExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\InvalidStateException.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\InvalidStateException.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\PriorityQueue.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\PriorityQueue.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\AsyncPrimatives\AsyncAutoResetLatch.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\AsyncPrimatives\AsyncAutoResetLatch.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\AsyncPrimatives\AsyncBox.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\AsyncPrimatives\AsyncBox.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\AsyncPrimatives\AsyncCountdownLatch.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\AsyncPrimatives\AsyncCountdownLatch.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\AsyncPrimatives\AsyncLatch.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\AsyncPrimatives\AsyncLatch.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\AsyncPrimatives\AsyncLock.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\AsyncPrimatives\AsyncLock.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\AsyncPrimatives\AsyncSemaphore.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\AsyncPrimatives\AsyncSemaphore.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\AsyncPrimatives\AsyncSpinner.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\AsyncPrimatives\AsyncSpinner.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Channels\BinaryLatchChannel.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Channels\BinaryLatchChannel.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Channels\Channel.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Channels\Channel.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Channels\ChannelFactory.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Channels\ChannelFactory.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Channels\ChannelsExtensions.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Channels\ChannelsExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Channels\DisconnectableChannel.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Channels\DisconnectableChannel.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Channels\NonblockingChannel.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Channels\NonblockingChannel.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Collections\ConcurrentSet.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Collections\ConcurrentSet.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\CampfireNetHash.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\CampfireNetHash.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\CampfireNetObjectStoreExtensions.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\CampfireNetObjectStoreExtensions.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\FileSystemCampfireNetObjectStore.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\FileSystemCampfireNetObjectStore.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\ICampfireNetObjectStore.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\ICampfireNetObjectStore.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\IItemOperations.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\IItemOperations.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\MerkleNode.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\MerkleNode.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\MerkleNodeTypeTag.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\MerkleNodeTypeTag.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Utilities\Merkle\MerkleTree.cs">
+      <Link>__hack_mac_references\CampfireNet.Utilities\Merkle\MerkleTree.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Identities\BroadcastMessageDto.cs">
+      <Link>__hack_mac_references\CampfireNet.Identities\BroadcastMessageDto.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Identities\CryptoUtil.cs">
+      <Link>__hack_mac_references\CampfireNet.Identities\CryptoUtil.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Identities\Identity.cs">
+      <Link>__hack_mac_references\CampfireNet.Identities\Identity.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Identities\IdentityManager.cs">
+      <Link>__hack_mac_references\CampfireNet.Identities\IdentityManager.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Identities\Permission.cs">
+      <Link>__hack_mac_references\CampfireNet.Identities\Permission.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Identities\Program.cs">
+      <Link>__hack_mac_references\CampfireNet.Identities\Program.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Identities\TrustChainUtil.cs">
+      <Link>__hack_mac_references\CampfireNet.Identities\TrustChainUtil.cs</Link>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="..\CampfireNet.Core\IO\Packets\IdentPacket.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\IdentPacket.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\IO\Packets\WhoisPacket.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\IO\Packets\WhoisPacket.cs</Link>
+    </Compile>
+    <Compile Include="..\CampfireNet.Core\Security\__HackPrivateKeyUtilities.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\Security\__HackPrivateKeyUtilities.cs</Link>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="Resources\AboutResources.txt" />
+    <None Include="Properties\AndroidManifest.xml" />
+    <None Include="Assets\AboutAssets.txt" />
+    <None Include="..\CampfireNet.Core\CampfireNet.Core.csproj">
+      <Link>__hack_mac_references\CampfireNet.Core\CampfireNet.Core.csproj</Link>
+    </None>
+    <None Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
+      <Link>__hack_mac_references\CampfireNet.Utilities\CampfireNet.Utilities.csproj</Link>
+    </None>
+    <None Include="..\CampfireNet.Identities\App.config">
+      <Link>__hack_mac_references\CampfireNet.Identities\App.config</Link>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\layout\Main.axml" />
+    <AndroidResource Include="Resources\values\Strings.xml" />
+    <AndroidResource Include="Resources\mipmap-hdpi\Icon.png" />
+    <AndroidResource Include="Resources\mipmap-mdpi\Icon.png" />
+    <AndroidResource Include="Resources\mipmap-xhdpi\Icon.png" />
+    <AndroidResource Include="Resources\mipmap-xxhdpi\Icon.png" />
+    <AndroidResource Include="Resources\mipmap-xxxhdpi\Icon.png" />
+    <AndroidResource Include="Resources\layout\Message.axml" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\AndroidTest\AndroidTest.csproj">
+      <Project>{FD4B66A8-03DC-43B1-AAB9-C6451A401963}</Project>
+      <Name>AndroidTest</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
+  <ProjectExtensions>
+    <MonoDevelop>
+      <Properties>
+        <Policies>
+          <TextStylePolicy TabsToSpaces="True" RemoveTrailingWhitespace="True" EolMarker="Native" FileWidth="120" TabWidth="3" IndentWidth="3" NoTabsAfterNonTabs="True" inheritsSet="VisualStudio" inheritsScope="text/plain" scope="text/x-csharp" />
+          <CSharpFormattingPolicy IndentBlock="True" IndentBraces="False" IndentSwitchCaseSection="True" LabelPositioning="OneLess" NewLinesForBracesInProperties="False" NewLinesForBracesInAccessors="False" NewLinesForBracesInAnonymousMethods="False" NewLinesForBracesInControlBlocks="False" NewLinesForBracesInAnonymousTypes="False" NewLinesForBracesInObjectCollectionArrayInitializers="False" NewLinesForBracesInLambdaExpressionBody="False" NewLineForElse="False" NewLineForCatch="False" NewLineForFinally="False" SpaceWithinMethodDeclarationParenthesis="False" SpaceBetweenEmptyMethodDeclarationParentheses="False" SpaceWithinMethodCallParentheses="False" SpaceBetweenEmptyMethodCallParentheses="False" SpaceAfterControlFlowStatementKeyword="True" SpaceWithinExpressionParentheses="False" SpaceWithinCastParentheses="False" SpaceWithinOtherParentheses="False" SpaceAfterCast="False" SpacesIgnoreAroundVariableDeclaration="False" SpaceBetweenEmptySquareBrackets="False" SpaceWithinSquareBrackets="False" SpaceAfterColonInBaseTypeDeclaration="True" SpaceAfterComma="True" SpaceAfterDot="False" SpaceAfterSemicolonsInForStatement="True" SpaceBeforeColonInBaseTypeDeclaration="True" SpaceBeforeComma="False" SpaceBeforeDot="False" SpaceBeforeSemicolonsInForStatement="False" SpacingAroundBinaryOperator="Single" WrappingPreserveSingleLine="True" WrappingKeepStatementsOnSingleLine="True" PlaceSystemDirectiveFirst="True" IndentSwitchSection="True" NewLinesForBracesInTypes="False" NewLinesForBracesInMethods="False" NewLineForMembersInObjectInit="True" NewLineForMembersInAnonymousTypes="True" NewLineForClausesInQuery="True" SpacingAfterMethodDeclarationName="False" SpaceAfterMethodCallName="False" SpaceBeforeOpenSquareBracket="False" inheritsSet="Mono" inheritsScope="text/x-csharp" scope="text/x-csharp" />
+        </Policies>
+      </Properties>
+    </MonoDevelop>
+  </ProjectExtensions>
+</Project>
