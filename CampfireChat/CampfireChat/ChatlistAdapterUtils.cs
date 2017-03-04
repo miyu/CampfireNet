@@ -19,7 +19,7 @@ namespace CampfireChat
 
 		public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
 		{
-			View itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.ChatHistory, parent, false);
+			View itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.ChatEntry, parent, false);
 
 			ChatlistViewHolder vh = new ChatlistViewHolder(itemView, OnClick);
 			return vh;
