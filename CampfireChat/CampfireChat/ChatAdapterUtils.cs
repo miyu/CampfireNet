@@ -19,6 +19,12 @@ namespace CampfireChat
 			Entries = entries;
 		}
 
+		public void AddEntry(int position, MessageEntry entry)
+		{
+			Entries.Insert(position, entry);
+			NotifyItemInserted(position);
+		}
+
 		public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
 		{
 			View itemView = LayoutInflater.From(parent.Context).Inflate(Resource.Layout.MessageEntry, parent, false);

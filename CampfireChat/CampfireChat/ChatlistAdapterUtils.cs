@@ -16,7 +16,7 @@ namespace CampfireChat
 			Entries = entries;
 		}
 
-		public void addEntry(int position, ChatEntry entry)
+		public void AddEntry(int position, ChatEntry entry)
 		{
 			Entries.Insert(position, entry);
 			NotifyItemInserted(position);
