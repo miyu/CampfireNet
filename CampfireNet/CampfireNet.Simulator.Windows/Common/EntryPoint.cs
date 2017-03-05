@@ -100,7 +100,7 @@ namespace CampfireNet.Simulator {
             }
 
             var client = agent.Client = new CampfireNetClient(identity, bluetoothAdapter, broadcastMessageSerializer, merkleTreeFactory);
-            client.BroadcastReceived += e => {
+            client.MessageReceived += e => {
                var epoch = BitConverter.ToInt32(e.Message.DecryptedPayload, 0);
 //               Console.WriteLine($"{client.AdapterId:n} recv {epoch}");
                agent.Value = Math.Max(agent.Value, epoch);

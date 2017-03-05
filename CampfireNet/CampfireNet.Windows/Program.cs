@@ -44,7 +44,7 @@ namespace CampfireNet.Windows {
             var client = new CampfireNetClient(identity, adapter, broadcastMessageSerializer, clientMerkleTreeFactory);
             client.RunAsync().Forget();
 
-            client.BroadcastReceived += e => {
+            client.MessageReceived += e => {
                var s = Encoding.UTF8.GetString(e.Message.DecryptedPayload, 0, e.Message.DecryptedPayload.Length);
                DebugConsole.WriteLine(new string(' ', Console.BufferWidth - 1), ConsoleColor.White, ConsoleColor.Red);
                DebugConsole.WriteLine(("RECV: " + s).PadRight(Console.BufferWidth - 1), ConsoleColor.White, ConsoleColor.Red);

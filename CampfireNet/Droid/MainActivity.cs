@@ -84,7 +84,7 @@ namespace AndroidTest.Droid {
          var identity = client.Identity;
 
          var sync = new object();
-         client.BroadcastReceived += e => {
+         client.MessageReceived += e => {
             lock (sync) {
                var s = Encoding.UTF8.GetString(e.Message.DecryptedPayload, 0, e.Message.DecryptedPayload.Length);
                uiDispatchHandler.ObtainMessage(LOG_MESSAGE, "RECV: " + s).SendToTarget();

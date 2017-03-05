@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using CampfireNet.Identities;
+﻿using CampfireNet.Identities;
 using CampfireNet.IO;
 using CampfireNet.IO.Transport;
 using CampfireNet.Security;

@@ -7,13 +7,12 @@ using System.Threading.Tasks;
 using CampfireNet.Identities;
 using CampfireNet.IO;
 using CampfireNet.IO.Transport;
-using CampfireNet.Security;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.Channels;
 using CampfireNet.Utilities.Merkle;
 
 namespace CampfireNet {
-	public class CampfireNetClient {
+   public class CampfireNetClient {
 		private readonly Identity identity;
 		private readonly IBluetoothAdapter bluetoothAdapter;
 		private readonly BroadcastMessageSerializer broadcastMessageSerializer;
@@ -28,10 +27,8 @@ namespace CampfireNet {
 			this.localMerkleTree = merkleTreeFactory.CreateForLocal();
 		}
 
-		public event MessageReceivedEventHandler BroadcastSent;
-		public event MessageReceivedEventHandler BroadcastReceived;
-		public event MessageReceivedEventHandler UnicastSent;
-		public event MessageReceivedEventHandler UnicastReceived;
+		public event MessageReceivedEventHandler MessageSent;
+		public event MessageReceivedEventHandler MessageReceived;
 		public Guid AdapterId => bluetoothAdapter.AdapterId;
 	   public Identity Identity => identity;
 
@@ -41,7 +38,7 @@ namespace CampfireNet {
 			var localInsertionResult = await localMerkleTree.TryInsertAsync(messageDto).ConfigureAwait(false);
 			if (localInsertionResult.Item1) {
             // "Decrypt the message"
-            BroadcastSent?.Invoke(new MessageReceivedEventArgs(
+            MessageSent?.Invoke(new MessageReceivedEventArgs(
 					null,
 					new BroadcastMessage {
 						SourceId = identity.PublicIdentity,
@@ -64,7 +61,7 @@ namespace CampfireNet {
          var localInsertionResult = await localMerkleTree.TryInsertAsync(messageDto).ConfigureAwait(false);
          if (localInsertionResult.Item1) {
             // "Decrypt the message"
-            UnicastSent?.Invoke(new MessageReceivedEventArgs(
+            MessageSent?.Invoke(new MessageReceivedEventArgs(
                null,
                new BroadcastMessage {
                   SourceId = identity.PublicIdentity,
@@ -133,11 +130,7 @@ namespace CampfireNet {
 		/// </summary>
 		/// <param name="args"></param>
 		private void HandleBroadcastReceived(MessageReceivedEventArgs args) {
-         if (args.Message.DestinationId.SequenceEqual(Identity.BROADCAST_ID)) {
-            BroadcastReceived?.Invoke(args);
-         } else {
-            UnicastReceived?.Invoke(args);
-         }
+         MessageReceived?.Invoke(args);
 		}
 
 		private void Debug(string s, params object[] args) {

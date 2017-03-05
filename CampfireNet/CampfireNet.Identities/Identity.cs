@@ -22,8 +22,8 @@ namespace CampfireNet.Identities {
          this.identityManager = identityManager;
 
          TrustChain = null;
-         HeldPermissions = Permission.None;
-         GrantablePermissions = Permission.None;
+         PermissionsHeld = Permission.None;
+         PermissionsGrantable = Permission.None;
          Name = name;
       }
 
@@ -34,15 +34,15 @@ namespace CampfireNet.Identities {
          this.identityManager = identityManager;
 
          TrustChain = null;
-         HeldPermissions = Permission.None;
-         GrantablePermissions = Permission.None;
+         PermissionsHeld = Permission.None;
+         PermissionsGrantable = Permission.None;
          Name = name;
       }
 
       public TrustChainNode[] TrustChain { get; private set; }
 
-      public Permission HeldPermissions { get; private set; }
-      public Permission GrantablePermissions { get; private set; }
+      public Permission PermissionsHeld { get; private set; }
+      public Permission PermissionsGrantable { get; private set; }
 
       public string Name { get; set; }
 
@@ -60,8 +60,8 @@ namespace CampfireNet.Identities {
 
          if (isValid && endsWithThis) {
             TrustChain = nodes;
-            HeldPermissions = nodes[nodes.Length - 1].HeldPermissions;
-            GrantablePermissions = nodes[nodes.Length - 1].GrantablePermissions;
+            PermissionsHeld = nodes[nodes.Length - 1].HeldPermissions;
+            PermissionsGrantable = nodes[nodes.Length - 1].GrantablePermissions;
 
             identityManager.AddIdentities(nodes);
          } else {
@@ -84,8 +84,8 @@ namespace CampfireNet.Identities {
 
          byte[] rootChain = TrustChainUtil.GenerateNewChain(new TrustChainNode[0], PublicIdentity, PublicIdentity, Permission.All,
                                        Permission.All, nameBytes, privateKey);
-         HeldPermissions = Permission.All;
-         GrantablePermissions = Permission.All;
+         PermissionsHeld = Permission.All;
+         PermissionsGrantable = Permission.All;
          AddTrustChain(rootChain);
       }
 
@@ -225,8 +225,8 @@ namespace CampfireNet.Identities {
 
       // whether the given permissions can be granted by this node
       public bool CanGrantPermissions(Permission heldPermissions, Permission grantablePermissions) {
-         return HeldPermissions.HasFlag(Permission.Invite) &&
-              TrustChainUtil.ValidatePermissions(GrantablePermissions, heldPermissions) &&
+         return PermissionsHeld.HasFlag(Permission.Invite) &&
+              TrustChainUtil.ValidatePermissions(PermissionsGrantable, heldPermissions) &&
               TrustChainUtil.ValidatePermissions(heldPermissions, grantablePermissions);
       }
    }
