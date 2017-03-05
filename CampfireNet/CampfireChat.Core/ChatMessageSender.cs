@@ -6,16 +6,16 @@ using CampfireNet.Utilities;
 namespace CampfireChat {
    public class ChatMessageSender {
       private readonly CampfireNetClient client;
-      private readonly JoinedChatRoomTable joinedChatRoomTable;
+      private readonly ChatRoomTable chatRoomTable;
 
-      public ChatMessageSender(CampfireNetClient client, JoinedChatRoomTable joinedChatRoomTable) {
+      public ChatMessageSender(CampfireNetClient client, ChatRoomTable chatRoomTable) {
          this.client = client;
-         this.joinedChatRoomTable = joinedChatRoomTable;
+         this.chatRoomTable = chatRoomTable;
       }
 
       public async Task Send(byte[] destination, ChatMessageDto messageDto) {
          ChatRoomContext chatroomContext;
-         if (!joinedChatRoomTable.TryLookup(destination, out chatroomContext)) {
+         if (!chatRoomTable.TryLookup(destination, out chatroomContext)) {
             throw new InvalidStateException("Cannot send message to undiscovered chatroom/user.");
          }
          
