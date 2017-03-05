@@ -52,20 +52,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AndroidBluetoothAdapter.cs" />
-    <Compile Include="BluetoothDiscoveryFacade.cs" />
-    <Compile Include="AndroidBluetoothFacade.cs" />
-    <Compile Include="AutomaticPairingService.cs" />
-    <Compile Include="BluetoothServer.cs" />
-    <Compile Include="CampfireNetBluetoothConstants.cs" />
-    <Compile Include="InboundBluetoothSocketTable.cs" />
-    <Compile Include="LambdaBroadcastReceiver.cs" />
-    <Compile Include="LambdaHandler.cs" />
-    <Compile Include="MacUtilities.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.designer.cs" />
-    <Compile Include="BluetoothTest.cs" />
-    <Compile Include="ChatServer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -84,9 +72,9 @@
     <AndroidResource Include="Resources\layout\Message.axml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\AndroidTest\AndroidTest.csproj">
-      <Project>{FD4B66A8-03DC-43B1-AAB9-C6451A401963}</Project>
-      <Name>AndroidTest</Name>
+    <ProjectReference Include="..\CampfireNet.Android\CampfireNet.Android.csproj">
+      <Project>{f8783a31-77c7-4c52-9e13-698fe20dc4a3}</Project>
+      <Name>CampfireNet.Android</Name>
     </ProjectReference>
     <ProjectReference Include="..\CampfireNet.Core\CampfireNet.Core.csproj">
       <Project>{74987653-09da-4274-bec8-759f95bc9836}</Project>

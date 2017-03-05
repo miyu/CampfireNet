@@ -76,30 +76,12 @@ namespace AndroidTest.Droid {
             return;
          }
 
-         var automaticPairingService = new AutomaticPairingService(ApplicationContext);
-         var bluetoothFacade = new AndroidBluetoothFacade(ApplicationContext);
-         bluetoothFacade.EnableBluetoothFromActivity(this);
-
-         var bluetoothDiscoveryFacade = new BluetoothDiscoveryFacade(ApplicationContext);
-         var inboundBluetoothSocketTable = new InboundBluetoothSocketTable();
-         var bluetoothServer = BluetoothServer.Create(nativeBluetoothAdapter, inboundBluetoothSocketTable);
-         bluetoothServer.Start();
-
-
-         var rootRsa = __HackPrivateKeyUtilities.DeserializePrivateKey(__HackPrivateKeyUtilities.__HACK_ROOT_PRIVATE_KEY);
-         var rootIdentity = new Identity(rootRsa, new IdentityManager(), "hack_root");
-         rootIdentity.GenerateRootChain();
-
-         var identity = new Identity(new IdentityManager(), "SomeAndroidIdentityName");
-         identity.AddTrustChain(rootIdentity.GenerateNewChain(identity.PublicIdentity, Permission.All, Permission.All, identity.Name));
-         //         identity.GenerateRootChain();
-
-         var campfireNetBluetoothAdapter = new AndroidBluetoothAdapter(ApplicationContext, nativeBluetoothAdapter, bluetoothDiscoveryFacade, inboundBluetoothSocketTable);
-         var broadcastMessageSerializer = new BroadcastMessageSerializer();
-         var objectStore = new InMemoryCampfireNetObjectStore();
-         var clientMerkleTreeFactory = new ClientMerkleTreeFactory(broadcastMessageSerializer, objectStore);
-         var client = new CampfireNetClient(identity, campfireNetBluetoothAdapter, broadcastMessageSerializer,
-                                            clientMerkleTreeFactory);
+         var androidBluetoothAdapter = new AndroidBluetoothAdapterFactory().Create(this, ApplicationContext, nativeBluetoothAdapter);
+         var client = CampfireNetClientBuilder.CreateNew()
+                                              .WithDevelopmentNetworkClaims()
+                                              .WithBluetoothAdapter(androidBluetoothAdapter)
+                                              .Build();
+         var identity = client.Identity;
 
          var sync = new object();
          client.BroadcastReceived += e => {
