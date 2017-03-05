@@ -114,7 +114,7 @@
     </AndroidResource>
     <AndroidResource Include="Resources\drawable\ic_settings_white_48dp.png" />
     <AndroidResource Include="Resources\drawable\ic_add_white_48dp.png" />
-    <AndroidResource Include="Resources\layout\Contactlist.axml">
+    <AndroidResource Include="Resources\layout\ContactEntry.axml">
       <SubType>Designer</SubType>
     </AndroidResource>
     <AndroidResource Include="Resources\menu\chat_menu.xml" />

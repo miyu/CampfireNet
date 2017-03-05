@@ -1,20 +1,20 @@
-﻿using System;
+﻿
+using System;
 using Android.Views;
 using Android.Widget;
 using Android.Support.V7.Widget;
-using Android.OS;
-using Android.Runtime;
+using System.Collections.Generic;
 
 namespace CampfireChat
 {
 	class ChatAdapter : RecyclerView.Adapter
 	{
-		public MessageEntry[] Entries;
+		public List<MessageEntry> Entries;
 		public event EventHandler<byte[]> ItemClick;
 
 		private int selectedPos = -1;
 
-		public ChatAdapter(MessageEntry[] entries)
+		public ChatAdapter(List<MessageEntry> entries)
 		{
 			Entries = entries;
 		}
@@ -62,7 +62,7 @@ namespace CampfireChat
 
 		public override int ItemCount
 		{
-			get { return Entries.Length; }
+			get { return Entries.Count; }
 		}
 	}
 
@@ -77,7 +77,7 @@ namespace CampfireChat
 			Name = itemView.FindViewById<TextView>(Resource.Id.Name);
 
 			itemView.Clickable = true;
-			itemView.Click += (sender, e) => listener(base.AdapterPosition);
+			itemView.Click += (sender, e) => listener(AdapterPosition);
 		}
 	}
 

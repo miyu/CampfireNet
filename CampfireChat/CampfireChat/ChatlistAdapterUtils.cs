@@ -2,19 +2,24 @@ using System;
 using Android.Views;
 using Android.Widget;
 using Android.Support.V7.Widget;
+using System.Collections.Generic;
 
 namespace CampfireChat
 {
 	class ChatlistAdapter : RecyclerView.Adapter
 	{
-		public ChatEntry[] Entries;
+		public List<ChatEntry> Entries { get; set; }
 		public event EventHandler<Title> ItemClick;
 
-		private int selectedPos = -1;
-
-		public ChatlistAdapter(ChatEntry[] entries)
+		public ChatlistAdapter(List<ChatEntry> entries)
 		{
 			Entries = entries;
+		}
+
+		public void addEntry(int position, ChatEntry entry)
+		{
+			Entries.Insert(position, entry);
+			NotifyItemInserted(position);
 		}
 
 		public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)
@@ -30,15 +35,6 @@ namespace CampfireChat
 			ChatlistViewHolder vh = holder as ChatlistViewHolder;
 			ChatEntry entry = Entries[position];
 
-			if (selectedPos == position)
-			{
-				holder.ItemView.SetBackgroundColor(Android.Graphics.Color.LightGray);
-			}
-			else
-			{
-				holder.ItemView.SetBackgroundColor(Android.Graphics.Color.Transparent);
-			}
-
 			if (entry.Names.Length == 1)
 			{
 				vh.Names.Text = entry.Names[0];
@@ -53,16 +49,10 @@ namespace CampfireChat
 			}
 
 			vh.Preview.Text = entry.PreviewLine;
-
-			holder.ItemView.Selected = selectedPos == position;
 		}
 
 		private void OnClick(int position)
 		{
-			NotifyItemChanged(selectedPos);
-			selectedPos = position;
-			NotifyItemChanged(selectedPos);
-
 			if (ItemClick != null)
 			{
 				string title = string.Join(", ", Entries[position].Names);
@@ -72,7 +62,7 @@ namespace CampfireChat
 
 		public override int ItemCount
 		{
-			get { return Entries.Length; }
+			get { return Entries.Count; }
 		}
 	}
 
@@ -87,7 +77,7 @@ namespace CampfireChat
 			Names = itemView.FindViewById<TextView>(Resource.Id.Names);
 
 			itemView.Clickable = true;
-			itemView.Click += (sender, e) => listener(base.AdapterPosition);
+			itemView.Click += (sender, e) => listener(AdapterPosition);
 			//itemView.Touch += (object sender, View.TouchEventArgs e) => listener(base.AdapterPosition, e.Event.Action));
 		}
 	}
