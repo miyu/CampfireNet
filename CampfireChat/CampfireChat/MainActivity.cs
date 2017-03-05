@@ -1,4 +1,5 @@
 ﻿
+using System.Collections.Generic;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -16,7 +17,7 @@ namespace CampfireChat
 
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
-			ChatEntry[] testEntries = createTestData();
+			List<ChatEntry> testEntries = createTestData();
 
 			base.OnCreate(savedInstanceState);
 			SetContentView(Resource.Layout.Main);
@@ -65,7 +66,7 @@ namespace CampfireChat
 			return base.OnOptionsItemSelected(item);
 		}
 
-		public ChatEntry[] createTestData()
+		public List<ChatEntry> createTestData()
 		{
 			string[] testData = { "Preview of a long message that goes beyond the lines",
 				"Preview of a really really long message that really goes beyond the lines and is sure to overflow",
@@ -79,9 +80,9 @@ namespace CampfireChat
 			testNames[3] = new string[] { "Name4Test1", "Name4Test2", "Name4Test3", "Name4Test4" };
 			testNames[4] = new string[] { "Name5Test1", "Name5Test2", "Name5Test3", "Name5Test4", "Name5Test5" };
 
-			ChatEntry[] entries = new ChatEntry[testData.Length];
+			List<ChatEntry> entries = new List<ChatEntry>();
 
-			for (var i = 0; i < entries.Length; i++)
+			for (var i = 0; i < testData.Length; i++)
 			{
 				string[] names;
 				if (i < testNames.Length)
@@ -93,7 +94,7 @@ namespace CampfireChat
 					names = new string[] { "default" };
 				}
 
-				entries[i] = new ChatEntry(names, testData[i]);
+				entries.Add(new ChatEntry(names, testData[i]));
 			}
 
 			return entries;
