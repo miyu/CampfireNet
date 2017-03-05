@@ -80,7 +80,7 @@ namespace CampfireNet {
 		public Identity Identity => identity;
 		public IdentityManager IdentityManager => identity.IdentityManager;
 
-		public event BroadcastReceivedEventHandler BroadcastReceived;
+		public event MessageReceivedEventHandler BroadcastReceived;
 
 		public void Start(Action shutdownCallback) {
 			Task.WhenAll(
@@ -332,7 +332,7 @@ namespace CampfireNet {
 								} else {
 									denumberedMessage = decryptedPayload;
 								}
-								BroadcastReceived?.Invoke(new BroadcastReceivedEventArgs(neighbor, new BroadcastMessage {
+								BroadcastReceived?.Invoke(new MessageReceivedEventArgs(neighbor, new BroadcastMessage {
 									SourceId = message.SourceIdHash,
 									DestinationId = message.DestinationIdHash,
 									DecryptedPayload = denumberedMessage,

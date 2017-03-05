@@ -52,6 +52,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\CampfireNet.Core\MessageReceivedEventArgs.cs">
+      <Link>__hack_mac_references\CampfireNet.Core\MessageReceivedEventArgs.cs</Link>
+    </Compile>
     <Compile Include="AndroidBluetoothAdapter.cs" />
     <Compile Include="BluetoothDiscoveryFacade.cs" />
     <Compile Include="AndroidBluetoothFacade.cs" />
@@ -66,9 +69,6 @@
     <Compile Include="Resources\Resource.designer.cs" />
     <Compile Include="BluetoothTest.cs" />
     <Compile Include="ChatServer.cs" />
-    <Compile Include="..\CampfireNet.Core\BroadcastReceivedEventArgs.cs">
-      <Link>__hack_mac_references\CampfireNet.Core\BroadcastReceivedEventArgs.cs</Link>
-    </Compile>
     <Compile Include="..\CampfireNet.Core\CampfireNetClient.cs">
       <Link>__hack_mac_references\CampfireNet.Core\CampfireNetClient.cs</Link>
     </Compile>
