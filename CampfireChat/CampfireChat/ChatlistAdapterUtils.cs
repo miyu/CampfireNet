@@ -35,19 +35,7 @@ namespace CampfireChat
 			ChatlistViewHolder vh = holder as ChatlistViewHolder;
 			ChatEntry entry = Entries[position];
 
-			if (entry.Names.Length == 1)
-			{
-				vh.Names.Text = entry.Names[0];
-			}
-			else if (entry.Names.Length == 2)
-			{
-				vh.Names.Text = entry.Names[0] + ", " + entry.Names[1];
-			}
-			else
-			{
-				vh.Names.Text = entry.Names[0] + ", and " + (entry.Names.Length - 1) + " others";
-			}
-
+			vh.FriendlyName.Text = entry.FriendlyName;
 			vh.Preview.Text = entry.PreviewLine;
 		}
 
@@ -68,13 +56,13 @@ namespace CampfireChat
 
 	public class ChatlistViewHolder : RecyclerView.ViewHolder
 	{
-		public TextView Names { get; private set; }
+		public TextView FriendlyName { get; private set; }
 		public TextView Preview { get; private set; }
 
 		public ChatlistViewHolder(View itemView, Action<int> listener) : base(itemView)
 		{
 			Preview = itemView.FindViewById<TextView>(Resource.Id.Preview);
-			Names = itemView.FindViewById<TextView>(Resource.Id.Names);
+			FriendlyName = itemView.FindViewById<TextView>(Resource.Id.FriendlyName);
 
 			itemView.Clickable = true;
 			itemView.Click += (sender, e) => listener(AdapterPosition);
@@ -84,12 +72,14 @@ namespace CampfireChat
 
 	public class ChatEntry
 	{
-		public string[] Names { get; private set; }
+		public string FriendlyName { get; private set; }
+		public byte[] Key { get; private set; }
 		public string PreviewLine { get; private set; }
 
-		public ChatEntry(string[] names, string previewLine)
+		public ChatEntry(string friendlyName, byte[] key, string previewLine)
 		{
-			Names = names;
+			FriendlyName = friendlyName;
+			Key = key;
 			PreviewLine = previewLine;
 		}
 	}
