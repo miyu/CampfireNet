@@ -60,9 +60,10 @@ namespace CampfireNet.Identities {
 
          try {
             using (var rsa = new RSACryptoServiceProvider()) {
-               RSAParameters parameters = new RSAParameters();
-               parameters.Modulus = modulus;
-               parameters.Exponent = RSA_EXPONENT;
+               RSAParameters parameters = new RSAParameters {
+                  Modulus = modulus,
+                  Exponent = RSA_EXPONENT
+               };
                rsa.ImportParameters(parameters);
                return rsa.VerifyData(data, signature, HashAlgorithmName.SHA256, RSASignaturePadding.Pkcs1);
             }
@@ -155,9 +156,10 @@ namespace CampfireNet.Identities {
       }
 
       public static byte[] AsymmetricEncrypt(byte[] data, byte[] modulus) {
-         RSAParameters parameters = new RSAParameters();
-         parameters.Modulus = modulus;
-         parameters.Exponent = RSA_EXPONENT;
+         RSAParameters parameters = new RSAParameters {
+            Modulus = modulus,
+            Exponent = RSA_EXPONENT
+         };
 
          return AsymmetricEncrypt(data, parameters);
       }
@@ -229,16 +231,17 @@ namespace CampfireNet.Identities {
       }
 
       public static RSAParameters DeserializeKey(byte[] key) {
-         RSAParameters parameters = new RSAParameters();
+         RSAParameters parameters = new RSAParameters {
+            D = new byte[ASYM_KEY_SIZE_BYTES],
+            DP = new byte[ASYM_KEY_SIZE_BYTES / 2],
+            DQ = new byte[ASYM_KEY_SIZE_BYTES / 2],
+            Exponent = new byte[RSA_EXPONENT.Length],
+            InverseQ = new byte[ASYM_KEY_SIZE_BYTES / 2],
+            Modulus = new byte[ASYM_KEY_SIZE_BYTES],
+            P = new byte[ASYM_KEY_SIZE_BYTES / 2],
+            Q = new byte[ASYM_KEY_SIZE_BYTES / 2]
+         };
 
-         parameters.D = new byte[ASYM_KEY_SIZE_BYTES];
-         parameters.DP = new byte[ASYM_KEY_SIZE_BYTES / 2];
-         parameters.DQ = new byte[ASYM_KEY_SIZE_BYTES / 2];
-         parameters.Exponent = new byte[RSA_EXPONENT.Length];
-         parameters.InverseQ = new byte[ASYM_KEY_SIZE_BYTES / 2];
-         parameters.Modulus = new byte[ASYM_KEY_SIZE_BYTES];
-         parameters.P = new byte[ASYM_KEY_SIZE_BYTES / 2];
-         parameters.Q = new byte[ASYM_KEY_SIZE_BYTES / 2];
 
          using (var input = new MemoryStream(key)) {
             input.Read(parameters.D, 0, ASYM_KEY_SIZE_BYTES);

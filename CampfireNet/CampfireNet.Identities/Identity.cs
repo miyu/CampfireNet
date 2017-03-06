@@ -49,7 +49,7 @@ namespace CampfireNet.Identities {
       public byte[] PublicIdentity => privateKey.Modulus;
       public byte[] PublicIdentityHash => identityHash;
       // TODO remove
-      public RSAParameters privateKeyDebug => privateKey;
+      public RSAParameters PrivateKeyDebug => privateKey;
       public IdentityManager IdentityManager => identityManager;
 
       // gives this identity a trust chain to use
