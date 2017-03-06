@@ -11,7 +11,7 @@ namespace CampfireChat {
       }
 
       public ChatRoomContext GetOrCreate(IdentityHash destination) {
-         return descriptorsByRoomIdHash.GetOrAdd(destination, new ChatRoomContext());
+         return descriptorsByRoomIdHash.GetOrAdd(destination, new ChatRoomContext(null, null, null));
       }
    }
 }

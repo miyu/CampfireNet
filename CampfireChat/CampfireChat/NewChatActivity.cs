@@ -1,4 +1,5 @@
 
+using System;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -6,85 +7,84 @@ using Android.Support.V7.Widget;
 using Android.Views;
 using System.Collections.Generic;
 
-namespace CampfireChat
-{
-	[Activity(Label = "New Message", ParentActivity = typeof(MainActivity))]
-	[IntentFilter(new string[] { "android.intent.action.SEARCH" })]
-	[MetaData(("android.app.searchable"), Resource = "@xml/searchable")]
-	public class NewChatActivity : Activity
-	{
-		private RecyclerView contactlistRecyclerView;
-		private RecyclerView.Adapter contactlistAdapter;
-		private RecyclerView.LayoutManager contactlistLayoutManager;
-		protected override void OnCreate(Bundle savedInstanceState)
-		{
-			ContactEntry[] testEntries = createTestData();
-			base.OnCreate(savedInstanceState);
-			SetContentView(Resource.Layout.NewChat);
+namespace CampfireChat {
+   [Activity(Label = "New Message")]
+   [IntentFilter(new string[] { "android.intent.action.SEARCH" })]
+   [MetaData(("android.app.searchable"), Resource = "@xml/searchable")]
+   public class NewChatActivity : Activity {
+      private RecyclerView contactlistRecyclerView;
+      private RecyclerView.Adapter contactlistAdapter;
+      private RecyclerView.LayoutManager contactlistLayoutManager;
 
-			var toolbar = FindViewById<Android.Widget.Toolbar>(Resource.Id.Toolbar);
-			SetActionBar(toolbar);
-			ActionBar.SetDisplayHomeAsUpEnabled(true);
-			contactlistRecyclerView = (RecyclerView)FindViewById(Resource.Id.ContactList);
-			contactlistRecyclerView.HasFixedSize = true;
+      protected override void OnCreate(Bundle savedInstanceState) {
+         List<ContactEntry> testEntries = createTestData();
+         base.OnCreate(savedInstanceState);
+         SetContentView(Resource.Layout.NewChat);
 
-			contactlistLayoutManager = new LinearLayoutManager(this);
-			contactlistRecyclerView.SetLayoutManager(contactlistLayoutManager);
+         var toolbar = FindViewById<Android.Widget.Toolbar>(Resource.Id.Toolbar);
+         SetActionBar(toolbar);
+         ActionBar.SetDisplayHomeAsUpEnabled(true);
+         contactlistRecyclerView = (RecyclerView)FindViewById(Resource.Id.ContactList);
+         contactlistRecyclerView.HasFixedSize = true;
 
-			contactlistAdapter = new ContactlistAdapter(testEntries);
-			contactlistRecyclerView.SetAdapter(contactlistAdapter);
+         contactlistLayoutManager = new LinearLayoutManager(this);
+         contactlistRecyclerView.SetLayoutManager(contactlistLayoutManager);
 
-			var search = FindViewById<Android.Widget.SearchView>(Resource.Id.SearchFriend);
-            search.QueryTextChange += (sender, e) => {
-                string query = Intent.GetStringExtra(SearchManager.Query);
-                UpdateResults(query);
-            };
-		}
+         contactlistAdapter = new ContactlistAdapter(testEntries);
+         contactlistRecyclerView.SetAdapter(contactlistAdapter);
+         
+      }
 
-		public override bool OnCreateOptionsMenu(IMenu menu)
-		{
-			MenuInflater.Inflate(Resource.Menu.new_chat_menu, menu);
-			SearchManager searchManager = (SearchManager)GetSystemService(SearchService);
-			Android.Widget.SearchView searchView = (Android.Widget.SearchView)menu.FindItem(Resource.Id.SearchFriend).ActionView;
-			searchView.SetSearchableInfo(searchManager.GetSearchableInfo(ComponentName));
-			return base.OnCreateOptionsMenu(menu);
-		}
+      public override bool OnCreateOptionsMenu(IMenu menu) {
+         MenuInflater.Inflate(Resource.Menu.new_chat_menu, menu);
 
-		public override bool OnOptionsItemSelected(IMenuItem item)
-		{
-			return base.OnOptionsItemSelected(item);
-		}
+         SearchManager searchManager = (SearchManager)GetSystemService(SearchService);
+         Android.Widget.SearchView searchView = (Android.Widget.SearchView)menu.FindItem(Resource.Id.SearchFriend).ActionView;
+         searchView.SetSearchableInfo(searchManager.GetSearchableInfo(ComponentName));
+         
+         searchView.QueryTextChange += (sender, e) => {
+               string query = e.NewText;
+               Console.WriteLine($"Got {query}");
+               UpdateResults(query);
+         };
 
+         return base.OnCreateOptionsMenu(menu);
+      }
 
-		private void UpdateResults(string query)
-		{
-			ContactEntry[] entries = createTestData();
-			List<ContactEntry> updated = new List<ContactEntry>();
-			for (int i = 0; i < entries.Length; i++)
-			{
-				string name = entries[i].Name.ToLower();
-				string tag = entries[i].Tag.ToLower();
-				if (name.Contains(query) || tag.Contains(query))
-				{
-					updated.Add(entries[i]);
-				}
-			}
-			contactlistRecyclerView.SwapAdapter(new ContactlistAdapter(updated.ToArray()), false);
-		}
+      public override bool OnOptionsItemSelected(IMenuItem item) {
+         if (item.ItemId == Android.Resource.Id.Home) {
+            Finish();
+         }
 
-		public ContactEntry[] createTestData()
-		{
-			string[] testName = {"Love", "Air", "Shoes", "Hair", "Perfume",
-				"Obfuscation", "Clock", "Game", "Scroll", "Lion", "Chrome", "Tresure", "Charm" };
+         return base.OnOptionsItemSelected(item);
+      }
 
-			ContactEntry[] entries = new ContactEntry[testName.Length];
+      private void UpdateResults(string query) {
+         List<ContactEntry> entries = (contactlistAdapter as ContactlistAdapter).FullEntries;
+         List<ContactEntry> updated = new List<ContactEntry>();
 
-			for (var i = 0; i < entries.Length; i++)
-			{
-				entries[i] = new ContactEntry(testName[i], testName[testName.Length - 1 - i]);
-			}
+         for (int i = 0; i < entries.Count; i++) {
+            string name = entries[i].Name.ToLower();
+            string tag = entries[i].Tag.ToLower();
+            if (name.Contains(query) || tag.Contains(query)) {
+               updated.Add(entries[i]);
+            }
+         }
+         (contactlistAdapter as ContactlistAdapter).CurrentEntries = updated;
+         contactlistAdapter.NotifyDataSetChanged();
+      }
 
-			return entries;
-		}
-	}
+      public List<ContactEntry> createTestData() {
+         string[] testName = {"Love", "Air", "Shoes", "Hair", "Perfume",
+            "Obfuscation", "Clock", "Game", "Scroll", "Lion", "Chrome", "Tresure", "Charm" };
+
+         List<ContactEntry> entries = new List<ContactEntry>();
+
+         for (var i = 0; i < testName.Length; i++) {
+            entries.Add(new ContactEntry(testName[i], testName[testName.Length - 1 - i]));
+         }
+
+         return entries;
+      }
+   }
 }

@@ -7,7 +7,7 @@ using CampfireNet.Identities;
 
 namespace CampfireChat {
    public class CampfireChatClientFactory {
-      public CampfireChatClient Create(CampfireNetClient campfireNetClient) {
+      public static CampfireChatClient Create(CampfireNetClient campfireNetClient) {
          var chatRoomTable = new ChatRoomTable();
          var messageSender = new ChatMessageSender(campfireNetClient, chatRoomTable);
          var campfireChatClient = new CampfireChatClient(campfireNetClient, chatRoomTable, messageSender);

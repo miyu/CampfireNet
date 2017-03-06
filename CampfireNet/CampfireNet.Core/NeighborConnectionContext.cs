@@ -333,8 +333,8 @@ namespace CampfireNet {
 									denumberedMessage = decryptedPayload;
 								}
 								BroadcastReceived?.Invoke(new MessageReceivedEventArgs(neighbor, new BroadcastMessage {
-									SourceId = message.SourceIdHash,
-									DestinationId = message.DestinationIdHash,
+									SourceId = IdentityHash.GetFlyweight(message.SourceIdHash),
+									DestinationId = IdentityHash.GetFlyweight(message.DestinationIdHash),
 									DecryptedPayload = denumberedMessage,
 									Dto = message
 								}));
