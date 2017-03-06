@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using CampfireNet;
+using CampfireNet.Identities;
 using CampfireNet.Utilities;
 
 namespace CampfireChat {
@@ -13,7 +14,7 @@ namespace CampfireChat {
          this.chatRoomTable = chatRoomTable;
       }
 
-      public async Task Send(byte[] destination, ChatMessageDto messageDto) {
+      public async Task Send(IdentityHash destination, ChatMessageDto messageDto) {
          ChatRoomContext chatroomContext;
          if (!chatRoomTable.TryLookup(destination, out chatroomContext)) {
             throw new InvalidStateException("Cannot send message to undiscovered chatroom/user.");
