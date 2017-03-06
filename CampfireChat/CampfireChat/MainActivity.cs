@@ -117,7 +117,7 @@ namespace CampfireChat
 					names = new string[] { "default" };
 				}
 
-				entries.Add(new ChatEntry(names, testData[i]));
+				entries.Add(new ChatEntry(names[0], new byte[] {}, testData[i]));
 			}
 
 			return entries;
