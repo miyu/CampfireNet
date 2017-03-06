@@ -35,7 +35,10 @@ namespace CampfireChat
 			contactlistRecyclerView.SetAdapter(contactlistAdapter);
 
 			var search = FindViewById<Android.Widget.SearchView>(Resource.Id.SearchFriend);
-			HandleIntent(Intent);
+            search.QueryTextChange += (sender, e) => {
+                string query = Intent.GetStringExtra(SearchManager.Query);
+                UpdateResults(query);
+            };
 		}
 
 		public override bool OnCreateOptionsMenu(IMenu menu)
@@ -52,19 +55,6 @@ namespace CampfireChat
 			return base.OnOptionsItemSelected(item);
 		}
 
-		protected override void OnNewIntent(Intent intent)
-		{
-			HandleIntent(intent);
-		}
-
-		private void HandleIntent(Intent intent)
-		{
-			if (Intent.ActionSearch.Equals(intent.Action))
-			{
-				string query = intent.GetStringExtra(SearchManager.Query);
-				UpdateResults(query);
-			}
-		}
 
 		private void UpdateResults(string query)
 		{

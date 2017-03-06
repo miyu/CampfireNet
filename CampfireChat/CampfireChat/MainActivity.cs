@@ -15,6 +15,8 @@ namespace CampfireChat
 		private RecyclerView.Adapter chatlistAdapter;
 		private RecyclerView.LayoutManager chatlistLayoutManager;
 
+		private ChatRoomTable table = null;
+
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
 			List<ChatEntry> testEntries = createTestData();
@@ -65,6 +67,27 @@ namespace CampfireChat
 			}
 			return base.OnOptionsItemSelected(item);
 		}
+
+		//public void Setup()
+		//{
+		//	var nativeBluetoothAdapter = BluetoothAdapter.DefaultAdapter;
+		//	if (!nativeBluetoothAdapter.IsEnabled)
+		//	{
+		//		System.Console.WriteLine("Enabling bluetooth");
+		//		Intent enableBtIntent = new Intent(BluetoothAdapter.ActionRequestEnable);
+		//		StartActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
+		//		return;
+		//	}
+
+		//	var androidBluetoothAdapter = new AndroidBluetoothAdapterFactory().Create(this, ApplicationContext, nativeBluetoothAdapter);
+		//	var client = CampfireNetClientBuilder.CreateNew()
+		//										 .WithDevelopmentNetworkClaims()
+		//										 .WithBluetoothAdapter(androidBluetoothAdapter)
+		//										 .Build();
+		//	var identity = client.Identity;
+
+		//	client.RunAsync().Forget();
+		//}
 
 		public List<ChatEntry> createTestData()
 		{
