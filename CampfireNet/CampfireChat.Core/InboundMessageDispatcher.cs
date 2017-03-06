@@ -72,8 +72,8 @@ namespace CampfireChat {
 
    public class ChatMessageDto {
       public BroadcastMessage BroadcastMessage { get; set; }
-      
       public DateTime LocalTimestamp { get; set; }
+
       public int SequenceNumber { get; set; }
       public Dictionary<IdentityHash, int> LogicalClock { get; set; }
       public string FriendlySenderName { get; set; }
