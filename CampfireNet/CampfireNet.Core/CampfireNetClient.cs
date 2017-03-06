@@ -50,12 +50,8 @@ namespace CampfireNet {
 			}
 		}
 
-      public async Task UnicastAsync(byte[] destinationId, byte[] payload) {
-         if (destinationId.Length != CryptoUtil.HASH_SIZE) {
-            throw new ArgumentException($"Expected DestinationId to be of size {CryptoUtil.HASH_SIZE}");
-         }
-
-         var trustChainNode = identity.IdentityManager.LookupIdentity(destinationId);
+      public async Task UnicastAsync(IdentityHash destinationId, byte[] payload) {
+         var trustChainNode = identity.IdentityManager.LookupIdentity(destinationId.Bytes.ToArray());
 
          var messageDto = identity.EncodePacket(payload, trustChainNode.ThisId);
          var localInsertionResult = await localMerkleTree.TryInsertAsync(messageDto).ConfigureAwait(false);
