@@ -41,8 +41,8 @@ namespace CampfireNet {
             MessageSent?.Invoke(new MessageReceivedEventArgs(
 					null,
 					new BroadcastMessage {
-						SourceId = identity.PublicIdentity,
-						DestinationId = Identity.BROADCAST_ID,
+						SourceId = IdentityHash.GetFlyweight(identity.PublicIdentity),
+						DestinationId = IdentityHash.GetFlyweight(Identity.BROADCAST_ID),
 						DecryptedPayload = payload,
 						Dto = messageDto
 					}
@@ -64,8 +64,8 @@ namespace CampfireNet {
             MessageSent?.Invoke(new MessageReceivedEventArgs(
                null,
                new BroadcastMessage {
-                  SourceId = identity.PublicIdentity,
-                  DestinationId = Identity.BROADCAST_ID,
+                  SourceId = IdentityHash.GetFlyweight(identity.PublicIdentity),
+                  DestinationId = IdentityHash.GetFlyweight(Identity.BROADCAST_ID),
                   DecryptedPayload = payload,
                   Dto = messageDto
                }
