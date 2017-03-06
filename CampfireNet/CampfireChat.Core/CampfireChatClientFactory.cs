@@ -8,15 +8,22 @@ using CampfireNet.Identities;
 namespace CampfireChat {
    public class CampfireChatClientFactory {
       public static CampfireChatClient Create(CampfireNetClient campfireNetClient) {
-         var chatRoomTable = new ChatRoomTable();
+         var campfireChatSettings = new CampfireChatSettings {
+            LocalFriendlyName = "Anonymous"
+         };
+         var chatRoomTable = new ChatRoomTable(campfireChatSettings);
          var messageSender = new ChatMessageSender(campfireNetClient, chatRoomTable);
-         var campfireChatClient = new CampfireChatClient(campfireNetClient, chatRoomTable, messageSender);
+         var campfireChatClient = new CampfireChatClient(campfireNetClient, campfireChatSettings, chatRoomTable, messageSender);
+         campfireChatClient.Initialize();
          return campfireChatClient;
       }
    }
 
    public class CampfireChatClient : IDisposable {
-      public CampfireChatClient(CampfireNetClient campfireNetClient, ChatRoomTable chatRoomTable, ChatMessageSender messageSender) {
+      private readonly CampfireChatSettings campfireChatSettings;
+
+      public CampfireChatClient(CampfireNetClient campfireNetClient, CampfireChatSettings campfireChatSettings, ChatRoomTable chatRoomTable, ChatMessageSender messageSender) {
+         this.campfireChatSettings = campfireChatSettings;
          CampfireNetClient = campfireNetClient;
          ChatRoomTable = chatRoomTable;
          MessageSender = messageSender;
@@ -25,7 +32,10 @@ namespace CampfireChat {
       public CampfireNetClient CampfireNetClient { get; }
       public ChatRoomTable ChatRoomTable { get; }
       public ChatMessageSender MessageSender { get; }
-      public string LocalFriendlyName { get; set; }
+      public string LocalFriendlyName {
+         get { return campfireChatSettings.LocalFriendlyName; }
+         set { campfireChatSettings.LocalFriendlyName = value; }
+      }
 
       public void Initialize() {
          CampfireNetClient.MessageReceived += HandleClientMessageReceived;
