@@ -186,6 +186,10 @@
       <Project>{08295e02-de64-41df-b647-c6a8716ce816}</Project>
       <Name>CampfireChat.Core</Name>
     </ProjectReference>
+    <ProjectReference Include="..\..\CampfireNet\CampfireNet.Identities\CampfireNet.Identities.csproj">
+      <Project>{0db822bc-fad9-496b-ac8e-f880b02a4590}</Project>
+      <Name>CampfireNet.Identities</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
