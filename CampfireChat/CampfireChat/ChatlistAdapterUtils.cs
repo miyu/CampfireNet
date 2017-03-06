@@ -43,7 +43,7 @@ namespace CampfireChat
 		{
 			if (ItemClick != null)
 			{
-				string title = string.Join(", ", Entries[position].Names);
+				string title = Entries[position].FriendlyName;
 				ItemClick(this, new Title(title, position));
 			}
 		}
@@ -96,3 +96,4 @@ namespace CampfireChat
 		}
 	}
 }
+
