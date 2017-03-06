@@ -5,6 +5,8 @@ using Android.Content;
 using Android.OS;
 using Android.Support.V7.Widget;
 using Android.Views;
+using CampfireNet.Identities;
+using Encoding = System.Text.Encoding;
 
 namespace CampfireChat
 {
@@ -16,10 +18,15 @@ namespace CampfireChat
 		private RecyclerView.LayoutManager chatlistLayoutManager;
 
 		private ChatRoomTable table = null;
+	   private HashSet<byte[]> knownRooms;
 
 		protected override void OnCreate(Bundle savedInstanceState)
 		{
 			List<ChatEntry> testEntries = createTestData();
+         knownRooms = new HashSet<byte[]>();
+		   knownRooms.Add(CryptoUtil.GetHash(Identity.BROADCAST_ID));
+		   knownRooms.Add(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Fred")));
+		   testEntries = GetKnownRooms();
 
 			base.OnCreate(savedInstanceState);
 			SetContentView(Resource.Layout.Main);
@@ -38,10 +45,23 @@ namespace CampfireChat
 			chatlistRecyclerView.SetAdapter(chatlistAdapter);
 		}
 
-		private void OnItemClick(object sender, Title title)
+      private List<ChatEntry> GetKnownRooms() {
+         var entries = new List<ChatEntry>();
+         foreach (var roomKey in knownRooms) {
+            ChatRoomContext context;
+            bool found = table.TryLookup(IdentityHash.GetFlyweight(roomKey), out context);
+            if (found) {
+               entries.Add(new ChatEntry(roomKey, context));
+            }
+         }
+
+         return entries;
+      }
+
+		private void OnItemClick(object sender, byte[] chatId)
 		{
 			Intent intent = new Intent(this, typeof(ChatActivity));
-			intent.PutExtra("title", title.TitleString);
+			intent.PutExtra("chatId", chatId);
 			StartActivity(intent);
 		}
 
@@ -96,29 +116,20 @@ namespace CampfireChat
 				"text here", "more longish text here", "Love", "Air", "Shoes", "Hair", "Perfume",
 				"Obfuscation", "Clock", "Game", "Scroll", "Lion", "Chrome", "Tresure", "Charm" };
 
-			string[][] testNames = new string[5][];
+			var testNames = new string[5][];
 			testNames[0] = new string[] { "Name1Test" };
 			testNames[1] = new string[] { "Name2Test1", "Name2Test2" };
 			testNames[2] = new string[] { "Name3Test1", "Name3Test2", "Name3Test3" };
 			testNames[3] = new string[] { "Name4Test1", "Name4Test2", "Name4Test3", "Name4Test4" };
 			testNames[4] = new string[] { "Name5Test1", "Name5Test2", "Name5Test3", "Name5Test4", "Name5Test5" };
 
-			List<ChatEntry> entries = new List<ChatEntry>();
+			var entries = new List<ChatEntry>();
 
-			for (var i = 0; i < testData.Length; i++)
-			{
-				string[] names;
-				if (i < testNames.Length)
-				{
-					names = testNames[i];
-				}
-				else
-				{
-					names = new string[] { "default" };
-				}
-
-				entries.Add(new ChatEntry(names[0], new byte[] {}, testData[i]));
-			}
+//			for (var i = 0; i < testData.Length; i++) {
+//			   var names = i < testNames.Length ? testNames[i] : new string[] { "default" };
+//
+//			   entries.Add(new ChatEntry());
+//			}
 
 			return entries;
 		}
