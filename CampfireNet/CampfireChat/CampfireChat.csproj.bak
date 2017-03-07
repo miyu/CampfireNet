@@ -32,9 +32,9 @@
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AndroidUseSharedRuntime>True</AndroidUseSharedRuntime>
+    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
     <AndroidLinkMode>None</AndroidLinkMode>
-    <EmbedAssembliesIntoApk>False</EmbedAssembliesIntoApk>
+    <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <BundleAssemblies>False</BundleAssemblies>
     <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
@@ -43,6 +43,7 @@
     <EnableLLVM>False</EnableLLVM>
     <AndroidEnableMultiDex>False</AndroidEnableMultiDex>
     <EnableProguard>False</EnableProguard>
+    <Debugger>.Net (Xamarin)</Debugger>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>PdbOnly</DebugType>
@@ -182,19 +183,19 @@
     <AndroidResource Include="Resources\xml\searchable.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\CampfireChat.Core\CampfireChat.Core.csproj">
+    <ProjectReference Include="..\..\CampfireNet\CampfireChat.Core\CampfireChat.Core.csproj">
       <Project>{08295e02-de64-41df-b647-c6a8716ce816}</Project>
       <Name>CampfireChat.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CampfireNet.Android\CampfireNet.Android.csproj">
-      <Project>{f8783a31-77c7-4c52-9e13-698fe20dc4a3}</Project>
+    <ProjectReference Include="..\..\CampfireNet\CampfireNet.Android\CampfireNet.Android.csproj">
+      <Project>{F8783A31-77C7-4C52-9E13-698FE20DC4A3}</Project>
       <Name>CampfireNet.Android</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CampfireNet.Core\CampfireNet.Core.csproj">
+    <ProjectReference Include="..\..\CampfireNet\CampfireNet.Core\CampfireNet.Core.csproj">
       <Project>{74987653-09da-4274-bec8-759f95bc9836}</Project>
       <Name>CampfireNet.Core</Name>
     </ProjectReference>
-    <ProjectReference Include="..\CampfireNet.Identities\CampfireNet.Identities.csproj">
+    <ProjectReference Include="..\..\CampfireNet\CampfireNet.Identities\CampfireNet.Identities.csproj">
       <Project>{0db822bc-fad9-496b-ac8e-f880b02a4590}</Project>
       <Name>CampfireNet.Identities</Name>
     </ProjectReference>

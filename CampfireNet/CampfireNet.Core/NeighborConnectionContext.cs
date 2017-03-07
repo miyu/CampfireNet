@@ -116,6 +116,8 @@ namespace CampfireNet {
 							break;
 						case nameof(GivePacket):
 							DebugPrint("Got GIVE {0}", ((GivePacket)packet).NodeHash);
+					      var p = (GivePacket)packet;
+                     Console.WriteLine($"Recieved data hash {p.NodeHash} ({p.Node.Contents.Length} '{BitConverter.ToString(p.Node.Contents)}')");
 							await ChannelsExtensions.WriteAsync(giveChannel, (GivePacket)packet).ConfigureAwait(false);
 							break;
 						case nameof(WhoisPacket):
@@ -242,6 +244,7 @@ namespace CampfireNet {
 						neighbor.SendAsync(serializer.ToByteArray(need)).Forget();
 					}
 
+               Console.WriteLine($"Found {neededHashes.Count} messages to sync");
 					foreach (var i in Enumerable.Range(0, neededHashes.Count)) {
 						var hash = neededHashes.First();
 						neededHashes.RemoveFirst();
@@ -251,6 +254,7 @@ namespace CampfireNet {
 						}
 
 						var give = await ChannelsExtensions.ReadAsync(giveChannel).ConfigureAwait(false);
+                  Console.WriteLine($"Got hash {give.NodeHash}");
 						nodesToImport.Add(Tuple.Create(give.NodeHash, give.Node));
 
 						if (!await IsRemoteObjectHeldLocally(give.Node.LeftHash).ConfigureAwait(false)) {
@@ -268,6 +272,7 @@ namespace CampfireNet {
 																				  n => n.Item1,
 																				  n => broadcastMessageSerializer.Deserialize(n.Item2.Contents)
 																			  );
+            Console.WriteLine($"Need to add {broadcastMessagesByNodeHash.Count} hashes that we don't have");
 
 				var neededSourceIdHashes = broadcastMessagesByNodeHash.Select(kvp => kvp.Value.SourceIdHash)
 																						.GroupBy(sourceIdHash => sourceIdHash.ToHexString())
@@ -314,28 +319,26 @@ namespace CampfireNet {
 				}
 
 				await remoteMerkleTree.ImportAsync(have.MerkleRootHash, nodesToImport).ConfigureAwait(false);
+
+            Console.WriteLine($"Currently have {nodesToImport.Count} nodes to import still");
+
 				foreach (var tuple in nodesToImport) {
 					var node = tuple.Item2;
 					if (node.Descendents == 0 && await localMerkleTree.GetNodeAsync(tuple.Item1).ConfigureAwait(false) == null) {
 						var isDataNode = node.TypeTag == MerkleNodeTypeTag.Data;
 						BroadcastMessageDto message = isDataNode ? broadcastMessageSerializer.Deserialize(node.Contents) : null;
 
+                  Console.WriteLine("Got data node");
+
 						var insertionResult = await localMerkleTree.TryInsertAsync(tuple.Item2).ConfigureAwait(false);
 						if (insertionResult.Item1 && isDataNode) {
 							byte[] decryptedPayload;
+						   Console.WriteLine("Got a message");
 							if (identity.TryDecodePayload(message, out decryptedPayload)) {
-
-								byte[] denumberedMessage;
-								if (decryptedPayload.Length > 4) {
-									denumberedMessage = new byte[decryptedPayload.Length - 4];
-									Buffer.BlockCopy(decryptedPayload, 4, denumberedMessage, 0, denumberedMessage.Length - 4);
-								} else {
-									denumberedMessage = decryptedPayload;
-								}
 								BroadcastReceived?.Invoke(new MessageReceivedEventArgs(neighbor, new BroadcastMessage {
 									SourceId = IdentityHash.GetFlyweight(message.SourceIdHash),
 									DestinationId = IdentityHash.GetFlyweight(message.DestinationIdHash),
-									DecryptedPayload = denumberedMessage,
+									DecryptedPayload = decryptedPayload,
 									Dto = message
 								}));
 							}

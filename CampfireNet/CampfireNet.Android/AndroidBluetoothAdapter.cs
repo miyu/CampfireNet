@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Android.Bluetooth;
@@ -160,8 +161,8 @@ namespace AndroidTest.Droid {
          }
 
          public async Task SendAsync(byte[] data) {
+            Console.WriteLine($"Sending data hash {Encoding.UTF8.GetString(data.Take(48).ToArray())} ({data.Length}) '{BitConverter.ToString(data.Skip(48).ToArray())}'");
             using (await synchronization.LockAsync().ConfigureAwait(false)) {
-               Console.WriteLine("Sending Data from Neighbor ---");
                try {
                   var stream = socket.OutputStream;
                   await stream.WriteAsync(BitConverter.GetBytes(data.Length), 0, 4).ConfigureAwait(false);

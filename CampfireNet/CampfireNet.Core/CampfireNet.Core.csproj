@@ -5,6 +5,11 @@
     <RootNamespace>CampfireNet</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>full</DebugType>
+    <DebugSymbols>True</DebugSymbols>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\CampfireNet.Identities\CampfireNet.Identities.csproj">
       <Project>{0DB822BC-FAD9-496B-AC8E-F880B02A4590}</Project>

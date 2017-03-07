@@ -5,6 +5,11 @@
     <RootNamespace>CampfireChat</RootNamespace>
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>full</DebugType>
+    <DebugSymbols>True</DebugSymbols>
+  </PropertyGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\CampfireNet.Core\CampfireNet.Core.csproj" />
     <ProjectReference Include="..\CampfireNet.Identities\CampfireNet.Identities.csproj" />
