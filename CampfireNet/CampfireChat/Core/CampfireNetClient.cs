@@ -4,12 +4,17 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
+using Android.Media;
 using CampfireNet.Identities;
 using CampfireNet.IO;
 using CampfireNet.IO.Transport;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.Channels;
 using CampfireNet.Utilities.Merkle;
+using Java.Lang;
+using Encoding = System.Text.Encoding;
+using Exception = System.Exception;
+using Math = System.Math;
 
 namespace CampfireNet {
    public class CampfireNetClient {
@@ -49,7 +54,7 @@ namespace CampfireNet {
 					}
 				));
 			}
-		}
+      }
 
       public async Task UnicastAsync(IdentityHash destinationId, byte[] payload) {
          var trustChainNode = identity.IdentityManager.LookupIdentity(destinationId.Bytes.ToArray());
@@ -61,8 +66,8 @@ namespace CampfireNet {
             MessageSent?.Invoke(new MessageReceivedEventArgs(
                null,
                new BroadcastMessage {
-                  SourceId = IdentityHash.GetFlyweight(identity.PublicIdentity),
-                  DestinationId = IdentityHash.GetFlyweight(Identity.BROADCAST_ID),
+                  SourceId = IdentityHash.GetFlyweight(identity.PublicIdentityHash),
+                  DestinationId = destinationId,
                   DecryptedPayload = payload,
                   Dto = messageDto
                }
@@ -70,7 +75,29 @@ namespace CampfireNet {
          }
       }
 
-		public async Task RunAsync() {
+      public async Task MulticastAsync(IdentityHash destinationId, byte[] payload) {
+         byte[] symmetricKey;
+         if (!identity.IdentityManager.TryLookupMulticastKey(destinationId, out symmetricKey)) {
+            throw new InvalidStateException("Attempted to multicast to destination of unknown key!");
+         }
+
+         var messageDto = identity.EncodePacket(payload, symmetricKey);
+         var localInsertionResult = await localMerkleTree.TryInsertAsync(messageDto).ConfigureAwait(false);
+         if (localInsertionResult.Item1) {
+            // "Decrypt the message"
+            MessageSent?.Invoke(new MessageReceivedEventArgs(
+               null,
+               new BroadcastMessage {
+                  SourceId = IdentityHash.GetFlyweight(identity.PublicIdentityHash),
+                  DestinationId = destinationId,
+                  DecryptedPayload = payload,
+                  Dto = messageDto
+               }
+            ));
+         }
+      }
+
+      public async Task RunAsync() {
 			try {
 				await DiscoverAsync();
 			} catch (Exception e) {

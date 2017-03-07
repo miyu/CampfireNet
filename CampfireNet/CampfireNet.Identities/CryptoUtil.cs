@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -99,8 +100,6 @@ namespace CampfireNet.Identities {
          }
       }
 
-
-
       public static byte[] SymmetricDecrypt(byte[] data, byte[] key, byte[] iv) {
          if (key.Length != SYM_KEY_SIZE || iv.Length != IV_SIZE) {
             throw new CryptographicException("Bad key size");
@@ -125,6 +124,13 @@ namespace CampfireNet.Identities {
                   return output.ToArray();
                }
             }
+         }
+      }
+
+      public static byte[] GenerateIV() {
+         using (var aes = Aes.Create()) {
+            aes.GenerateIV();
+            return aes.IV;
          }
       }
 

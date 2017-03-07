@@ -2,19 +2,17 @@
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Security.Cryptography;
+using CampfireNet.Utilities;
 
 namespace CampfireNet.Identities
 {
 	public class IdentityManager
 	{
-		// keys are strings of public keys, formatted as:
-		//     ItentityService.getIdentityString(publicKey);
-		private ConcurrentDictionary<string, TrustChainNode> identityTable;
+      // keys are strings of public keys, formatted as:
+      //     ItentityService.getIdentityString(publicKey);
+	   private readonly ConcurrentDictionary<string, TrustChainNode> userIdentityTable = new ConcurrentDictionary<string, TrustChainNode>();
 
-		public IdentityManager()
-		{
-			identityTable = new ConcurrentDictionary<string, TrustChainNode>();
-		}
+	   private readonly ConcurrentDictionary<IdentityHash, byte[]> multicastEncryptionKeysByIdentity = new ConcurrentDictionary<IdentityHash, byte[]>();
 
 		// returns the canonical identity string of a public key
 		public static string GetIdentityString(byte[] publicKey)
@@ -37,7 +35,7 @@ namespace CampfireNet.Identities
 		// TODO remove name crap
 		public bool AddIdentity(TrustChainNode identity, string name = "")
 		{
-			bool successAdded = identityTable.TryAdd(GetIdentityString(identity.ThisId), identity);
+			bool successAdded = userIdentityTable.TryAdd(GetIdentityString(identity.ThisId), identity);
 			string existsString = successAdded ? "not found" : "found";
 			Console.WriteLine($"{name} adding {identity.Name}: identity {existsString}");
 			return successAdded;
@@ -55,7 +53,7 @@ namespace CampfireNet.Identities
 		public TrustChainNode LookupIdentity(string publicKeyHash)
 		{
 			TrustChainNode identity;
-			if (identityTable.TryGetValue(publicKeyHash, out identity))
+			if (userIdentityTable.TryGetValue(publicKeyHash, out identity))
 			{
 				return identity;
 			}
@@ -69,6 +67,14 @@ namespace CampfireNet.Identities
 
       public bool IsKnownIdentity(byte[] idOrIdHash) {
          return LookupIdentity(GetIdentityString(idOrIdHash)) != null;
+      }
+
+	   public void AddMulticastKey(IdentityHash identityHash, byte[] symmetricKey) {
+	      multicastEncryptionKeysByIdentity[identityHash] = symmetricKey;
+	   }
+
+      public bool TryLookupMulticastKey(IdentityHash identityHash, out byte[] symmetricKey) {
+         return multicastEncryptionKeysByIdentity.TryGetValue(identityHash, out symmetricKey);
       }
    }
 }

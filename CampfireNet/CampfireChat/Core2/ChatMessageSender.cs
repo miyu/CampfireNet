@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using CampfireNet;
 using CampfireNet.Identities;
@@ -25,6 +26,9 @@ namespace CampfireChat {
          if (chatroomContext.IsUnicast) {
             Console.WriteLine("Unicast messaging");
             await client.UnicastAsync(destination, messageDtoBytes);
+         } else if (destination.Bytes.Any(v => v != 0)) {
+            Console.WriteLine("Multicast messaging");
+            await client.MulticastAsync(destination, messageDtoBytes);
          } else {
             Console.WriteLine("Broadcast messaging");
             await client.BroadcastAsync(messageDtoBytes);

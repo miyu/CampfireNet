@@ -14,15 +14,18 @@ namespace CampfireChat
 
 		private int selectedPos = -1;
 
-		public ChatAdapter(List<MessageEntry> entries)
+		public ChatAdapter(List<MessageEntry> entries = null)
 		{
-			Entries = entries;
+			Entries = entries ?? new List<MessageEntry>();
 		}
 
-		public void AddEntry(int position, MessageEntry entry)
+		public void AddEntry(MessageEntry entry, int position = -1)
 		{
+         if (position == -1) {
+            position = Entries.Count;
+         }
+         Console.WriteLine($"              ##################### adding entry at {position} with text {entry.Message}");
 			Entries.Insert(position, entry);
-			NotifyItemInserted(position);
 		}
 
 		public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)

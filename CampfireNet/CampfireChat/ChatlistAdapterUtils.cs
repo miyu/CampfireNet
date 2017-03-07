@@ -30,7 +30,7 @@ namespace CampfireChat {
          ChatEntry entry = Entries[position];
 
          vh.FriendlyName.Text = entry.Context.FriendlyName;
-         vh.Preview.Text = "Preview TBD";
+         vh.Preview.Text = entry.Context.FriendlyName;
       }
 
       private void OnClick(int position) {

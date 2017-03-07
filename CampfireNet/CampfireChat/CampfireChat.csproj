@@ -39,7 +39,6 @@
     <BundleAssemblies>False</BundleAssemblies>
     <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
     <AndroidSupportedAbis>armeabi;armeabi-v7a;x86;arm64-v8a</AndroidSupportedAbis>
-    <Debugger>Xamarin</Debugger>
     <AotAssemblies>False</AotAssemblies>
     <EnableLLVM>False</EnableLLVM>
     <AndroidEnableMultiDex>False</AndroidEnableMultiDex>
@@ -97,8 +96,45 @@
     <Reference Include="Mono.Android.Export" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Android\AndroidBluetoothAdapter.cs" />
+    <Compile Include="Android\AndroidBluetoothAdapterFactory.cs" />
+    <Compile Include="Android\AndroidBluetoothFacade.cs" />
+    <Compile Include="Android\AutomaticPairingService.cs" />
+    <Compile Include="Android\BluetoothDiscoveryFacade.cs" />
+    <Compile Include="Android\BluetoothServer.cs" />
+    <Compile Include="Android\CampfireNetBluetoothConstants.cs" />
+    <Compile Include="Android\InboundBluetoothSocketTable.cs" />
+    <Compile Include="Android\LambdaBroadcastReceiver.cs" />
+    <Compile Include="Android\LambdaHandler.cs" />
+    <Compile Include="Android\MacUtilities.cs" />
     <Compile Include="ChatlistAdapterUtils.cs" />
     <Compile Include="ContactlistAdapterUtils.cs" />
+    <Compile Include="Core2\CampfireChatClientFactory.cs" />
+    <Compile Include="Core2\ChatMessageOrderComparer.cs" />
+    <Compile Include="Core2\ChatMessageSender.cs" />
+    <Compile Include="Core2\ChatRoomContext.cs" />
+    <Compile Include="Core2\ChatRoomTable.cs" />
+    <Compile Include="Core2\InboundMessageDispatcher.cs" />
+    <Compile Include="Core\CampfireNetClient.cs" />
+    <Compile Include="Core\CampfireNetClientBuilder.cs" />
+    <Compile Include="Core\ClientMerkleTreeFactory.cs" />
+    <Compile Include="Core\IO\BroadcastMessage.cs" />
+    <Compile Include="Core\IO\BroadcastMessageSerializer.cs" />
+    <Compile Include="Core\IO\NotConnectedException.cs" />
+    <Compile Include="Core\IO\Packets\DonePacket.cs" />
+    <Compile Include="Core\IO\Packets\GivePacket.cs" />
+    <Compile Include="Core\IO\Packets\HavePacket.cs" />
+    <Compile Include="Core\IO\Packets\IdentPacket.cs" />
+    <Compile Include="Core\IO\Packets\NeedPacket.cs" />
+    <Compile Include="Core\IO\Packets\PacketType.cs" />
+    <Compile Include="Core\IO\Packets\WhoisPacket.cs" />
+    <Compile Include="Core\IO\Packets\WirePacketSerializer.cs" />
+    <Compile Include="Core\IO\Transport\IBluetoothAdapter.cs" />
+    <Compile Include="Core\IO\Transport\IBluetoothNeighbor.cs" />
+    <Compile Include="Core\MessageReceivedEventArgs.cs" />
+    <Compile Include="Core\NeighborConnectionContext.cs" />
+    <Compile Include="Core\Security\__HackPrivateKeyUtilities.cs" />
+    <Compile Include="Globals.cs" />
     <Compile Include="NewChatActivity.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
@@ -182,13 +218,13 @@
     <AndroidResource Include="Resources\xml\searchable.xml" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\CampfireNet\CampfireChat.Core\CampfireChat.Core.csproj">
-      <Project>{08295e02-de64-41df-b647-c6a8716ce816}</Project>
-      <Name>CampfireChat.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\CampfireNet\CampfireNet.Identities\CampfireNet.Identities.csproj">
+    <ProjectReference Include="..\CampfireNet.Identities\CampfireNet.Identities.csproj">
       <Project>{0db822bc-fad9-496b-ac8e-f880b02a4590}</Project>
       <Name>CampfireNet.Identities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
+      <Project>{2b952a46-062b-4238-933f-923bc8e77fc9}</Project>
+      <Name>CampfireNet.Utilities</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

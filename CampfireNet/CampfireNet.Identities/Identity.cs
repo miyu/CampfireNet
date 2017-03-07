@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Xml;
 using CampfireNet.Utilities;
 
 namespace CampfireNet.Identities {
@@ -134,34 +136,66 @@ namespace CampfireNet.Identities {
          return true;
       }
 
+      // unicast/broadcast
       // () asymmetric encrypt
       // <[sender hash][recipient hash]([sender hash][message])[signature]>
       //  [32         ][32            ] [32         ][msg len] [256      ]
-      public BroadcastMessageDto EncodePacket(byte[] message, byte[] remoteModulus = null) {
-         if (remoteModulus != null && remoteModulus.Length != CryptoUtil.ASYM_KEY_SIZE_BYTES) {
+      // 
+      // multicast
+      // () symmetric encrypt
+      // <[sender hash][recipient hash][IV](<[message][signature]>)[signature]>
+      public BroadcastMessageDto EncodePacket(byte[] message, byte[] remoteKey = null) {
+         if (remoteKey != null && remoteKey.Length != CryptoUtil.ASYM_KEY_SIZE_BYTES && remoteKey.Length != CryptoUtil.SYM_KEY_SIZE) {
             throw new CryptographicException("Bad key size");
          }
 
          byte[] senderHash = CryptoUtil.GetHash(privateKey.Modulus);
-         byte[] recipientHash;
+         byte[] recipientHash = CryptoUtil.GetHash(remoteKey); ;
          byte[] processedMessage;
 
-         if (remoteModulus == null) {
+         if (remoteKey == null) {
+            // broadcast
             recipientHash = BROADCAST_ID;
             processedMessage = message;
+         } else if (remoteKey.Length == CryptoUtil.ASYM_KEY_SIZE_BYTES) {
+            // unicast
+            using (var ms = new MemoryStream())
+            using (var writer = new BinaryWriter(ms)) {
+               writer.Write(senderHash);
+               writer.Write(message);
+               processedMessage = ms.ToArray();
+            }
+
+            processedMessage = CryptoUtil.AsymmetricEncrypt(processedMessage, remoteKey);
          } else {
-            recipientHash = CryptoUtil.GetHash(remoteModulus);
-            byte[] senderAndMessage = new byte[CryptoUtil.HASH_SIZE + message.Length];
-            Buffer.BlockCopy(senderHash, 0, senderAndMessage, 0, CryptoUtil.HASH_SIZE);
-            Buffer.BlockCopy(message, 0, senderAndMessage, CryptoUtil.HASH_SIZE, message.Length);
-            processedMessage = CryptoUtil.AsymmetricEncrypt(senderAndMessage, remoteModulus);
+            // multicast
+            using (var ms = new MemoryStream())
+            using (var writer = new BinaryWriter(ms)) {
+               writer.Write(message);
+               writer.Write(CryptoUtil.Sign(message, privateKey));
+               processedMessage = ms.ToArray();
+            }
+
+            byte[] iv = CryptoUtil.GenerateIV();
+            processedMessage = CryptoUtil.SymmetricEncrypt(processedMessage, remoteKey, iv);
+
+            using (var ms = new MemoryStream())
+            using (var writer = new BinaryWriter(ms)) {
+               writer.Write(iv);
+               writer.Write(processedMessage);
+               processedMessage = ms.ToArray();
+            }
          }
 
-         byte[] payload = new byte[2 * CryptoUtil.HASH_SIZE + processedMessage.Length];
-         Buffer.BlockCopy(senderHash, 0, payload, 0, CryptoUtil.HASH_SIZE);
-         Buffer.BlockCopy(recipientHash, 0, payload, CryptoUtil.HASH_SIZE, CryptoUtil.HASH_SIZE);
-         Buffer.BlockCopy(processedMessage, 0, payload, 2 * CryptoUtil.HASH_SIZE, processedMessage.Length);
-
+         byte[] payload;
+         using (var ms = new MemoryStream())
+         using (var writer = new BinaryWriter(ms)) {
+            writer.Write(senderHash);
+            writer.Write(recipientHash);
+            writer.Write(processedMessage);
+            payload = ms.ToArray();
+         }
+         
          byte[] signature = CryptoUtil.Sign(payload, privateKey);
 
          return new BroadcastMessageDto {
@@ -178,44 +212,66 @@ namespace CampfireNet.Identities {
          var payload = broadcastMessage.Payload;
          var signature = broadcastMessage.Signature;
 
-         bool unicast = receiverHash.SequenceEqual(identityHash);
-         bool broadcast = receiverHash.SequenceEqual(BROADCAST_ID);
+         byte[] totalMessage;
+         using (var ms = new MemoryStream())
+         using (var writer = new BinaryWriter(ms)) {
+            writer.Write(senderHash);
+            writer.Write(receiverHash);
+            writer.Write(payload);
+            totalMessage = ms.ToArray();
+         }
 
-         if (!unicast && !broadcast) {
+         var senderNode = identityManager.LookupIdentity(senderHash);
+         if (senderNode == null) {
+//            throw new InvalidStateException("Sender has not recognized");
             decryptedPayload = null;
             return false;
          }
 
-         byte[] modulus;
-         TrustChainNode senderNode = identityManager.LookupIdentity(senderHash);
-         if (senderNode == null) {
-            throw new InvalidStateException("Sender hash not recognized");
-         } else {
-            modulus = senderNode.ThisId;
+         if (!CryptoUtil.Verify(totalMessage, senderNode.ThisId, signature)) {
+//            throw new CryptographicException("Could not verify message");
+            decryptedPayload = null;
+            return false;
          }
 
-         if (!CryptoUtil.Verify(broadcastMessage, modulus, signature)) {
-            throw new CryptographicException("Could not verify message");
-         }
+         // message is now verified
 
-         if (broadcast) {
+         if (receiverHash.SequenceEqual(BROADCAST_ID)) {
+            // broadcast
             decryptedPayload = payload;
             return true;
+         } else if (receiverHash.SequenceEqual(identityHash)) {
+            // unicast to us
+            var decryptedSenderAndMessage = CryptoUtil.AsymmetricDecrypt(payload, privateKey);
+            if (!decryptedSenderAndMessage.Take(CryptoUtil.HASH_SIZE).SequenceEqual(senderHash)) {
+               // BREACH BREACH BREACH DEPLOY SECURITY COUNTER MEASURES
+//               throw new CryptographicException("DATA WAS BAD THERE ARE BAD PEOPLE HERE THEY MUST BE KEPT OUT");
+               decryptedPayload = null;
+               return false;
+            }
+            decryptedPayload = decryptedSenderAndMessage.Skip(CryptoUtil.HASH_SIZE).ToArray();
+            return true;
+         } else if (identityManager.TryLookupMulticastKey(IdentityHash.GetFlyweight(receiverHash), out byte[] symmetricKey)) {
+            // multicast
+            var iv = payload.Take(CryptoUtil.IV_SIZE).ToArray();
+            var encryptedMessage = payload.Skip(CryptoUtil.IV_SIZE).ToArray();
+            var messageAndInnerSignature = CryptoUtil.SymmetricDecrypt(encryptedMessage, symmetricKey, iv);
+            var innerSignature = messageAndInnerSignature.Skip(messageAndInnerSignature.Length - CryptoUtil.ASYM_KEY_SIZE_BYTES).ToArray();
+            var message = messageAndInnerSignature.Take(messageAndInnerSignature.Length - CryptoUtil.ASYM_KEY_SIZE_BYTES).ToArray();
+            
+            if (!CryptoUtil.Verify(message, senderNode.ThisId, innerSignature)) {
+//               throw new CryptographicException("Could not verify inner signature");
+               decryptedPayload = null;
+               return false;
+            }
+
+            decryptedPayload = message;
+            return true;
+         } else {
+            // unknown multi/unicast
+            decryptedPayload = null;
+            return false;
          }
-
-         byte[] decryptedSenderAndMessage = broadcast ? payload : CryptoUtil.AsymmetricDecrypt(payload, privateKey);
-         byte[] decryptedSenderHash = new byte[CryptoUtil.HASH_SIZE];
-
-         Buffer.BlockCopy(decryptedSenderAndMessage, 0, decryptedSenderHash, 0, CryptoUtil.HASH_SIZE);
-
-         if (!decryptedSenderHash.SequenceEqual(senderHash)) {
-            throw new CryptographicException("Sender hash does not equal sender hash in message");
-         }
-
-         var messageSize = decryptedSenderAndMessage.Length - CryptoUtil.HASH_SIZE;
-         decryptedPayload = new byte[messageSize];
-         Buffer.BlockCopy(decryptedSenderAndMessage, CryptoUtil.HASH_SIZE, decryptedPayload, 0, messageSize);
-         return true;
       }
 
       public void SaveKey(string path) {
