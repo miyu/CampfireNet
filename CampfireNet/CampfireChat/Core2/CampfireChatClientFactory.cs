@@ -76,6 +76,7 @@ namespace CampfireChat {
       }
 
       public void Dispose() {
+         CampfireNetClient.MessageSent -= HandleClientMessageReceivedOrSent;
          CampfireNetClient.MessageReceived -= HandleClientMessageReceivedOrSent;
       }
    }

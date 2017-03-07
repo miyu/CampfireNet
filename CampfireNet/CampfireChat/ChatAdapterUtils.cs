@@ -24,8 +24,8 @@ namespace CampfireChat
          if (position == -1) {
             position = Entries.Count;
          }
+         Console.WriteLine($"              ##################### adding entry at {position} with text {entry.Message}");
 			Entries.Insert(position, entry);
-			NotifyItemInserted(position);
 		}
 
 		public override RecyclerView.ViewHolder OnCreateViewHolder(ViewGroup parent, int viewType)

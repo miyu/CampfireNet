@@ -26,8 +26,6 @@ namespace CampfireChat
 		
 		public static void UpdateIdValues()
 		{
-			global::CampfireNet.Android.Resource.String.ApplicationName = global::CampfireChat.Resource.String.ApplicationName;
-			global::CampfireNet.Android.Resource.String.Hello = global::CampfireChat.Resource.String.Hello;
 		}
 		
 		public partial class Animation
@@ -2402,13 +2400,10 @@ namespace CampfireChat
 			public const int ApplicationName = 2131361826;
 			
 			// aapt resource value: 0x7f0a0021
-			public const int Hello = 2131361825;
+			public const int NewMessage = 2131361825;
 			
 			// aapt resource value: 0x7f0a0023
-			public const int NewMessage = 2131361827;
-			
-			// aapt resource value: 0x7f0a0024
-			public const int SearchHint = 2131361828;
+			public const int SearchHint = 2131361827;
 			
 			// aapt resource value: 0x7f0a0000
 			public const int abc_action_bar_home_description = 2131361792;

@@ -19,6 +19,8 @@ namespace CampfireNet.Identities {
 
       public static IdentityHash GetFlyweight(byte[] data) {
          if (data.Length != CryptoUtil.HASH_SIZE) {
+            Console.WriteLine(BitConverter.ToString(data));
+            Console.WriteLine(data.Length);
             throw new ArgumentException($"{nameof(data)} wasn't of correct hash length.");
          }
 

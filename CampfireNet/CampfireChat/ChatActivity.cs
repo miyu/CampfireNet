@@ -9,22 +9,25 @@ using Android.OS;
 using Android.Support.V7.Widget;
 using Android.Views;
 using Android.Widget;
+using AndroidTest.Droid;
 using CampfireNet.Identities;
 using CampfireNet.Utilities;
 using static CampfireNet.Utilities.Channels.ChannelsExtensions;
 
 namespace CampfireChat {
    [Activity(Label = "Chat", ParentActivity = typeof(MainActivity))]
-	public class ChatActivity : Activity
-	{
+	public class ChatActivity : Activity {
+      internal const int UPDATE_VIEW = 0;
+
 		private RecyclerView chatRecyclerView;
 		private ChatAdapter chatAdapter;
 		private RecyclerView.LayoutManager chatLayoutManager;
 
 //		private List<MessageEntry> testMessages;
 	   private ChatRoomContext chatRoomContext;
-
 	   private ChatRoomViewModel viewModel;
+
+	   private Handler uiHandler;
 
 	   protected override void OnCreate(Bundle savedInstanceState)
 		{
@@ -63,15 +66,29 @@ namespace CampfireChat {
 		   var chatId = Intent.GetByteArrayExtra("chatId");
 		   chatRoomContext = Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(chatId));
 		   viewModel = chatRoomContext.CreateViewModelAndSubscribe((sender, e) => {
+            Console.WriteLine("        ######## hitting add entry time");
 		      var message = e.Message;
 		      if (message.ContentType != ChatMessageContentType.Text)
 		         throw new NotImplementedException();
-
+//
 		      chatAdapter.AddEntry(new MessageEntry(message.FriendlySenderName, Encoding.UTF8.GetString(message.ContentRaw)));
+		      uiHandler.ObtainMessage(UPDATE_VIEW, -1, 0).SendToTarget();
 		   });
+         foreach (var message in viewModel.InitialMessages) {
+            chatAdapter.AddEntry(new MessageEntry(message.FriendlySenderName, Encoding.UTF8.GetString(message.ContentRaw)));
+         }
 
 		   var sendButton = FindViewById<Button>(Resource.Id.SendMessage);
 		   sendButton.Click += HandleSendButtonClicked;
+
+         uiHandler = new LambdaHandler(msg => {
+            if (msg.What == UPDATE_VIEW) {
+               var index = msg.Arg1 == -1 ? chatAdapter.Entries.Count - 1 : msg.Arg1;
+               Console.WriteLine($"Updating item view at {index}");
+//               chatAdapter.NotifyItemChanged(index);
+                  chatAdapter.NotifyDataSetChanged();
+            }
+         });
 		}
 
 	   private void OnItemClick(object sender, byte[] id)
@@ -86,12 +103,16 @@ namespace CampfireChat {
 	   private void HandleSendButtonClicked(object sender, EventArgs e) {
 	      var sendTextbox = FindViewById<EditText>(Resource.Id.Input);
 	      var text = sendTextbox.Text;
-         Console.WriteLine(text);
-	      new Thread(() => {
-            Console.WriteLine("!");
+         Console.WriteLine("I got: " + text);
+         Console.WriteLine("~~~! 9");
+	      try {
 	         viewModel.SendMessageText(text);
-         }).Start();
+	      } catch (Exception ex) {
+            Console.WriteLine("Got error!");
+            Console.WriteLine(ex);
+         }
 	      sendTextbox.Text = "";
+         Console.WriteLine("Text box cleared");
       }
 
 	   public override bool OnCreateOptionsMenu(IMenu menu)

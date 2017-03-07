@@ -4,12 +4,14 @@ using System;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
+using Android.Media;
 using CampfireNet.Identities;
 using CampfireNet.IO;
 using CampfireNet.IO.Transport;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.Channels;
 using CampfireNet.Utilities.Merkle;
+using Encoding = System.Text.Encoding;
 
 namespace CampfireNet {
    public class CampfireNetClient {
