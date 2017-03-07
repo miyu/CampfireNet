@@ -87,6 +87,14 @@ namespace CampfireChat {
             Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General")))).FriendlyName = "General";
             Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Test")))).FriendlyName = "Test";
 
+            Globals.CampfireNetClient.IdentityManager.AddMulticastKey(
+               IdentityHash.GetFlyweight(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General"))),
+               CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General_Key")));
+
+            Globals.CampfireNetClient.IdentityManager.AddMulticastKey(
+               IdentityHash.GetFlyweight(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Test"))),
+               CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Test_Key")));
+
             Globals.JoinedRooms = new HashSet<byte[]> {
                Identity.BROADCAST_ID,
                CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General")),
