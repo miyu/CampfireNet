@@ -61,6 +61,16 @@ namespace CampfireChat {
          return chatRoomContext.CreateViewModelAndSubscribe(messageReceivedCallback);
       }
 
+      public ChatRoomContext ConfigurePublicChatRoom(string name) {
+         var roomHashBytes = Encoding.UTF8.GetBytes(name);
+         return ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(CryptoUtil.GetHash(roomHashBytes)));
+      }
+
+      public ChatRoomContext ConfigurePrivateChatRoom(IdentityHash hash, byte[] symmetricKey) {
+         CampfireNetClient.IdentityManager.AddMulticastKey(hash, symmetricKey);
+         return ChatRoomTable.GetOrCreate(hash);
+      }
+
       public void Dispose() {
          CampfireNetClient.MessageReceived -= HandleClientMessageReceived;
       }

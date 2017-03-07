@@ -36,11 +36,8 @@ namespace CampfireChat {
       private List<ChatEntry> GetKnownRooms() {
          var entries = new List<ChatEntry>();
          foreach (var roomKey in knownRooms) {
-            ChatRoomContext context;
-            bool found = chatClient.ChatRoomTable.TryLookup(IdentityHash.GetFlyweight(roomKey), out context);
-            if (found) {
-               entries.Add(new ChatEntry(roomKey, context));
-            }
+            ChatRoomContext context = chatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(roomKey));
+            entries.Add(new ChatEntry(roomKey, context));
          }
 
          return entries;

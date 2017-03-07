@@ -31,6 +31,7 @@ namespace CampfireNet {
 		public event MessageReceivedEventHandler MessageReceived;
 		public Guid AdapterId => bluetoothAdapter.AdapterId;
 	   public Identity Identity => identity;
+	   public IdentityManager IdentityManager => identity.IdentityManager;
 
 		public async Task BroadcastAsync(byte[] payload) {
 			var messageDto = identity.EncodePacket(payload, null);
