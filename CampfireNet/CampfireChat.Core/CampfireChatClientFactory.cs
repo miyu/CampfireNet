@@ -13,6 +13,7 @@ namespace CampfireChat {
          };
          var chatRoomTable = new ChatRoomTable(campfireChatSettings);
          var messageSender = new ChatMessageSender(campfireNetClient, chatRoomTable);
+         chatRoomTable.SetChatMessageSender(messageSender);
          var campfireChatClient = new CampfireChatClient(campfireNetClient, campfireChatSettings, chatRoomTable, messageSender);
          campfireChatClient.Initialize();
          return campfireChatClient;

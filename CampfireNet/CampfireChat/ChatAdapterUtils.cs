@@ -14,13 +14,16 @@ namespace CampfireChat
 
 		private int selectedPos = -1;
 
-		public ChatAdapter(List<MessageEntry> entries)
+		public ChatAdapter(List<MessageEntry> entries = null)
 		{
-			Entries = entries;
+			Entries = entries ?? new List<MessageEntry>();
 		}
 
-		public void AddEntry(int position, MessageEntry entry)
+		public void AddEntry(MessageEntry entry, int position = -1)
 		{
+         if (position == -1) {
+            position = Entries.Count;
+         }
 			Entries.Insert(position, entry);
 			NotifyItemInserted(position);
 		}

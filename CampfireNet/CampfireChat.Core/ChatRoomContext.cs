@@ -50,7 +50,7 @@ namespace CampfireChat {
          chatMessageSender.Send(IdentityHash, message).Forget();
       }
 
-      internal void SendMessage(ChatMessageContentType contentType, byte[] contentRaw) {
+      public void SendMessage(ChatMessageContentType contentType, byte[] contentRaw) {
          var message = new ChatMessageDto {
             SequenceNumber = Interlocked.Increment(ref outboundMessageSequenceNumber),
             LogicalClock = CaptureCurrentLogicalClock(),
@@ -58,7 +58,7 @@ namespace CampfireChat {
             ContentType = ChatMessageContentType.Text,
             ContentRaw = contentRaw
          };
-         chatMessageSender.Send(IdentityHash, message).Forget();
+         SendMessage(message);
       }
 
       public void HandleMessageReceived(ChatMessageDto message) {

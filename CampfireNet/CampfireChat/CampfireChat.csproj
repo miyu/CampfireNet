@@ -32,18 +32,18 @@
     <DefineConstants>DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
-    <AndroidUseSharedRuntime>True</AndroidUseSharedRuntime>
+    <AndroidUseSharedRuntime>False</AndroidUseSharedRuntime>
     <AndroidLinkMode>None</AndroidLinkMode>
-    <EmbedAssembliesIntoApk>False</EmbedAssembliesIntoApk>
+    <EmbedAssembliesIntoApk>True</EmbedAssembliesIntoApk>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <BundleAssemblies>False</BundleAssemblies>
     <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
     <AndroidSupportedAbis>armeabi;armeabi-v7a;x86;arm64-v8a</AndroidSupportedAbis>
-    <Debugger>Xamarin</Debugger>
     <AotAssemblies>False</AotAssemblies>
     <EnableLLVM>False</EnableLLVM>
     <AndroidEnableMultiDex>False</AndroidEnableMultiDex>
     <EnableProguard>False</EnableProguard>
+    <Debugger>.Net (Xamarin)</Debugger>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>PdbOnly</DebugType>
@@ -99,6 +99,7 @@
   <ItemGroup>
     <Compile Include="ChatlistAdapterUtils.cs" />
     <Compile Include="ContactlistAdapterUtils.cs" />
+    <Compile Include="Globals.cs" />
     <Compile Include="NewChatActivity.cs" />
     <Compile Include="MainActivity.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
@@ -197,6 +198,10 @@
     <ProjectReference Include="..\..\CampfireNet\CampfireNet.Identities\CampfireNet.Identities.csproj">
       <Project>{0db822bc-fad9-496b-ac8e-f880b02a4590}</Project>
       <Name>CampfireNet.Identities</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
+      <Project>{2b952a46-062b-4238-933f-923bc8e77fc9}</Project>
+      <Name>CampfireNet.Utilities</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />

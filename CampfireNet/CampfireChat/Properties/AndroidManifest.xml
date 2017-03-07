@@ -2,16 +2,16 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android" package="CampfireChat.CampfireChat" android:versionCode="1" android:versionName="1.0">
 	<uses-sdk android:minSdkVersion="15" />
 	<application android:label="CampfireChat" android:theme="@style/CampTheme"></application>
-   <uses-permission android:name="android.permission.BLUETOOTH" />
-   <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
-   <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
-   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-   <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
-   <receiver android:name=".MainActivity$Receiver">
-      <intent-filter>
-         <action android:name="android.bluetooth.device.action.PAIRING_REQUEST" />
-         <action android:name="android.bluetooth.device.action.PAIRING_CANCEL" />
-      </intent-filter>
-   </receiver>
+	<uses-permission android:name="android.permission.BLUETOOTH" />
+	<uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+	<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+	<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+	<uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+	<receiver android:name=".MainActivity$Receiver">
+		<intent-filter>
+			<action android:name="android.bluetooth.device.action.PAIRING_REQUEST" />
+			<action android:name="android.bluetooth.device.action.PAIRING_CANCEL" />
+		</intent-filter>
+	</receiver>
 </manifest>

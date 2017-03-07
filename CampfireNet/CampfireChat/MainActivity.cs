@@ -9,6 +9,7 @@ using Android.Support.V7.Widget;
 using Android.Views;
 using CampfireNet;
 using CampfireNet.Identities;
+using CampfireNet.Utilities;
 using Encoding = System.Text.Encoding;
 
 namespace CampfireChat {
@@ -20,10 +21,6 @@ namespace CampfireChat {
       private RecyclerView.Adapter chatlistAdapter;
       private RecyclerView.LayoutManager chatlistLayoutManager;
 
-      private CampfireNetClient client = null;
-      private CampfireChatClient chatClient = null;
-      private HashSet<byte[]> knownRooms;
-
       protected override void OnCreate(Bundle savedInstanceState) {
          base.OnCreate(savedInstanceState);
          SetContentView(Resource.Layout.Main);
@@ -33,20 +30,9 @@ namespace CampfireChat {
          SetActionBar(toolbar);
       }
 
-      private List<ChatEntry> GetKnownRooms() {
-         var entries = new List<ChatEntry>();
-         foreach (var roomKey in knownRooms) {
-            ChatRoomContext context = chatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(roomKey));
-            entries.Add(new ChatEntry(roomKey, context));
-         }
-
-         return entries;
-      }
-
-      private void OnItemClick(object sender, byte[] chatId) {
-         Intent intent = new Intent(this, typeof(ChatActivity));
-         intent.PutExtra("chatId", chatId);
-         StartActivity(intent);
+      protected override void OnStart() {
+         base.OnStart();
+         Setup();
       }
 
       public override bool OnCreateOptionsMenu(IMenu menu) {
@@ -78,28 +64,36 @@ namespace CampfireChat {
             return;
          }
 
-         if (client == null) {
+         bool isFirstRun = false;
+         if (Globals.CampfireNetClient == null) {
+            isFirstRun = true;
             var androidBluetoothAdapter = new AndroidBluetoothAdapterFactory().Create(this, ApplicationContext, nativeBluetoothAdapter);
-            client = CampfireNetClientBuilder.CreateNew()
+            Globals.CampfireNetClient = CampfireNetClientBuilder.CreateNew()
                                              .WithDevelopmentNetworkClaims()
                                              .WithBluetoothAdapter(androidBluetoothAdapter)
                                              .Build();
          }
-         var identity = client.Identity;
+         var identity = Globals.CampfireNetClient.Identity;
 
          Console.WriteLine("Constructing client");
 
-         if (chatClient == null) {
-            chatClient = CampfireChatClientFactory.Create(client);
+         if (Globals.CampfireChatClient == null) {
+            Globals.CampfireChatClient = CampfireChatClientFactory.Create(Globals.CampfireNetClient);
          }
 
          Console.WriteLine("Adding data");
+         if (Globals.JoinedRooms == null) {
+            Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(Identity.BROADCAST_ID)).FriendlyName = "Broadcast";
+            Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General")))).FriendlyName = "General";
+            Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Test")))).FriendlyName = "Test";
 
-         List<ChatEntry> testEntries = createTestData();
-         knownRooms = new HashSet<byte[]>();
-         knownRooms.Add(CryptoUtil.GetHash(Identity.BROADCAST_ID));
-         knownRooms.Add(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Fred")));
-         testEntries = GetKnownRooms();
+            Globals.JoinedRooms = new HashSet<byte[]> {
+               Identity.BROADCAST_ID,
+               CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General")),
+               CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Test")),
+            };
+         }
+         var testEntries = GetKnownRooms();
 
 
          chatlistRecyclerView = (RecyclerView)FindViewById(Resource.Id.ChatList);
@@ -112,12 +106,15 @@ namespace CampfireChat {
          ((ChatlistAdapter)chatlistAdapter).ItemClick += OnItemClick;
          chatlistRecyclerView.SetAdapter(chatlistAdapter);
 
-         //			client.RunAsync().Forget();
+         if (isFirstRun) {
+            Globals.CampfireNetClient.RunAsync().Forget();
+         }
       }
 
-      protected override void OnStart() {
-         base.OnStart();
-         Setup();
+      private void OnItemClick(object sender, byte[] chatId) {
+         Intent intent = new Intent(this, typeof(ChatActivity));
+         intent.PutExtra("chatId", chatId);
+         StartActivity(intent);
       }
 
       protected override void OnActivityResult(int requestCode, Result resultCode, Intent data) {
@@ -131,7 +128,7 @@ namespace CampfireChat {
          Setup();
       }
 
-      public List<ChatEntry> createTestData() {
+      public List<ChatEntry> CreateTestData() {
          string[] testData = { "Preview of a long message that goes beyond the lines",
             "Preview of a really really long message that really goes beyond the lines and is sure to overflow",
             "text here", "more longish text here", "Love", "Air", "Shoes", "Hair", "Perfume",
@@ -151,6 +148,16 @@ namespace CampfireChat {
          //
          //			   entries.Add(new ChatEntry());
          //			}
+
+         return entries;
+      }
+
+      private List<ChatEntry> GetKnownRooms() {
+         var entries = new List<ChatEntry>();
+         foreach (var roomKey in Globals.JoinedRooms) {
+            ChatRoomContext context = Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(roomKey));
+            entries.Add(new ChatEntry(roomKey, context));
+         }
 
          return entries;
       }
