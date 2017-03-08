@@ -10,7 +10,6 @@ using Android.Views;
 using CampfireNet;
 using CampfireNet.Identities;
 using CampfireNet.Utilities;
-using AndroidTest.Droid;
 using Encoding = System.Text.Encoding;
 
 namespace CampfireChat {
@@ -59,7 +58,7 @@ namespace CampfireChat {
       public void Setup() {
          var nativeBluetoothAdapter = BluetoothAdapter.DefaultAdapter;
          if (!nativeBluetoothAdapter.IsEnabled) {
-            System.Console.WriteLine("Enabling bluetooth");
+            Console.WriteLine("Enabling bluetooth");
             Intent enableBtIntent = new Intent(BluetoothAdapter.ActionRequestEnable);
             StartActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
             return;
@@ -131,34 +130,10 @@ namespace CampfireChat {
             return;
 
          if (resultCode != Result.Ok) {
-            System.Console.WriteLine("BT Setup failed!");
+            Console.WriteLine("BT Setup failed!");
          }
 
          Setup();
-      }
-
-      public List<ChatEntry> CreateTestData() {
-         string[] testData = { "Preview of a long message that goes beyond the lines",
-            "Preview of a really really long message that really goes beyond the lines and is sure to overflow",
-            "text here", "more longish text here", "Love", "Air", "Shoes", "Hair", "Perfume",
-            "Obfuscation", "Clock", "Game", "Scroll", "Lion", "Chrome", "Tresure", "Charm" };
-
-         var testNames = new string[5][];
-         testNames[0] = new string[] { "Name1Test" };
-         testNames[1] = new string[] { "Name2Test1", "Name2Test2" };
-         testNames[2] = new string[] { "Name3Test1", "Name3Test2", "Name3Test3" };
-         testNames[3] = new string[] { "Name4Test1", "Name4Test2", "Name4Test3", "Name4Test4" };
-         testNames[4] = new string[] { "Name5Test1", "Name5Test2", "Name5Test3", "Name5Test4", "Name5Test5" };
-
-         var entries = new List<ChatEntry>();
-
-         //			for (var i = 0; i < testData.Length; i++) {
-         //			   var names = i < testNames.Length ? testNames[i] : new string[] { "default" };
-         //
-         //			   entries.Add(new ChatEntry());
-         //			}
-
-         return entries;
       }
 
       private List<ChatEntry> GetKnownRooms() {

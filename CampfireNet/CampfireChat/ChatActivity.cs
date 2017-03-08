@@ -1,5 +1,6 @@
 ﻿
 using System;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -60,10 +61,10 @@ namespace CampfireChat {
          chatAdapter.ItemClick += OnItemClick;
          chatRecyclerView.SetAdapter(chatAdapter);
 
-         Title = Intent.GetStringExtra("title") ?? "Chat";
-
          var chatId = Intent.GetByteArrayExtra("chatId");
          chatRoomContext = Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(chatId));
+         Title = chatRoomContext.FriendlyName;
+
          viewModel = chatRoomContext.CreateViewModelAndSubscribe((sender, e) => {
             Console.WriteLine("        ######## hitting add entry time");
             var message = e.Message;
