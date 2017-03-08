@@ -7,6 +7,8 @@ using CampfireNet.Identities;
 using System.IO;
 using Android.Views;
 using System;
+using System.Security.Cryptography;
+using Android.Media;
 
 namespace CampfireChat {
    [Activity(Label = "Settings", ParentActivity = typeof(MainActivity))]
@@ -119,11 +121,15 @@ namespace CampfireChat {
 
                byte[] trustChainBytes = File.ReadAllBytes(fullPath);
 
-               if (trustChainBytes.Length % TrustChainNode.NODE_BLOCK_SIZE != 0) {
-                  Toast.MakeText(this, "Trust chain is invalid length", ToastLength.Short).Show();
-               } else if (!identity.ValidateAndAdd(trustChainBytes)) {
-                  Toast.MakeText(this, "Could not validate the trust chain", ToastLength.Short).Show();
-               } else {
+               try {
+                  TrustChainNode[] nodes = TrustChainUtil.SegmentChain(trustChainBytes);
+
+                  if (TrustChainUtil.ValidateTrustChain(nodes)) {
+                     identity.AddTrustChain(trustChainBytes);
+                  } else {
+                     Toast.MakeText(this, "Could not validate the trust chain", ToastLength.Short).Show();
+                  }
+               } catch (CryptographicException) {
                   Toast.MakeText(this, "Could not validate the trust chain", ToastLength.Short).Show();
                }
             } else if (requestCode == CHOOSE_IDENTITY_FILE) {
