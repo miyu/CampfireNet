@@ -1,9 +1,6 @@
 ﻿
 using System;
-using System.Linq;
 using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using Android.App;
 using Android.Content;
 using Android.OS;
@@ -12,8 +9,6 @@ using Android.Views;
 using Android.Widget;
 using AndroidTest.Droid;
 using CampfireNet.Identities;
-using CampfireNet.Utilities;
-using static CampfireNet.Utilities.Channels.ChannelsExtensions;
 
 namespace CampfireChat {
    [Activity(Label = "Chat")]
@@ -24,7 +19,6 @@ namespace CampfireChat {
       private ChatAdapter chatAdapter;
       private RecyclerView.LayoutManager chatLayoutManager;
 
-      //		private List<MessageEntry> testMessages;
       private ChatRoomContext chatRoomContext;
       private ChatRoomViewModel viewModel;
 

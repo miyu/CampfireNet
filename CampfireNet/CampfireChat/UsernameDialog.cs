@@ -13,6 +13,8 @@ using Android.Widget;
 namespace CampfireChat {
    class UsernameDialog : DialogFragment {
       public override Dialog OnCreateDialog(Bundle savedInstanceState) {
+         base.OnCreateDialog(savedInstanceState);
+
          AlertDialog.Builder builder = new AlertDialog.Builder(Activity)
             .SetView(Resource.Layout.NameDialog)
             .SetPositiveButton(Resource.String.Confirm, (sender, e) => {
@@ -25,6 +27,12 @@ namespace CampfireChat {
             })
             .SetTitle(Resource.String.InputName);
          return builder.Create();
+      }
+
+      public override View OnCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+         Dialog.SetCanceledOnTouchOutside(false);
+         this.Cancelable = false;
+         return base.OnCreateView(inflater, container, savedInstanceState);
       }
    }
 }
