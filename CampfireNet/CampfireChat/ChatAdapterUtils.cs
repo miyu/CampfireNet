@@ -7,8 +7,9 @@ using System.Collections.Generic;
 
 namespace CampfireChat
 {
-	class ChatAdapter : RecyclerView.Adapter
-	{
+	class ChatAdapter : RecyclerView.Adapter {
+      // HACK
+	   private readonly SortedList<ChatMessageDto, MessageEntry> sortedEntries = new SortedList<ChatMessageDto, MessageEntry>(new ChatMessageOrderComparer());
 		public List<MessageEntry> Entries;
 		public event EventHandler<byte[]> ItemClick;
 
@@ -19,11 +20,11 @@ namespace CampfireChat
 			Entries = entries ?? new List<MessageEntry>();
 		}
 
-		public void AddEntry(MessageEntry entry, int position = -1)
+		public void AddEntry(MessageEntry entry)
 		{
-         if (position == -1) {
-            position = Entries.Count;
-         }
+         sortedEntries.Add(entry.Dto, entry);
+		   var position = sortedEntries.IndexOfKey(entry.Dto);
+
          Console.WriteLine($"              ##################### adding entry at {position} with text {entry.Message}");
 			Entries.Insert(position, entry);
 		}
@@ -92,13 +93,15 @@ namespace CampfireChat
 
 	public class MessageEntry
 	{
-		public string Name { get; private set; }
+	   public ChatMessageDto Dto { get; }
+	   public string Name { get; private set; }
 		public string Message { get; private set; }
 
 
-		public MessageEntry(string name, string message)
+		public MessageEntry(ChatMessageDto dto, string name, string message)
 		{
-			Name = name;
+		   Dto = dto;
+		   Name = name;
 			Message = message;
 		}
 	}

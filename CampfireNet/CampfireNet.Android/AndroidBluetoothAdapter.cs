@@ -46,7 +46,7 @@ namespace AndroidTest.Droid {
          var devices = await bluetoothDiscoveryFacade.DiscoverPeersAsync().ConfigureAwait(false);
          var neighbors = new List<IBluetoothNeighbor>();
          foreach (var device in devices) {
-            if (device.Name == null || (!device.Name.Contains("CIA") && !device.Name.Contains("G920") && !device.Name.Contains("DESKTOP"))) {
+            if (device.Name == null || (!device.Name.Contains("Spy") && !device.Name.Contains("G920") && !device.Name.Contains("DESKTOP"))) {
                continue;
             }
 

@@ -11,10 +11,12 @@ namespace CampfireChat {
          var campfireChatSettings = new CampfireChatSettings {
             LocalFriendlyName = "Anonymous"
          };
-         var chatRoomTable = new ChatRoomTable(campfireChatSettings);
+         var chatRoomTable = new ChatRoomTable();
          var messageSender = new ChatMessageSender(campfireNetClient, chatRoomTable);
-         chatRoomTable.SetChatMessageSender(messageSender);
          var campfireChatClient = new CampfireChatClient(campfireNetClient, campfireChatSettings, chatRoomTable, messageSender);
+
+         chatRoomTable.SetChatMessageSender(messageSender);
+         chatRoomTable.SetCampfireChatClient(campfireChatClient);
          campfireChatClient.Initialize();
          return campfireChatClient;
       }

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading;
 using CampfireNet.Identities;
@@ -15,30 +16,42 @@ namespace CampfireChat {
    public class ChatRoomContext {
       private readonly object synchronization = new object();
       private readonly ConcurrentSet<ChatRoomViewModel> viewModels = new ConcurrentSet<ChatRoomViewModel>();
-      private readonly SortedSet<ChatMessageDto> messages = new SortedSet<ChatMessageDto>(new ChatMessageOrderComparer());
+      private readonly SortedList<ChatMessageDto, ChatMessageDto> messages = new SortedList<ChatMessageDto, ChatMessageDto>(new ChatMessageOrderComparer());
       private readonly Dictionary<IdentityHash, int> currentLogicalClock = new Dictionary<IdentityHash, int>();
-      private readonly CampfireChatSettings campfireChatSettings;
+      private readonly CampfireChatClient campfireChatClient;
       private readonly ChatMessageSender chatMessageSender;
       private int outboundMessageSequenceNumber;
 
-      public ChatRoomContext(CampfireChatSettings campfireChatSettings, ChatMessageSender chatMessageSender, IdentityHash identityHash) {
-         this.campfireChatSettings = campfireChatSettings;
+      public ChatRoomContext(CampfireChatClient campfireChatClient, ChatMessageSender chatMessageSender, IdentityHash chatroomIdentityHash) {
+         this.campfireChatClient = campfireChatClient;
          this.chatMessageSender = chatMessageSender;
 
-         IdentityHash = identityHash;
+         ChatroomIdentityHash = chatroomIdentityHash;
       }
 
-      public IdentityHash IdentityHash { get; }
+      public IdentityHash UserIdentityHash => IdentityHash.GetFlyweight(campfireChatClient.CampfireNetClient.Identity.PublicIdentityHash);
+      public IdentityHash ChatroomIdentityHash { get; }
       public bool IsUnicast { get; set; }
       public string FriendlyName { get; set; }
 
       public Dictionary<IdentityHash, int> CaptureCurrentLogicalClock() {
-         return new Dictionary<IdentityHash, int>(currentLogicalClock);
+         lock (synchronization) {
+            return new Dictionary<IdentityHash, int>(currentLogicalClock);
+         }
+      }
+
+      public Dictionary<IdentityHash, int> IncrementThenCaptureCurrentLogicalClock() {
+         lock (synchronization) {
+            int currentValue;
+            currentLogicalClock.TryGetValue(UserIdentityHash, out currentValue);
+            currentLogicalClock[UserIdentityHash] = currentValue + 1;
+            return new Dictionary<IdentityHash, int>(currentLogicalClock);
+         }
       }
 
       public ChatRoomViewModel CreateViewModelAndSubscribe(ChatMessageReceivedCallback messageReceivedCallback) {
          lock(synchronization) {
-            var previousMessages = messages.ToList();
+            var previousMessages = messages.ToList().Select(kvp => kvp.Key).ToList();
             var viewModel = new ChatRoomViewModel(this, previousMessages, messageReceivedCallback);
             viewModels.AddOrThrow(viewModel);
             return viewModel;
@@ -48,27 +61,29 @@ namespace CampfireChat {
       public void SendMessage(ChatMessageDto message) {
          // This will write to Merkle Tree which will trigger message received.
          Console.WriteLine("Entering send message 3");
-         chatMessageSender.Send(IdentityHash, message).Forget();
+         chatMessageSender.Send(ChatroomIdentityHash, message).Forget();
          Console.WriteLine("Exiting send message 3");
       }
 
       public void SendMessage(ChatMessageContentType contentType, byte[] contentRaw) {
-         Console.WriteLine("Entering send message 2");
-         var message = new ChatMessageDto {
-            SequenceNumber = Interlocked.Increment(ref outboundMessageSequenceNumber),
-            LogicalClock = CaptureCurrentLogicalClock(),
-            FriendlySenderName = campfireChatSettings.LocalFriendlyName,
-            ContentType = ChatMessageContentType.Text,
-            ContentRaw = contentRaw
-         };
-         Console.WriteLine("Made message");
-         SendMessage(message);
-         Console.WriteLine("Exiting send message 2");
+         lock (synchronization) {
+            Console.WriteLine("Entering send message 2");
+            var message = new ChatMessageDto {
+               SequenceNumber = Interlocked.Increment(ref outboundMessageSequenceNumber),
+               LogicalClock = IncrementThenCaptureCurrentLogicalClock(),
+               FriendlySenderName = campfireChatClient.LocalFriendlyName,
+               ContentType = ChatMessageContentType.Text,
+               ContentRaw = contentRaw
+            };
+            Console.WriteLine("Made message");
+            SendMessage(message);
+            Console.WriteLine("Exiting send message 2");
+         }
       }
 
       public void HandleMessageReceived(ChatMessageDto message) {
          lock(synchronization) {
-            messages.Add(message);
+            messages.Add(message, message);
 
             foreach (var kvp in message.LogicalClock) {
                int storedCounter;
