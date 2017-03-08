@@ -33,7 +33,7 @@ namespace CampfireNet {
 
       public CampfireNetClient Build() {
          if (bluetoothAdapter == null) throw new InvalidStateException($"{nameof(bluetoothAdapter)} Null");
-         if (identity == null) identity = new Identity(new RSACryptoServiceProvider(), new IdentityManager(), null);
+         if (identity == null) identity = new Identity(new IdentityManager(), null);
          var broadcastMessageSerializer = new BroadcastMessageSerializer();
          var objectStore = new InMemoryCampfireNetObjectStore();
          var clientMerkleTreeFactory = new ClientMerkleTreeFactory(broadcastMessageSerializer, objectStore);

@@ -275,6 +275,10 @@ namespace CampfireNet.Identities {
          }
       }
 
+      public byte[] ExportKey() {
+         return CryptoUtil.SerializeKey(privateKey);
+      }
+
       public void SaveKey(string path) {
          byte[] data = CryptoUtil.SerializeKey(privateKey);
          File.WriteAllBytes(path, data);
@@ -286,5 +290,6 @@ namespace CampfireNet.Identities {
               TrustChainUtil.ValidatePermissions(PermissionsGrantable, heldPermissions) &&
               TrustChainUtil.ValidatePermissions(heldPermissions, grantablePermissions);
       }
+
    }
 }

@@ -2,14 +2,11 @@
 using System;
 using System.Collections.Generic;
 using Android.App;
-using Android.Bluetooth;
 using Android.Content;
 using Android.OS;
 using Android.Support.V7.Widget;
 using Android.Views;
-using CampfireNet;
 using CampfireNet.Identities;
-using CampfireNet.Utilities;
 using Encoding = System.Text.Encoding;
 
 namespace CampfireChat {
@@ -27,11 +24,14 @@ namespace CampfireChat {
 
          var toolbar = FindViewById<Android.Widget.Toolbar>(Resource.Id.Toolbar);
          SetActionBar(toolbar);
-         if (Globals.CampfireNetClient.Identity.Name == null) {
+
+         var prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
+         if (prefs.GetString("Name", null) == null) {
             ShowDialog();
-            var prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
             Helper.UpdateName(prefs, Globals.CampfireNetClient.Identity.Name);
          }
+         Console.WriteLine("username is {0}", prefs.GetString("Name", null));
+         Console.WriteLine("key is {0}", prefs.GetString("Key", null));
       }
 
       protected override void OnStart() {
