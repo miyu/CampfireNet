@@ -199,7 +199,7 @@
       <Name>CampfireNet.Identities</Name>
     </ProjectReference>
     <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
-      <Project>{2b952a46-062b-4238-933f-923bc8e77fc9}</Project>
+      <Project>{2B952A46-062B-4238-933F-923BC8E77FC9}</Project>
       <Name>CampfireNet.Utilities</Name>
     </ProjectReference>
   </ItemGroup>
