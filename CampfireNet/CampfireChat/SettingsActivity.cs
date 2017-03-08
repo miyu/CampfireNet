@@ -22,7 +22,7 @@ namespace CampfireChat {
          SetActionBar(toolbar);
          ActionBar.SetDisplayHomeAsUpEnabled(true);
 
-         var prefs = Application.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
+         prefs = Application.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
 
          var identity = Globals.CampfireNetClient.Identity;
          var generateRoot = FindViewById<LinearLayout>(Resource.Id.BecomeRoot);
@@ -48,13 +48,29 @@ namespace CampfireChat {
             Toast.MakeText(this, "Action selected: load chain", ToastLength.Short).Show();
             Intent chooseFile = new Intent(Intent.ActionGetContent);
             chooseFile.AddCategory(Intent.CategoryOpenable);
-            chooseFile.SetType("text/plain");
             chooseFile = Intent.CreateChooser(chooseFile, "Choose a file");
             StartActivityForResult(chooseFile, PICKFILE_RESULT_CODE);
+            var path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
+            path = Path.Combine(path, $"trust_chain_{IdentityManager.GetIdentityString(identity.PublicIdentityHash)}.tc");
+
+            if (!File.Exists(path)) {
+               Toast.MakeText(ApplicationContext, "Cannot find own trust chain file in Download folder.", ToastLength.Short).Show();
+               return;
+            }
+
+            byte[] data = File.ReadAllBytes(path);
+
+            try {
+               identity.AddTrustChain(data);
+               Toast.MakeText(ApplicationContext, "Successfully loaded trust chain.", ToastLength.Short).Show();
+            } catch (BadTrustChainException) {
+               Toast.MakeText(ApplicationContext, "Invalid trust chain found.", ToastLength.Short).Show();
+            }
          };
 
          var inviteFriend = FindViewById<LinearLayout>(Resource.Id.Invite);
          inviteFriend.Click += (sender, e) => {
+            Intent chooseFile = new Intent(Intent.ActionGetContent);
 
          };
       }

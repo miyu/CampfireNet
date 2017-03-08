@@ -30,9 +30,8 @@ namespace CampfireChat {
          SetActionBar(toolbar);
 
          var prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
-         if (prefs.GetString("Name", null) == null) {
+         if (Globals.CampfireNetClient.Identity.Name == null) {
             ShowDialog();
-            Helper.UpdateName(prefs, Globals.CampfireNetClient.Identity.Name);
          }
          Console.WriteLine("username is {0}", prefs.GetString("Name", null));
          Console.WriteLine("key is {0}", prefs.GetString("Key", null));
