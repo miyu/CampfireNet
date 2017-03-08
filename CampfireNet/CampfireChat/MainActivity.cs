@@ -28,11 +28,14 @@ namespace CampfireChat {
 
          var toolbar = FindViewById<Android.Widget.Toolbar>(Resource.Id.Toolbar);
          SetActionBar(toolbar);
-         if(Globals.CampfireNetClient.Identity.Name == null) {
+
+         var prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
+         if (prefs.GetString("Name", null) == null) {
             ShowDialog();
-            var prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
             Helper.UpdateName(prefs, Globals.CampfireNetClient.Identity.Name);
          }
+         Console.WriteLine("username is {0}", prefs.GetString("Name", null));
+         Console.WriteLine("key is {0}", prefs.GetString("Key", null));
       }
 
       protected override void OnStart() {

@@ -30,27 +30,12 @@ namespace CampfireChat {
       }
 
       public static RSAParameters InitRSA(ISharedPreferences prefs) {
-         RSAParameters rsa = new RSAParameters();
-         rsa.D = HexStringToByteArray(prefs.GetString("D", null));
-         rsa.Exponent = HexStringToByteArray(prefs.GetString("Exp", null));
-         rsa.Modulus = HexStringToByteArray(prefs.GetString("Mod", null));
-         rsa.Q = HexStringToByteArray(prefs.GetString("Q", null));
-         rsa.InverseQ = HexStringToByteArray(prefs.GetString("InvQ", null));
-         rsa.DP = HexStringToByteArray(prefs.GetString("DP", null));
-         rsa.DQ = HexStringToByteArray(prefs.GetString("DQ", null));
-         return rsa;
+         return CryptoUtil.DeserializeKey(HexStringToByteArray(prefs.GetString("Key", null)));
       }
 
       public static void UpdateIdentity(ISharedPreferences prefs, Identity identity) {
          ISharedPreferencesEditor editor = prefs.Edit();
-         //WTF? How should I restore the key then? Should I set it to private?
-         editor.PutString("D", ByteArrayToString(identity.PrivateKeyDebug.D));
-         editor.PutString("Exp", ByteArrayToString(identity.PrivateKeyDebug.Exponent));
-         editor.PutString("Mod", ByteArrayToString(identity.PrivateKeyDebug.Modulus));
-         editor.PutString("Q", ByteArrayToString(identity.PrivateKeyDebug.Q));
-         editor.PutString("InvQ", ByteArrayToString(identity.PrivateKeyDebug.InverseQ));
-         editor.PutString("DP", ByteArrayToString(identity.PrivateKeyDebug.DP));
-         editor.PutString("DQ", ByteArrayToString(identity.PrivateKeyDebug.DQ));
+         editor.PutString("Key", ByteArrayToString(identity.ExportKey()));
          editor.Commit();
       }
 
