@@ -10,12 +10,14 @@
 		name="InputName">Input your name:</string>
 	<string
 		name="Confirm">Confirm</string>
-   <string
-      name="TagName">Tag your friend:</string>
-   <string
-      name="Cancel">Cancel</string>
-   <string
-      name="InputGroup">Input group name:</string>
-   <string
-      name="Join">Join</string>
+	<string
+		name="UsernamePrompt">Enter a name:</string>
+	<string
+		name="TagName">Tag your friend:</string>
+	<string
+		name="Cancel">Cancel</string>
+	<string
+		name="InputGroup">Input group name:</string>
+	<string
+		name="Join">Join</string>
 </resources>

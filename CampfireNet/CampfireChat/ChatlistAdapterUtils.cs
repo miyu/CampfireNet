@@ -54,7 +54,7 @@ namespace CampfireChat {
       }
    }
 
-   public class ChatEntry {
+   public class ChatEntry : Java.Lang.Object {
       public byte[] Id { get; private set; }
       public ChatRoomContext Context { get; private set; }
 
