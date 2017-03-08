@@ -11,11 +11,10 @@ namespace CampfireChat {
 
       protected override void OnResume() {
          base.OnResume();
-         Task startupWork = new Task(Startup);
-         startupWork.Start();
+         Task.Run(() => Startup());
       }
 
-      async void Startup() {
+      public void Startup() {
          var nativeBluetoothAdapter = Helper.EnableBluetooth(this);
          var androidBluetoothAdapter = new AndroidBluetoothAdapterFactory().Create(this, ApplicationContext, nativeBluetoothAdapter);
 
