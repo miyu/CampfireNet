@@ -16,12 +16,15 @@ namespace CampfireChat {
          AlertDialog.Builder builder = new AlertDialog.Builder(Activity)
             .SetView(Resource.Layout.NameDialog)
             .SetPositiveButton(Resource.String.Confirm, (sender, e) => {
+               var editText = Dialog.FindViewById<EditText>(Resource.Id.Username);
+               Globals.CampfireNetClient.Identity.Name = editText.Text;
+
                var prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
-               Globals.CampfireNetClient.Identity.Name = this.Dialog.FindViewById<EditText>(Resource.Id.username).Text;
                Helper.UpdateName(prefs, Globals.CampfireNetClient.Identity.Name);
-               Dismiss();})
+               Dismiss();
+            })
             .SetTitle(Resource.String.InputName);
-        return builder.Create();
-    }
+         return builder.Create();
+      }
    }
 }

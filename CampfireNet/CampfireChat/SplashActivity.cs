@@ -1,16 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 using Android.App;
 using Android.Content;
-using Android.OS;
-using Android.Runtime;
-using Android.Views;
-using Android.Widget;
 using System.Threading.Tasks;
-using Android.Bluetooth;
 using CampfireNet;
 using CampfireNet.Identities;
 
@@ -20,11 +11,10 @@ namespace CampfireChat {
 
       protected override void OnResume() {
          base.OnResume();
-         Task startupWork = new Task(() => { Startup(); });
-         startupWork.Start();
+         Task.Run(() => Startup());
       }
 
-      async void Startup() {
+      public void Startup() {
          var nativeBluetoothAdapter = Helper.EnableBluetooth(this);
          var androidBluetoothAdapter = new AndroidBluetoothAdapterFactory().Create(this, ApplicationContext, nativeBluetoothAdapter);
 
@@ -33,8 +23,8 @@ namespace CampfireChat {
          var userName = prefs.GetString("Name", null);
          if (userName == null) {
             Globals.CampfireNetClient = CampfireNetClientBuilder.CreateNew()
-                                             .WithBluetoothAdapter(androidBluetoothAdapter)
-                                             .Build();
+                                                                .WithBluetoothAdapter(androidBluetoothAdapter)
+                                                                .Build();
             Helper.UpdateIdentity(prefs, Globals.CampfireNetClient.Identity);
          } else {
             var rsa = Helper.InitRSA(prefs);
@@ -44,8 +34,8 @@ namespace CampfireChat {
                identity.AddTrustChain(Helper.HexStringToByteArray(trustChain));
             }
             Globals.CampfireNetClient = CampfireNetClientBuilder.CreateNew()
-                                             .WithBluetoothAdapter(androidBluetoothAdapter)
-                                             .WithIdentity(identity).Build();
+                                                                .WithBluetoothAdapter(androidBluetoothAdapter)
+                                                                .WithIdentity(identity).Build();
          }
 
          if (Globals.CampfireChatClient == null) {

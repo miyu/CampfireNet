@@ -16,6 +16,7 @@ using CampfireNet.Identities;
 namespace CampfireChat {
    class Helper {
       public const int REQUEST_ENABLE_BT = 1;
+
       public static byte[] HexStringToByteArray(string hex) {
          int NumberChars = hex.Length;
          byte[] bytes = new byte[NumberChars / 2];
