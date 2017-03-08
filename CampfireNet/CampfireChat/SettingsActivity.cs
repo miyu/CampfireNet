@@ -3,6 +3,7 @@ using Android.App;
 using Android.Content;
 using Android.OS;
 using Android.Widget;
+using AndroidTest.Droid;
 using CampfireNet;
 using CampfireNet.Identities;
 using System.IO;

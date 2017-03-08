@@ -10,6 +10,7 @@ using Android.Views;
 using CampfireNet;
 using CampfireNet.Identities;
 using CampfireNet.Utilities;
+using AndroidTest.Droid;
 using Encoding = System.Text.Encoding;
 
 namespace CampfireChat {
