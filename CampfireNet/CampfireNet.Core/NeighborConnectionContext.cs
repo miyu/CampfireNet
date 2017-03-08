@@ -1,4 +1,5 @@
 #define CN_DEBUG
+//#define FAST
 
 using System;
 using System.Collections;
@@ -117,7 +118,7 @@ namespace CampfireNet {
                   case nameof(GivePacket):
                      DebugPrint("Got GIVE {0}", ((GivePacket)packet).NodeHash);
                      var p = (GivePacket)packet;
-                     Console.WriteLine($"Recieved data hash {p.NodeHash} ({p.Node.Contents.Length} '{BitConverter.ToString(p.Node.Contents)}')");
+                     DebugPrint("Recieved data hash {0} ({1} '{2}')", p.NodeHash, p.Node.Contents.Length, BitConverter.ToString(p.Node.Contents));
                      await ChannelsExtensions.WriteAsync(giveChannel, (GivePacket)packet).ConfigureAwait(false);
                      break;
                   case nameof(WhoisPacket):
@@ -155,7 +156,11 @@ namespace CampfireNet {
 
       private async Task SynchronizationLoopTaskStart() {
          var isGreater = bluetoothAdapter.AdapterId.CompareTo(neighbor.AdapterId) > 0;
-         var rateLimit = ChannelFactory.Timer(1000); //5000, 3000);
+#if FAST
+         var rateLimit = ChannelFactory.Timer(1000);
+#else
+         var rateLimit = ChannelFactory.Timer(5000, 3000);
+#endif
          try {
             while (true) {
                if (isGreater) {
@@ -220,9 +225,11 @@ namespace CampfireNet {
       private static object g_printLock = new object();
 
       private void DebugPrint(string s, params object[] args) {
+#if CN_DEBUG
          var colors = new ConsoleColor[] { ConsoleColor.Red, ConsoleColor.Green, ConsoleColor.Yellow, ConsoleColor.White };
          var color = colors[Math.Abs(bluetoothAdapter.AdapterId.GetHashCode()) % colors.Length];
          DebugConsole.WriteLine(bluetoothAdapter.AdapterId.ToString("n") + " => " + neighbor.AdapterId.ToString("n") + " " + s, color, ConsoleColor.Black, args);
+#endif
       }
 
       private async Task SynchronizeRemoteToLocalAsync() {
@@ -252,7 +259,7 @@ namespace CampfireNet {
                   neighbor.SendAsync(serializer.ToByteArray(need)).Forget();
                }
 
-               Console.WriteLine($"Found {neededHashes.Count} messages to sync");
+               DebugPrint($"Found {0} messages to sync", neededHashes.Count);
                foreach (var i in Enumerable.Range(0, neededHashes.Count)) {
                   var hash = neededHashes.First();
                   neededHashes.RemoveFirst();
@@ -262,7 +269,7 @@ namespace CampfireNet {
                   }
 
                   var give = await ChannelsExtensions.ReadAsync(giveChannel).ConfigureAwait(false);
-                  Console.WriteLine($"Got hash {give.NodeHash}");
+                  DebugPrint("Got hash {0}", give.NodeHash);
                   nodesToImport.Add(Tuple.Create(give.NodeHash, give.Node));
 
                   if (!await IsRemoteObjectHeldLocally(give.Node.LeftHash).ConfigureAwait(false)) {
@@ -280,7 +287,7 @@ namespace CampfireNet {
                                                               n => n.Item1,
                                                               n => broadcastMessageSerializer.Deserialize(n.Item2.Contents)
                                                            );
-            Console.WriteLine($"Need to add {broadcastMessagesByNodeHash.Count} hashes that we don't have");
+            DebugPrint("Need to add {0} hashes that we don't have", broadcastMessagesByNodeHash.Count);
 
             var neededSourceIdHashes = broadcastMessagesByNodeHash.Select(kvp => kvp.Value.SourceIdHash)
                                                                   .GroupBy(sourceIdHash => sourceIdHash.ToHexString())
@@ -296,7 +303,13 @@ namespace CampfireNet {
 
             foreach (var i in Enumerable.Range(0, neededSourceIdHashes.Count)) {
                var ident = await ChannelsExtensions.ReadAsync(identChannel).ConfigureAwait(false);
-               Identity.ValidateAndAdd(ident.TrustChain);
+               if (!HackGlobals.DisableChainOfTrustCheck) {
+                  Identity.ValidateAndAdd(ident.TrustChain);
+               } else {
+                  foreach (var trustChainNode in ident.TrustChain) {
+                     IdentityManager.AddIdentity(trustChainNode, "");
+                  }
+               }
             }
 
             foreach (var neededSourceId in neededSourceIdHashes) {
@@ -314,12 +327,12 @@ namespace CampfireNet {
                   var sender = IdentityManager.LookupIdentity(message.SourceIdHash);
                   if (message.DestinationIdHash.All(val => val == 0)) {
                      if ((sender.HeldPermissions & Permission.Broadcast) == 0) {
-                        Console.WriteLine("Sender does not have broadcast permissions. Malicious peer!");
+                        DebugPrint("Sender does not have broadcast permissions. Malicious peer!");
                         throw new InvalidStateException();
                      }
                   } else {
                      if ((sender.HeldPermissions & Permission.Unicast) == 0) {
-                        Console.WriteLine("Sender does not have unicast permissions. Malicious peer!");
+                        DebugPrint("Sender does not have unicast permissions. Malicious peer!");
                         throw new InvalidStateException();
                      }
                   }
@@ -328,7 +341,7 @@ namespace CampfireNet {
 
             await remoteMerkleTree.ImportAsync(have.MerkleRootHash, nodesToImport).ConfigureAwait(false);
 
-            Console.WriteLine($"Currently have {nodesToImport.Count} nodes to import still");
+            DebugPrint($"Currently have {0} nodes to import still", nodesToImport.Count);
 
             foreach (var tuple in nodesToImport) {
                var node = tuple.Item2;
@@ -336,12 +349,12 @@ namespace CampfireNet {
                   var isDataNode = node.TypeTag == MerkleNodeTypeTag.Data;
                   BroadcastMessageDto message = isDataNode ? broadcastMessageSerializer.Deserialize(node.Contents) : null;
 
-                  Console.WriteLine("Got data node");
+                  DebugPrint("Got data node");
 
                   var insertionResult = await localMerkleTree.TryInsertAsync(tuple.Item2).ConfigureAwait(false);
                   if (insertionResult.Item1 && isDataNode) {
                      byte[] decryptedPayload;
-                     Console.WriteLine("Got a message");
+                     DebugPrint("Got a message");
                      if (identity.TryDecodePayload(message, out decryptedPayload)) {
                         BroadcastReceived?.Invoke(new MessageReceivedEventArgs(neighbor, new BroadcastMessage {
                            SourceId = IdentityHash.GetFlyweight(message.SourceIdHash),
@@ -408,7 +421,7 @@ namespace CampfireNet {
                      TrustChain = trustChain.ToArray()
                   };
                   neighbor.SendAsync(serializer.ToByteArray(ident)).Forget();
-                  Console.WriteLine("EMIT IDENT " + ident.Id.ToHexString());
+                  DebugPrint("EMIT IDENT {0}", ident.Id.ToHexString());
                })
             }.ConfigureAwait(false);
          }

@@ -20,6 +20,10 @@ namespace CampfireChat {
          var androidBluetoothAdapter = new AndroidBluetoothAdapterFactory().Create(this, ApplicationContext, nativeBluetoothAdapter);
 
          var prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
+         using (var editor = prefs.Edit()) {
+            editor.Clear();
+            editor.Commit();
+         }
 
          var userName = prefs.GetString("Name", null);
          if (userName == null) {

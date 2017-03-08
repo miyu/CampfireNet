@@ -1,4 +1,5 @@
 #define CN_DEBUG
+//#define FAST
 
 using System;
 using System.Collections.Concurrent;
@@ -13,6 +14,10 @@ using CampfireNet.Utilities.Channels;
 using CampfireNet.Utilities.Merkle;
 
 namespace CampfireNet {
+   public static class HackGlobals {
+      public static bool DisableChainOfTrustCheck { get; set; }
+   }
+
    public class CampfireNetClient {
       private readonly Identity identity;
       private readonly IBluetoothAdapter bluetoothAdapter;
@@ -102,7 +107,11 @@ namespace CampfireNet {
       }
 
       public async Task DiscoverAsync() {
-         var rateLimit = ChannelFactory.Timer(1000); // 5000, 5000);
+#if FAST
+         var rateLimit = ChannelFactory.Timer(1000);
+#else
+         var rateLimit = ChannelFactory.Timer(5000, 5000);
+#endif
          var connectedNeighborContextsByAdapterId = new ConcurrentDictionary<Guid, NeighborConnectionContext>();
          while (true) {
             Debug("Starting discovery round!");

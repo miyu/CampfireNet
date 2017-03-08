@@ -3,17 +3,19 @@ using System.Linq;
 using CampfireNet.IO;
 using CampfireNet.Utilities.Merkle;
 using System.Collections.Generic;
+using System.IO;
+using System.Security.Cryptography;
 using CampfireNet.Identities;
 using Microsoft.Xna.Framework;
 
 namespace CampfireNet.Simulator {
    public class SimulatorConfiguration {
-		public int AgentCount { get; set; }
-		public int DisplayWidth { get; set; }
-		public int DisplayHeight { get; set; }
-		public int FieldWidth { get; set; }
-		public int FieldHeight { get; set; }
-		public int AgentRadius { get; set; }
+      public int AgentCount { get; set; }
+      public int DisplayWidth { get; set; }
+      public int DisplayHeight { get; set; }
+      public int FieldWidth { get; set; }
+      public int FieldHeight { get; set; }
+      public int AgentRadius { get; set; }
 
       public static SimulatorConfiguration Build(int scale, int displayWidth, int displayHeight) {
          return new SimulatorConfiguration {
@@ -38,14 +40,25 @@ namespace CampfireNet.Simulator {
       }
    }
 
-	public static class EntryPoint {
-		public static void Run() {
-//			ThreadPool.SetMaxThreads(8, 8);
-//			var configuration = SimulatorConfiguration.Build2P(1920, 1080);
-			var configuration = SimulatorConfiguration.Build(1, 1920, 1080);
-			var agents = ConstructAgents(configuration);
-			new SimulatorGame(configuration, agents).Run();
-		}
+   public static class EntryPoint {
+      public static void Run() {
+//         GenerateRSAParameters();
+         //			ThreadPool.SetMaxThreads(8, 8);
+         //			var configuration = SimulatorConfiguration.Build2P(1920, 1080);
+         var configuration = SimulatorConfiguration.Build(3, 1920, 1080);
+         var agents = ConstructAgents(configuration);
+         new SimulatorGame(configuration, agents).Run();
+      }
+
+      private static void GenerateRSAParameters() {
+         Directory.CreateDirectory(Path.Combine(Environment.CurrentDirectory, "keys"));
+         for (int i = 0; i < 2048; i++) {
+            Console.WriteLine(i);
+            var rsa = new RSACryptoServiceProvider(CryptoUtil.ASYM_KEY_SIZE_BITS);
+            File.WriteAllBytes(Path.Combine(Environment.CurrentDirectory, "keys", i.ToString()), CryptoUtil.SerializeKey(rsa.ExportParameters(true)));
+         }
+      }
+
       private static DeviceAgent[] ConstructAgents(SimulatorConfiguration configuration) {
          var random = new Random(2);
 
@@ -91,11 +104,12 @@ namespace CampfireNet.Simulator {
 
             var broadcastMessageSerializer = new BroadcastMessageSerializer();
             var merkleTreeFactory = new ClientMerkleTreeFactory(broadcastMessageSerializer, new InMemoryCampfireNetObjectStore());
-            var identity = agent.CampfireNetIdentity = (Identity)new Identity(new IdentityManager(), $"Agent_{i}");
-            if (i == 0 || i == 1) {
+            var rsaParameters = CryptoUtil.DeserializeKey(File.ReadAllBytes(Path.Combine(Environment.CurrentDirectory, "keys", i.ToString())));
+            var identity = agent.CampfireNetIdentity = (Identity)new Identity(new IdentityManager(), rsaParameters, $"Agent_{i}");
+            if (i == 0) {
                agent.CampfireNetIdentity.GenerateRootChain();
             } else {
-               var rootAgent = agents[i % 2];
+               var rootAgent = agents[0];
                agent.CampfireNetIdentity.AddTrustChain(rootAgent.CampfireNetIdentity.GenerateNewChain(identity.PublicIdentity, Permission.All, Permission.None, identity.Name));
             }
 

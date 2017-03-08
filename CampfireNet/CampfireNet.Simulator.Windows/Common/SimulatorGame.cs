@@ -1,8 +1,12 @@
-﻿using System;
+﻿#define DEMO_BROADCAST
+//#define DEMO_UNICAST_AND_MULTICAST
+
+using System;
 using System.CodeDom;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using CampfireNet.Identities;
@@ -420,9 +424,30 @@ namespace CampfireNet.Simulator {
 
          rasterizerState = GraphicsDevice.RasterizerState = new RasterizerState { MultiSampleAntiAlias = true };
 
+#if DEMO_BROADCAST
          epoch++;
          epochAgentIndex = agents.Length / 2;
          agents[epochAgentIndex].Client.BroadcastAsync(BitConverter.GetBytes(epoch)).Forget();
+#endif
+
+#if DEMO_UNICAST_AND_MULTICAST
+
+         for (int i = 1; i <= 4; i++) {
+            epoch++;
+            agents[i * 2].Value = epoch;
+            agents[i * 2].Client.IdentityManager.AddIdentities(agents[i * 2 + 1].Client.Identity.TrustChain);
+            agents[i * 2].Client.UnicastAsync(IdentityHash.GetFlyweight(agents[i * 2 + 1].Client.Identity.PublicIdentityHash), BitConverter.GetBytes(epoch)).Forget();
+         }
+
+         var multicastId = IdentityHash.GetFlyweight(CryptoUtil.GetHash(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Potato"))));
+         var multicastKey = CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Potato"));
+         for (int i = 0; i < 10; i++) {
+            agents[10 + i].Client.IdentityManager.AddMulticastKey(multicastId, multicastKey);
+         }
+         epoch++;
+         agents[10].Value = epoch;
+         agents[10].Client.MulticastAsync(multicastId, BitConverter.GetBytes(epoch)).Forget();
+#endif
 
          //for (int i = 0; i < agents.Count; i++) {
          //   agents[i].Position = new Vector2(320 + 50 * (i % 14), 80 + 70 * i / 14);
@@ -537,15 +562,16 @@ namespace CampfireNet.Simulator {
             }
          }
 
-//         for (var i = 0; i < agents.Length - 1; i++) {
-//            var a = agents[i];
-//            var aConnectionStates = a.BluetoothState.ConnectionStates;
-//            for (var j = i + 1; j < agents.Length; j++) {
-//               var b = agents[j];
-//               var bConnectionStates = b.BluetoothState.ConnectionStates;
-//            }
-//         }
+         //         for (var i = 0; i < agents.Length - 1; i++) {
+         //            var a = agents[i];
+         //            var aConnectionStates = a.BluetoothState.ConnectionStates;
+         //            for (var j = i + 1; j < agents.Length; j++) {
+         //               var b = agents[j];
+         //               var bConnectionStates = b.BluetoothState.ConnectionStates;
+         //            }
+         //         }
 
+#if DEMO_BROADCAST
          if (Keyboard.GetState().IsKeyDown(Keys.A)) {
             epoch++;
             epochAgentIndex = (int)(new Random(epochAgentIndex + 5).Next(0, agents.Length));
@@ -567,6 +593,7 @@ namespace CampfireNet.Simulator {
                agents[epochAgentIndex].Client.BroadcastAsync(BitConverter.GetBytes(epoch)).Forget();
             }
          }
+#endif
       }
 
       protected override void Draw(GameTime gameTime) {
