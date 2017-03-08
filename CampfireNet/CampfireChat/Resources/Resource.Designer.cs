@@ -1791,17 +1791,17 @@ namespace CampfireChat
 		public partial class Id
 		{
 			
-			// aapt resource value: 0x7f090083
-			public const int AddChatRoom = 2131296387;
+			// aapt resource value: 0x7f090084
+			public const int AddChatRoom = 2131296388;
 			
-			// aapt resource value: 0x7f09007d
-			public const int BecomeRoot = 2131296381;
+			// aapt resource value: 0x7f09007e
+			public const int BecomeRoot = 2131296382;
 			
 			// aapt resource value: 0x7f090062
 			public const int ChatList = 2131296354;
 			
-			// aapt resource value: 0x7f090081
-			public const int ClearAll = 2131296385;
+			// aapt resource value: 0x7f090082
+			public const int ClearAll = 2131296386;
 			
 			// aapt resource value: 0x7f090065
 			public const int ContactList = 2131296357;
@@ -1812,11 +1812,11 @@ namespace CampfireChat
 			// aapt resource value: 0x7f09005a
 			public const int Input = 2131296346;
 			
-			// aapt resource value: 0x7f09007f
-			public const int Invite = 2131296383;
+			// aapt resource value: 0x7f090080
+			public const int Invite = 2131296384;
 			
-			// aapt resource value: 0x7f09007e
-			public const int LoadChain = 2131296382;
+			// aapt resource value: 0x7f09007f
+			public const int LoadChain = 2131296383;
 			
 			// aapt resource value: 0x7f090063
 			public const int Message = 2131296355;
@@ -1836,23 +1836,29 @@ namespace CampfireChat
 			// aapt resource value: 0x7f09005e
 			public const int Preview = 2131296350;
 			
-			// aapt resource value: 0x7f090084
-			public const int SearchFriend = 2131296388;
+			// aapt resource value: 0x7f090085
+			public const int SearchFriend = 2131296389;
 			
 			// aapt resource value: 0x7f090059
 			public const int SendBar = 2131296345;
 			
-			// aapt resource value: 0x7f090080
-			public const int SendId = 2131296384;
+			// aapt resource value: 0x7f090081
+			public const int SendId = 2131296385;
 			
 			// aapt resource value: 0x7f09005b
 			public const int SendMessage = 2131296347;
 			
-			// aapt resource value: 0x7f090082
-			public const int Settings = 2131296386;
+			// aapt resource value: 0x7f090083
+			public const int Settings = 2131296387;
+			
+			// aapt resource value: 0x7f090086
+			public const int Star = 2131296390;
 			
 			// aapt resource value: 0x7f090061
 			public const int Tag = 2131296353;
+			
+			// aapt resource value: 0x7f09007d
+			public const int TagName = 2131296381;
 			
 			// aapt resource value: 0x7f090057
 			public const int Toolbar = 2131296343;
@@ -2376,22 +2382,25 @@ namespace CampfireChat
 			public const int notification_template_part_time = 2130903088;
 			
 			// aapt resource value: 0x7f030031
-			public const int select_dialog_item_material = 2130903089;
+			public const int Person = 2130903089;
 			
 			// aapt resource value: 0x7f030032
-			public const int select_dialog_multichoice_material = 2130903090;
+			public const int select_dialog_item_material = 2130903090;
 			
 			// aapt resource value: 0x7f030033
-			public const int select_dialog_singlechoice_material = 2130903091;
+			public const int select_dialog_multichoice_material = 2130903091;
 			
 			// aapt resource value: 0x7f030034
-			public const int Settings = 2130903092;
+			public const int select_dialog_singlechoice_material = 2130903092;
 			
 			// aapt resource value: 0x7f030035
-			public const int support_simple_spinner_dropdown_item = 2130903093;
+			public const int Settings = 2130903093;
 			
 			// aapt resource value: 0x7f030036
-			public const int toolbar = 2130903094;
+			public const int support_simple_spinner_dropdown_item = 2130903094;
+			
+			// aapt resource value: 0x7f030037
+			public const int toolbar = 2130903095;
 			
 			static Layout()
 			{
@@ -2414,6 +2423,9 @@ namespace CampfireChat
 			
 			// aapt resource value: 0x7f0d0002
 			public const int new_chat_menu = 2131558402;
+			
+			// aapt resource value: 0x7f0d0003
+			public const int person_menu = 2131558403;
 			
 			static Menu()
 			{
