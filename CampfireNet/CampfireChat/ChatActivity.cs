@@ -88,10 +88,9 @@ namespace CampfireChat {
 
       private void OnItemClick(object sender, byte[] id) {
          Toast.MakeText(this, $"got id {Encoding.UTF8.GetString(id)}", ToastLength.Short).Show();
-
-         //Intent intent = new Intent(this, typeof(ChatActivity));
-         //intent.PutExtra("id", id);
-         //StartActivity(intent);
+         Intent intent = new Intent(this, typeof(PersonActivity));
+         intent.PutExtra("UserId", id);
+         StartActivity(intent);
       }
 
       private void HandleSendButtonClicked(object sender, EventArgs e) {

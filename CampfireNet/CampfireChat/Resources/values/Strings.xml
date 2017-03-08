@@ -11,5 +11,9 @@
 	<string
 		name="Confirm">Confirm</string>
 	<string
-		name="UsernamePrompt">Enter a username:</string>
+		name="UsernamePrompt">Enter a name:</string>
+   <string
+      name="TagName">Tag your friend</string>
+   <string
+      name="Cancel">Cancel</string>
 </resources>

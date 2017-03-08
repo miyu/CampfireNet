@@ -12,6 +12,7 @@ using Android.Widget;
 using System.Security.Cryptography;
 using Android.Bluetooth;
 using CampfireNet.Identities;
+using System.IO;
 
 namespace CampfireChat {
    class Helper {
@@ -62,7 +63,12 @@ namespace CampfireChat {
          return nativeBluetoothAdapter;
       }
 
-
+      public static void WriteToFile(string path, byte[] data) {
+         using (var stream = new FileStream(path, FileMode.Create))
+         using (var writer = new BinaryWriter(stream)) {
+            writer.Write(data);
+         }
+      }
 
 
    }
