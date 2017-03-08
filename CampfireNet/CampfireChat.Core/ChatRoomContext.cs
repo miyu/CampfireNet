@@ -87,10 +87,9 @@ namespace CampfireChat {
 
             foreach (var kvp in message.LogicalClock) {
                int storedCounter;
-               if (currentLogicalClock.TryGetValue(kvp.Key, out storedCounter) && storedCounter > kvp.Value) {
-                  continue;
+               if (!currentLogicalClock.TryGetValue(kvp.Key, out storedCounter) || storedCounter < kvp.Value) {
+                  currentLogicalClock[kvp.Key] = kvp.Value;
                }
-               currentLogicalClock[kvp.Key] = kvp.Value;
             }
 
             foreach (var viewModel in viewModels) {
