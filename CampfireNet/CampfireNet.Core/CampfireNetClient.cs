@@ -2,6 +2,7 @@
 
 using System;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using CampfireNet.Identities;
@@ -109,32 +110,46 @@ namespace CampfireNet {
             var neighbors = await bluetoothAdapter.DiscoverAsync().ConfigureAwait(false);
             var discoveryDurationSeconds = Math.Max(10, 3 * (DateTime.Now - discoveryStartTime).TotalSeconds);
             try {
+               var neighborsToConnectTo = new List<IBluetoothNeighbor>();
+               foreach (var neighbor in neighbors) {
+                  if (neighbor.IsConnected) {
+                     Debug("Connection Candidate: {0} already connected.", neighbor.AdapterId);
+                     continue;
+                  }
+
+                  if (connectedNeighborContextsByAdapterId.ContainsKey(neighbor.AdapterId)) {
+                     Debug("Connection Candidate: {0} already has connected context.", neighbor.AdapterId);
+                     continue;
+                  }
+
+                  Debug("Connection Candidate: {0} looks like a go.", neighbor.AdapterId);
+                  neighborsToConnectTo.Add(neighbor);
+               }
                await Task.WhenAll(
-                  neighbors.Where(neighbor => !neighbor.IsConnected)
-                           .Where(neighbor => !connectedNeighborContextsByAdapterId.ContainsKey(neighbor.AdapterId))
-                           .Select(neighbor => ChannelsExtensions.Go(async () => {
-                              Debug("Attempt to connect to: {0}", neighbor.AdapterId);
-                              var connected = await neighbor.TryHandshakeAsync(discoveryDurationSeconds).ConfigureAwait(false);
-                              if (!connected) {
-                                 Debug("Failed to connect to: {0}", neighbor.AdapterId);
-                                 return;
-                              }
-                              Debug("Successfully connected to: {0}", neighbor.AdapterId);
+                  neighborsToConnectTo.Select(neighbor => ChannelsExtensions.Go(async () => {
+                     Debug("Attempt to connect to: {0}", neighbor.AdapterId);
+                     var connected = await neighbor.TryHandshakeAsync(discoveryDurationSeconds).ConfigureAwait(false);
+                     if (!connected) {
+                        Debug("Failed to connect to: {0}", neighbor.AdapterId);
+                        return;
+                     }
+                     Debug("Successfully connected to: {0}", neighbor.AdapterId);
 
-                              //                           Console.WriteLine("Discovered neighbor: " + neighbor.AdapterId);
-                              var remoteMerkleTree = merkleTreeFactory.CreateForNeighbor(neighbor.AdapterId.ToString("N"));
-                              var connectionContext = new NeighborConnectionContext(identity, bluetoothAdapter, neighbor, broadcastMessageSerializer, localMerkleTree, remoteMerkleTree);
-                              connectedNeighborContextsByAdapterId.AddOrThrow(neighbor.AdapterId, connectionContext);
-                              connectionContext.BroadcastReceived += HandleBroadcastReceived;
-                              connectionContext.Start(() => {
-                                 Debug("Connection Context Torn Down: {0}", neighbor.AdapterId);
+                     //                           Console.WriteLine("Discovered neighbor: " + neighbor.AdapterId);
+                     var remoteMerkleTree = merkleTreeFactory.CreateForNeighbor(neighbor.AdapterId.ToString("N"));
+                     var connectionContext = new NeighborConnectionContext(identity, bluetoothAdapter, neighbor, broadcastMessageSerializer, localMerkleTree, remoteMerkleTree);
+                     connectedNeighborContextsByAdapterId.AddOrThrow(neighbor.AdapterId, connectionContext);
+                     connectionContext.BroadcastReceived += HandleBroadcastReceived;
+                     connectionContext.Start(() => {
+                        Debug("Connection Context Torn Down: {0}", neighbor.AdapterId);
 
-                                 connectionContext.BroadcastReceived -= HandleBroadcastReceived;
-                                 connectedNeighborContextsByAdapterId.RemoveOrThrow(neighbor.AdapterId);
-                                 neighbor.Disconnect();
-                              });
-                           }))
-               ).ConfigureAwait(false);
+                        connectionContext.BroadcastReceived -= HandleBroadcastReceived;
+                        connectedNeighborContextsByAdapterId.RemoveOrThrow(neighbor.AdapterId);
+                        neighbor.Disconnect();
+                     });
+                  }))
+               )
+               .ConfigureAwait(false);
             } catch (Exception e) {
                Debug("Discovery threw!");
                Debug(e.ToString());

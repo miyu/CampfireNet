@@ -60,6 +60,10 @@ namespace AndroidTest.Droid {
          applicationContext.StartActivity(discoverableIntent, new Bundle());
       }
 
+      public class ThreadSafeBluetoothAdapter {
+         
+      }
+
       private class DiscoveryContext {
          private readonly object synchronization = new object();
 
@@ -86,9 +90,10 @@ namespace AndroidTest.Droid {
 
          public async Task<List<BluetoothDevice>> FetchResultsAsync() {
             var running = true;
+            var discoveryCanceled = false;
             while (running) {
                await new Select {
-                  Case(ChannelFactory.Timeout(TimeSpan.FromSeconds(20)), async () => {
+                  Case(ChannelFactory.Timeout(TimeSpan.FromSeconds(30)), async () => {
                      Console.WriteLine("Watchdog timeout at discovery!");
                      adapter.CancelDiscovery();
                      Console.WriteLine("Adapter enabled: " + adapter.IsEnabled);
@@ -107,7 +112,7 @@ namespace AndroidTest.Droid {
 
                      switch (intent.Action) {
                         case BluetoothAdapter.ActionDiscoveryStarted:
-                           if(state != 0) {
+                           if (state != 0) {
                               Console.WriteLine("WARN: STATE IS " + state + " NOT 0");
                            }
 
@@ -138,6 +143,7 @@ namespace AndroidTest.Droid {
                            state = 3;
                            Console.WriteLine($"Finished Discovery, Performing Service Discovery for Filtering");
                            adapter.CancelDiscovery();
+
                            allDiscoveredDevicesByMac.ForEach(kvp => pendingServiceDiscoveryDevices.AddOrThrow(kvp.Value));
                            running = TriggerNextServiceDiscoveryElseCompletion();
                            break;
@@ -154,7 +160,7 @@ namespace AndroidTest.Droid {
                               uuids.ForEach(Console.WriteLine);
                               // Equality isn't implemented by uuid, so compare tostrings...
                               if (uuids.Any(uuid => uuid.ToString().Equals(CampfireNetBluetoothConstants.APP_UUID.ToString())) ||
-                                    uuids.Any(uuid => uuid.ToString().Equals(CampfireNetBluetoothConstants.FIRMWARE_BUG_REVERSE_APP_UUID.ToString()))) {
+                                  uuids.Any(uuid => uuid.ToString().Equals(CampfireNetBluetoothConstants.FIRMWARE_BUG_REVERSE_APP_UUID.ToString()))) {
                                  Console.WriteLine($"Found CampfireNet device {device.Address} {device.Name ?? "[no name]"}");
                                  BluetoothDevice existing;
                                  if (discoveredCampfireNetDevices.TryGetValue(device.Address, out existing)) {
@@ -178,7 +184,7 @@ namespace AndroidTest.Droid {
                   })
                }.ConfigureAwait(false);
             }
-            adapter.CancelDiscovery();
+            Console.WriteLine("Returning discovered list. Count: " + discoveredCampfireNetDevices.Values.ToList().Count);
             return discoveredCampfireNetDevices.Values.ToList();
          }
 

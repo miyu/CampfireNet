@@ -62,21 +62,21 @@ namespace CampfireChat {
          Console.WriteLine("Adding data");
          if (Globals.JoinedRooms == null) {
             Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(Identity.BROADCAST_ID)).FriendlyName = "Broadcast 1";
-            Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General")))).FriendlyName = "General";
-            Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Test")))).FriendlyName = "Test";
+            Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(CryptoUtil.GetHash(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General"))))).FriendlyName = "General";
+            Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(CryptoUtil.GetHash(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Test"))))).FriendlyName = "Test";
 
             Globals.CampfireNetClient.IdentityManager.AddMulticastKey(
-               IdentityHash.GetFlyweight(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General"))),
-               CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General_Key")));
+               IdentityHash.GetFlyweight(CryptoUtil.GetHash(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General")))),
+               CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General")));
 
             Globals.CampfireNetClient.IdentityManager.AddMulticastKey(
-               IdentityHash.GetFlyweight(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Test"))),
-               CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Test_Key")));
+               IdentityHash.GetFlyweight(CryptoUtil.GetHash(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Test")))),
+               CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Test")));
 
             Globals.JoinedRooms = new HashSet<byte[]> {
                Identity.BROADCAST_ID,
-               CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General")),
-               CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Test")),
+               CryptoUtil.GetHash(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General"))),
+               CryptoUtil.GetHash(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Test"))),
             };
          }
          var testEntries = GetKnownRooms();
