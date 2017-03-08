@@ -23,7 +23,7 @@ namespace AndroidTest.Droid {
 
       public async Task<List<BluetoothDevice>> DiscoverPeersAsync() {
          if (bluetoothAdapter.IsDiscovering) {
-//            Console.WriteLine("Canceled existing discovery");
+            Console.WriteLine("Canceled existing discovery");
             bluetoothAdapter.CancelDiscovery();
          }
 
@@ -48,10 +48,10 @@ namespace AndroidTest.Droid {
          applicationContext.UnregisterReceiver(discoveryContext.Receiver);
 
          if (bluetoothAdapter.IsDiscovering) {
-//            Console.WriteLine("Warning: Still IsDiscovering");
+            Console.WriteLine("Warning: Still IsDiscovering");
          }
          return peers;
-      } 
+      }
 
       private void EnableDiscovery() {
          Intent discoverableIntent = new Intent(BluetoothAdapter.ActionRequestDiscoverable);
@@ -89,41 +89,41 @@ namespace AndroidTest.Droid {
             while (running) {
                await new Select {
                   Case(ChannelFactory.Timeout(TimeSpan.FromSeconds(20)), async () => {
-//                     Console.WriteLine("Watchdog timeout at discovery!");
+                     Console.WriteLine("Watchdog timeout at discovery!");
                      adapter.CancelDiscovery();
-//                     Console.WriteLine("Adapter enabled: " + adapter.IsEnabled);
-//                     Console.WriteLine("Disabling adapter...");
+                     Console.WriteLine("Adapter enabled: " + adapter.IsEnabled);
+                     Console.WriteLine("Disabling adapter...");
                      adapter.Disable();
                      await Task.Delay(5000);
-//                     Console.WriteLine("Enabling adapter...");
+                     Console.WriteLine("Enabling adapter...");
                      adapter.Enable();
                      await Task.Delay(10000);
                      running = false;
                   }),
                   Case(intentChannel, intent => {
-//                     Console.WriteLine($"GOT INTENT: " + intent.Action);
+                     Console.WriteLine($"GOT INTENT: " + intent.Action);
 
                      var device = (BluetoothDevice)intent.GetParcelableExtra(BluetoothDevice.ExtraDevice);
 
                      switch (intent.Action) {
                         case BluetoothAdapter.ActionDiscoveryStarted:
                            if(state != 0) {
-//                              Console.WriteLine("WARN: STATE IS " + state + " NOT 0");
+                              Console.WriteLine("WARN: STATE IS " + state + " NOT 0");
                            }
 
                            state = 1;
-//                           Console.WriteLine($"Started Discovery");
+                           Console.WriteLine($"Started Discovery");
                            break;
                         case BluetoothDevice.ActionFound:
                            if (state != 1 && state != 2) {
-//                              Console.WriteLine("WARN: STATE IS " + state + " NOT 1 or 2");
+                              Console.WriteLine("WARN: STATE IS " + state + " NOT 1 or 2");
                            }
 
                            state = 2;
-//                           Console.WriteLine($"Found: {device.Address} {device.Name ?? "[no name]"}");
+                           Console.WriteLine($"Found: {device.Address} {device.Name ?? "[no name]"}");
 
                            if (device.Name == null) {
-//                              Console.WriteLine("Skip as no name!");
+                              Console.WriteLine("Skip as no name!");
                               return;
                            }
 
@@ -131,23 +131,23 @@ namespace AndroidTest.Droid {
                            break;
                         case BluetoothAdapter.ActionDiscoveryFinished:
                            if (state != 2) {
-//                              Console.WriteLine("WARN: STATE IS " + state + " NOT 2");
+                              Console.WriteLine("WARN: STATE IS " + state + " NOT 2");
                               return;
                            }
 
                            state = 3;
-//                           Console.WriteLine($"Finished Discovery, Performing Service Discovery for Filtering");
+                           Console.WriteLine($"Finished Discovery, Performing Service Discovery for Filtering");
                            adapter.CancelDiscovery();
                            allDiscoveredDevicesByMac.ForEach(kvp => pendingServiceDiscoveryDevices.AddOrThrow(kvp.Value));
                            running = TriggerNextServiceDiscoveryElseCompletion();
                            break;
                         case BluetoothDevice.ActionUuid:
                            if (state != 3 && state != 4) {
-//                              Console.WriteLine("WARN: STATE IS " + state + " NOT 3 or 4");
+                              Console.WriteLine("WARN: STATE IS " + state + " NOT 3 or 4");
                            }
 
                            state = 4;
-//                           Console.WriteLine($"Got UUIDs of device {device.Address} {device.Name ?? "[no name]"}");
+                           Console.WriteLine($"Got UUIDs of device {device.Address} {device.Name ?? "[no name]"}");
                            var uuidObjects = intent.GetParcelableArrayExtra(BluetoothDevice.ExtraUuid);
                            if (uuidObjects != null) {
                               var uuids = uuidObjects.Cast<ParcelUuid>().ToArray();
@@ -155,17 +155,17 @@ namespace AndroidTest.Droid {
                               // Equality isn't implemented by uuid, so compare tostrings...
                               if (uuids.Any(uuid => uuid.ToString().Equals(CampfireNetBluetoothConstants.APP_UUID.ToString())) ||
                                     uuids.Any(uuid => uuid.ToString().Equals(CampfireNetBluetoothConstants.FIRMWARE_BUG_REVERSE_APP_UUID.ToString()))) {
-//                                 Console.WriteLine($"Found CampfireNet device {device.Address} {device.Name ?? "[no name]"}");
+                                 Console.WriteLine($"Found CampfireNet device {device.Address} {device.Name ?? "[no name]"}");
                                  BluetoothDevice existing;
                                  if (discoveredCampfireNetDevices.TryGetValue(device.Address, out existing)) {
-//                                    Console.WriteLine("Device already discovered!");
+                                    Console.WriteLine("Device already discovered!");
                                  } else {
                                     discoveredCampfireNetDevices.TryAdd(device.Address, device);
                                  }
                               }
                            }
                            if (!allDiscoveredDevicesByMac.ContainsKey(device.Address)) {
-//                              Console.WriteLine("Unrequested UUID, so tossing");
+                              Console.WriteLine("Unrequested UUID, so tossing");
                               return;
                            }
                            if (serviceDiscoveredDevicesByMac.TryAdd(device.Address, device)) {
@@ -187,9 +187,9 @@ namespace AndroidTest.Droid {
                var device = pendingServiceDiscoveryDevices.First();
                pendingServiceDiscoveryDevices.RemoveOrThrow(device);
 
-//               Console.WriteLine($"Fetching UUIDs of device {device.Address} {device.Name ?? "[no name]"}");
+               Console.WriteLine($"Fetching UUIDs of device {device.Address} {device.Name ?? "[no name]"}");
                var result = device.FetchUuidsWithSdp();
-//               Console.WriteLine("Fetch returned " + result);
+               Console.WriteLine("Fetch returned " + result);
                return true;
             }
             return false;
