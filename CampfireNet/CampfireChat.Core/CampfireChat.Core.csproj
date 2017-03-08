@@ -13,6 +13,7 @@
   <ItemGroup>
     <ProjectReference Include="..\CampfireNet.Core\CampfireNet.Core.csproj" />
     <ProjectReference Include="..\CampfireNet.Identities\CampfireNet.Identities.csproj" />
+    <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj" />
   </ItemGroup>
 
 </Project>
