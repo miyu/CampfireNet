@@ -27,7 +27,9 @@ namespace CampfireChat {
 
          var prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
          if (prefs.GetString("Name", null) == null) {
+            Console.WriteLine("Need a name, showing dialog");
             ShowDialog();
+            Console.WriteLine($"Updating with name {Globals.CampfireNetClient.Identity.Name}");
             Helper.UpdateName(prefs, Globals.CampfireNetClient.Identity.Name);
          }
          Console.WriteLine("username is {0}", prefs.GetString("Name", null));
