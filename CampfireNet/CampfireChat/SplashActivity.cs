@@ -4,6 +4,7 @@ using Android.Content;
 using System.Threading.Tasks;
 using CampfireNet;
 using CampfireNet.Identities;
+using CampfireNet.Utilities;
 
 namespace CampfireChat {
    [Activity(Theme = "@style/SplashTheme", MainLauncher = true, NoHistory = true, Icon = "@drawable/icon")]
