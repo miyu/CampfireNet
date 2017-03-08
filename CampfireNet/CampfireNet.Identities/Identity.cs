@@ -195,7 +195,7 @@ namespace CampfireNet.Identities {
             writer.Write(processedMessage);
             payload = ms.ToArray();
          }
-         
+
          byte[] signature = CryptoUtil.Sign(payload, privateKey);
 
          return new BroadcastMessageDto {
@@ -223,19 +223,20 @@ namespace CampfireNet.Identities {
 
          var senderNode = identityManager.LookupIdentity(senderHash);
          if (senderNode == null) {
-//            throw new InvalidStateException("Sender has not recognized");
+            //            throw new InvalidStateException("Sender has not recognized");
             decryptedPayload = null;
             return false;
          }
 
          if (!CryptoUtil.Verify(totalMessage, senderNode.ThisId, signature)) {
-//            throw new CryptographicException("Could not verify message");
+            //            throw new CryptographicException("Could not verify message");
             decryptedPayload = null;
             return false;
          }
 
          // message is now verified
 
+         byte[] symmetricKey;
          if (receiverHash.SequenceEqual(BROADCAST_ID)) {
             // broadcast
             decryptedPayload = payload;
@@ -245,22 +246,22 @@ namespace CampfireNet.Identities {
             var decryptedSenderAndMessage = CryptoUtil.AsymmetricDecrypt(payload, privateKey);
             if (!decryptedSenderAndMessage.Take(CryptoUtil.HASH_SIZE).SequenceEqual(senderHash)) {
                // BREACH BREACH BREACH DEPLOY SECURITY COUNTER MEASURES
-//               throw new CryptographicException("DATA WAS BAD THERE ARE BAD PEOPLE HERE THEY MUST BE KEPT OUT");
+               //               throw new CryptographicException("DATA WAS BAD THERE ARE BAD PEOPLE HERE THEY MUST BE KEPT OUT");
                decryptedPayload = null;
                return false;
             }
             decryptedPayload = decryptedSenderAndMessage.Skip(CryptoUtil.HASH_SIZE).ToArray();
             return true;
-         } else if (identityManager.TryLookupMulticastKey(IdentityHash.GetFlyweight(receiverHash), out byte[] symmetricKey)) {
+         } else if (identityManager.TryLookupMulticastKey(IdentityHash.GetFlyweight(receiverHash), out symmetricKey)) {
             // multicast
             var iv = payload.Take(CryptoUtil.IV_SIZE).ToArray();
             var encryptedMessage = payload.Skip(CryptoUtil.IV_SIZE).ToArray();
             var messageAndInnerSignature = CryptoUtil.SymmetricDecrypt(encryptedMessage, symmetricKey, iv);
             var innerSignature = messageAndInnerSignature.Skip(messageAndInnerSignature.Length - CryptoUtil.ASYM_KEY_SIZE_BYTES).ToArray();
             var message = messageAndInnerSignature.Take(messageAndInnerSignature.Length - CryptoUtil.ASYM_KEY_SIZE_BYTES).ToArray();
-            
+
             if (!CryptoUtil.Verify(message, senderNode.ThisId, innerSignature)) {
-//               throw new CryptographicException("Could not verify inner signature");
+               //               throw new CryptographicException("Could not verify inner signature");
                decryptedPayload = null;
                return false;
             }

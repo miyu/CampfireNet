@@ -37,7 +37,7 @@ namespace CampfireChat {
       }
 
       public ChatRoomViewModel CreateViewModelAndSubscribe(ChatMessageReceivedCallback messageReceivedCallback) {
-         lock(synchronization) {
+         lock (synchronization) {
             var previousMessages = messages.ToList();
             var viewModel = new ChatRoomViewModel(this, previousMessages, messageReceivedCallback);
             viewModels.AddOrThrow(viewModel);
@@ -67,7 +67,7 @@ namespace CampfireChat {
       }
 
       public void HandleMessageReceived(ChatMessageDto message) {
-         lock(synchronization) {
+         lock (synchronization) {
             messages.Add(message);
 
             foreach (var kvp in message.LogicalClock) {
