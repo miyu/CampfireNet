@@ -7,28 +7,25 @@
 			name="android:windowNoTitle">true</item>
 		<item
 			name="android:windowActionBar">false</item>
-      <item
-      name="android:windowFullscreen">true</item>
-      <item
-      name="android:windowBackground">@drawable/splash_screen</item>
+		<item
+			name="android:windowFullscreen">true</item>
+		<item
+			name="android:windowBackground">@drawable/splash_screen</item>
 	</style>
-
-   <style
+	<style
 		name="CampTheme"
 		parent="@android:style/Theme.Material.Light.DarkActionBar">
-      <item
+		<item
 			name="android:windowNoTitle">true</item>
-      <item
+		<item
 			name="android:windowActionBar">false</item>
-      <item
-        name="android:windowFullscreen">true</item>
-      <item
+		<item
 			name="android:colorPrimary">@color/primary_color</item>
-      <item
-        name="android:windowBackground">@color/background_color</item>
-      <item
+		<item
+			name="android:windowBackground">@color/background_color</item>
+		<item
 			name="android:textColorPrimary">#ffffff</item>
-      <item
+		<item
 			name="android:homeAsUpIndicator">@drawable/abc_ic_ab_back_material</item>
-   </style>
+	</style>
 </resources>
