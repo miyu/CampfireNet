@@ -86,6 +86,7 @@ namespace CampfireChat {
                Console.WriteLine($"Updating item view at {index}");
                //               chatAdapter.NotifyItemChanged(index);
                chatAdapter.NotifyDataSetChanged();
+               chatRecyclerView.GetLayoutManager().ScrollToPosition(chatAdapter.Entries.Count - 1);
             }
          });
       }
