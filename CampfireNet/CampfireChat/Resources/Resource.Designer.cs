@@ -846,44 +846,44 @@ namespace CampfireChat
 		public partial class Color
 		{
 			
-			// aapt resource value: 0x7f070041
-			public const int abc_background_cache_hint_selector_material_dark = 2131165249;
-			
 			// aapt resource value: 0x7f070042
-			public const int abc_background_cache_hint_selector_material_light = 2131165250;
+			public const int abc_background_cache_hint_selector_material_dark = 2131165250;
 			
 			// aapt resource value: 0x7f070043
-			public const int abc_btn_colored_borderless_text_material = 2131165251;
+			public const int abc_background_cache_hint_selector_material_light = 2131165251;
 			
 			// aapt resource value: 0x7f070044
-			public const int abc_btn_colored_text_material = 2131165252;
+			public const int abc_btn_colored_borderless_text_material = 2131165252;
 			
 			// aapt resource value: 0x7f070045
-			public const int abc_color_highlight_material = 2131165253;
+			public const int abc_btn_colored_text_material = 2131165253;
 			
 			// aapt resource value: 0x7f070046
-			public const int abc_hint_foreground_material_dark = 2131165254;
+			public const int abc_color_highlight_material = 2131165254;
 			
 			// aapt resource value: 0x7f070047
-			public const int abc_hint_foreground_material_light = 2131165255;
+			public const int abc_hint_foreground_material_dark = 2131165255;
+			
+			// aapt resource value: 0x7f070048
+			public const int abc_hint_foreground_material_light = 2131165256;
 			
 			// aapt resource value: 0x7f070005
 			public const int abc_input_method_navigation_guard = 2131165189;
 			
-			// aapt resource value: 0x7f070048
-			public const int abc_primary_text_disable_only_material_dark = 2131165256;
-			
 			// aapt resource value: 0x7f070049
-			public const int abc_primary_text_disable_only_material_light = 2131165257;
+			public const int abc_primary_text_disable_only_material_dark = 2131165257;
 			
 			// aapt resource value: 0x7f07004a
-			public const int abc_primary_text_material_dark = 2131165258;
+			public const int abc_primary_text_disable_only_material_light = 2131165258;
 			
 			// aapt resource value: 0x7f07004b
-			public const int abc_primary_text_material_light = 2131165259;
+			public const int abc_primary_text_material_dark = 2131165259;
 			
 			// aapt resource value: 0x7f07004c
-			public const int abc_search_url_text = 2131165260;
+			public const int abc_primary_text_material_light = 2131165260;
+			
+			// aapt resource value: 0x7f07004d
+			public const int abc_search_url_text = 2131165261;
 			
 			// aapt resource value: 0x7f070006
 			public const int abc_search_url_text_normal = 2131165190;
@@ -894,32 +894,32 @@ namespace CampfireChat
 			// aapt resource value: 0x7f070008
 			public const int abc_search_url_text_selected = 2131165192;
 			
-			// aapt resource value: 0x7f07004d
-			public const int abc_secondary_text_material_dark = 2131165261;
-			
 			// aapt resource value: 0x7f07004e
-			public const int abc_secondary_text_material_light = 2131165262;
+			public const int abc_secondary_text_material_dark = 2131165262;
 			
 			// aapt resource value: 0x7f07004f
-			public const int abc_tint_btn_checkable = 2131165263;
+			public const int abc_secondary_text_material_light = 2131165263;
 			
 			// aapt resource value: 0x7f070050
-			public const int abc_tint_default = 2131165264;
+			public const int abc_tint_btn_checkable = 2131165264;
 			
 			// aapt resource value: 0x7f070051
-			public const int abc_tint_edittext = 2131165265;
+			public const int abc_tint_default = 2131165265;
 			
 			// aapt resource value: 0x7f070052
-			public const int abc_tint_seek_thumb = 2131165266;
+			public const int abc_tint_edittext = 2131165266;
 			
 			// aapt resource value: 0x7f070053
-			public const int abc_tint_spinner = 2131165267;
+			public const int abc_tint_seek_thumb = 2131165267;
 			
 			// aapt resource value: 0x7f070054
-			public const int abc_tint_switch_thumb = 2131165268;
+			public const int abc_tint_spinner = 2131165268;
 			
 			// aapt resource value: 0x7f070055
-			public const int abc_tint_switch_track = 2131165269;
+			public const int abc_tint_switch_thumb = 2131165269;
+			
+			// aapt resource value: 0x7f070056
+			public const int abc_tint_switch_track = 2131165270;
 			
 			// aapt resource value: 0x7f070009
 			public const int accent_material_dark = 2131165193;
@@ -1047,6 +1047,9 @@ namespace CampfireChat
 			// aapt resource value: 0x7f07002c
 			public const int notification_material_background_media_default_color = 2131165228;
 			
+			// aapt resource value: 0x7f070041
+			public const int primary_color = 2131165249;
+			
 			// aapt resource value: 0x7f07002d
 			public const int primary_dark_material_dark = 2131165229;
 			
@@ -1098,11 +1101,11 @@ namespace CampfireChat
 			// aapt resource value: 0x7f07003c
 			public const int switch_thumb_disabled_material_light = 2131165244;
 			
-			// aapt resource value: 0x7f070056
-			public const int switch_thumb_material_dark = 2131165270;
-			
 			// aapt resource value: 0x7f070057
-			public const int switch_thumb_material_light = 2131165271;
+			public const int switch_thumb_material_dark = 2131165271;
+			
+			// aapt resource value: 0x7f070058
+			public const int switch_thumb_material_light = 2131165272;
 			
 			// aapt resource value: 0x7f07003d
 			public const int switch_thumb_normal_material_dark = 2131165245;
@@ -1748,17 +1751,23 @@ namespace CampfireChat
 			// aapt resource value: 0x7f020063
 			public const int notification_icon_background = 2130837603;
 			
-			// aapt resource value: 0x7f020066
-			public const int notification_template_icon_bg = 2130837606;
+			// aapt resource value: 0x7f020068
+			public const int notification_template_icon_bg = 2130837608;
 			
-			// aapt resource value: 0x7f020067
-			public const int notification_template_icon_low_bg = 2130837607;
+			// aapt resource value: 0x7f020069
+			public const int notification_template_icon_low_bg = 2130837609;
 			
 			// aapt resource value: 0x7f020064
 			public const int notification_tile_bg = 2130837604;
 			
 			// aapt resource value: 0x7f020065
 			public const int notify_panel_notification_icon_bg = 2130837605;
+			
+			// aapt resource value: 0x7f020066
+			public const int Splash = 2130837606;
+			
+			// aapt resource value: 0x7f020067
+			public const int splash_screen = 2130837607;
 			
 			static Drawable()
 			{
@@ -1773,17 +1782,17 @@ namespace CampfireChat
 		public partial class Id
 		{
 			
-			// aapt resource value: 0x7f090080
-			public const int AddChatRoom = 2131296384;
+			// aapt resource value: 0x7f090081
+			public const int AddChatRoom = 2131296385;
 			
-			// aapt resource value: 0x7f09007c
-			public const int BecomeRoot = 2131296380;
+			// aapt resource value: 0x7f09007d
+			public const int BecomeRoot = 2131296381;
 			
 			// aapt resource value: 0x7f090062
 			public const int ChatList = 2131296354;
 			
-			// aapt resource value: 0x7f090064
-			public const int ContactList = 2131296356;
+			// aapt resource value: 0x7f090065
+			public const int ContactList = 2131296357;
 			
 			// aapt resource value: 0x7f09005d
 			public const int FriendlyName = 2131296349;
@@ -1791,11 +1800,11 @@ namespace CampfireChat
 			// aapt resource value: 0x7f09005a
 			public const int Input = 2131296346;
 			
-			// aapt resource value: 0x7f09007e
-			public const int Invite = 2131296382;
+			// aapt resource value: 0x7f09007f
+			public const int Invite = 2131296383;
 			
-			// aapt resource value: 0x7f09007d
-			public const int LoadChain = 2131296381;
+			// aapt resource value: 0x7f09007e
+			public const int LoadChain = 2131296382;
 			
 			// aapt resource value: 0x7f090063
 			public const int Message = 2131296355;
@@ -1815,8 +1824,8 @@ namespace CampfireChat
 			// aapt resource value: 0x7f09005e
 			public const int Preview = 2131296350;
 			
-			// aapt resource value: 0x7f090081
-			public const int SearchFriend = 2131296385;
+			// aapt resource value: 0x7f090082
+			public const int SearchFriend = 2131296386;
 			
 			// aapt resource value: 0x7f090059
 			public const int SendBar = 2131296345;
@@ -1824,8 +1833,8 @@ namespace CampfireChat
 			// aapt resource value: 0x7f09005b
 			public const int SendMessage = 2131296347;
 			
-			// aapt resource value: 0x7f09007f
-			public const int Settings = 2131296383;
+			// aapt resource value: 0x7f090080
+			public const int Settings = 2131296384;
 			
 			// aapt resource value: 0x7f090061
 			public const int Tag = 2131296353;
@@ -1833,8 +1842,8 @@ namespace CampfireChat
 			// aapt resource value: 0x7f090057
 			public const int Toolbar = 2131296343;
 			
-			// aapt resource value: 0x7f090068
-			public const int action0 = 2131296360;
+			// aapt resource value: 0x7f090069
+			public const int action0 = 2131296361;
 			
 			// aapt resource value: 0x7f090048
 			public const int action_bar = 2131296328;
@@ -1857,17 +1866,17 @@ namespace CampfireChat
 			// aapt resource value: 0x7f090025
 			public const int action_bar_title = 2131296293;
 			
-			// aapt resource value: 0x7f090065
-			public const int action_container = 2131296357;
+			// aapt resource value: 0x7f090066
+			public const int action_container = 2131296358;
 			
 			// aapt resource value: 0x7f090049
 			public const int action_context_bar = 2131296329;
 			
-			// aapt resource value: 0x7f09006c
-			public const int action_divider = 2131296364;
+			// aapt resource value: 0x7f09006d
+			public const int action_divider = 2131296365;
 			
-			// aapt resource value: 0x7f090066
-			public const int action_image = 2131296358;
+			// aapt resource value: 0x7f090067
+			public const int action_image = 2131296359;
 			
 			// aapt resource value: 0x7f090003
 			public const int action_menu_divider = 2131296259;
@@ -1884,11 +1893,11 @@ namespace CampfireChat
 			// aapt resource value: 0x7f090027
 			public const int action_mode_close_button = 2131296295;
 			
-			// aapt resource value: 0x7f090067
-			public const int action_text = 2131296359;
+			// aapt resource value: 0x7f090068
+			public const int action_text = 2131296360;
 			
-			// aapt resource value: 0x7f090075
-			public const int actions = 2131296373;
+			// aapt resource value: 0x7f090076
+			public const int actions = 2131296374;
 			
 			// aapt resource value: 0x7f090028
 			public const int activity_chooser_view_content = 2131296296;
@@ -1911,14 +1920,14 @@ namespace CampfireChat
 			// aapt resource value: 0x7f09002f
 			public const int buttonPanel = 2131296303;
 			
-			// aapt resource value: 0x7f090069
-			public const int cancel_action = 2131296361;
+			// aapt resource value: 0x7f09006a
+			public const int cancel_action = 2131296362;
 			
 			// aapt resource value: 0x7f09003f
 			public const int checkbox = 2131296319;
 			
-			// aapt resource value: 0x7f090071
-			public const int chronometer = 2131296369;
+			// aapt resource value: 0x7f090072
+			public const int chronometer = 2131296370;
 			
 			// aapt resource value: 0x7f09001f
 			public const int collapseActionView = 2131296287;
@@ -1947,8 +1956,8 @@ namespace CampfireChat
 			// aapt resource value: 0x7f09001c
 			public const int end = 2131296284;
 			
-			// aapt resource value: 0x7f09007b
-			public const int end_padder = 2131296379;
+			// aapt resource value: 0x7f09007c
+			public const int end_padder = 2131296380;
 			
 			// aapt resource value: 0x7f090029
 			public const int expand_activities_button = 2131296297;
@@ -1965,8 +1974,8 @@ namespace CampfireChat
 			// aapt resource value: 0x7f09002d
 			public const int icon = 2131296301;
 			
-			// aapt resource value: 0x7f090076
-			public const int icon_group = 2131296374;
+			// aapt resource value: 0x7f090077
+			public const int icon_group = 2131296375;
 			
 			// aapt resource value: 0x7f090020
 			public const int ifRoom = 2131296288;
@@ -1974,17 +1983,17 @@ namespace CampfireChat
 			// aapt resource value: 0x7f09002a
 			public const int image = 2131296298;
 			
-			// aapt resource value: 0x7f090072
-			public const int info = 2131296370;
+			// aapt resource value: 0x7f090073
+			public const int info = 2131296371;
 			
 			// aapt resource value: 0x7f090000
 			public const int item_touch_helper_previous_elevation = 2131296256;
 			
-			// aapt resource value: 0x7f090077
-			public const int line1 = 2131296375;
+			// aapt resource value: 0x7f090078
+			public const int line1 = 2131296376;
 			
-			// aapt resource value: 0x7f090079
-			public const int line3 = 2131296377;
+			// aapt resource value: 0x7f09007a
+			public const int line3 = 2131296378;
 			
 			// aapt resource value: 0x7f09000a
 			public const int listMode = 2131296266;
@@ -1992,8 +2001,8 @@ namespace CampfireChat
 			// aapt resource value: 0x7f09002c
 			public const int list_item = 2131296300;
 			
-			// aapt resource value: 0x7f09006b
-			public const int media_actions = 2131296363;
+			// aapt resource value: 0x7f09006c
+			public const int media_actions = 2131296364;
 			
 			// aapt resource value: 0x7f09001d
 			public const int middle = 2131296285;
@@ -2010,14 +2019,14 @@ namespace CampfireChat
 			// aapt resource value: 0x7f09000b
 			public const int normal = 2131296267;
 			
-			// aapt resource value: 0x7f090074
-			public const int notification_background = 2131296372;
+			// aapt resource value: 0x7f090075
+			public const int notification_background = 2131296373;
+			
+			// aapt resource value: 0x7f09006f
+			public const int notification_main_column = 2131296367;
 			
 			// aapt resource value: 0x7f09006e
-			public const int notification_main_column = 2131296366;
-			
-			// aapt resource value: 0x7f09006d
-			public const int notification_main_column_container = 2131296365;
+			public const int notification_main_column_container = 2131296366;
 			
 			// aapt resource value: 0x7f090031
 			public const int parentPanel = 2131296305;
@@ -2031,11 +2040,11 @@ namespace CampfireChat
 			// aapt resource value: 0x7f090041
 			public const int radio = 2131296321;
 			
-			// aapt resource value: 0x7f090073
-			public const int right_icon = 2131296371;
+			// aapt resource value: 0x7f090074
+			public const int right_icon = 2131296372;
 			
-			// aapt resource value: 0x7f09006f
-			public const int right_side = 2131296367;
+			// aapt resource value: 0x7f090070
+			public const int right_side = 2131296368;
 			
 			// aapt resource value: 0x7f090016
 			public const int screen = 2131296278;
@@ -2109,8 +2118,8 @@ namespace CampfireChat
 			// aapt resource value: 0x7f090019
 			public const int src_over = 2131296281;
 			
-			// aapt resource value: 0x7f09006a
-			public const int status_bar_latest_event_content = 2131296362;
+			// aapt resource value: 0x7f09006b
+			public const int status_bar_latest_event_content = 2131296363;
 			
 			// aapt resource value: 0x7f090042
 			public const int submenuarrow = 2131296322;
@@ -2121,11 +2130,11 @@ namespace CampfireChat
 			// aapt resource value: 0x7f09000c
 			public const int tabMode = 2131296268;
 			
-			// aapt resource value: 0x7f09007a
-			public const int text = 2131296378;
+			// aapt resource value: 0x7f09007b
+			public const int text = 2131296379;
 			
-			// aapt resource value: 0x7f090078
-			public const int text2 = 2131296376;
+			// aapt resource value: 0x7f090079
+			public const int text2 = 2131296377;
 			
 			// aapt resource value: 0x7f090036
 			public const int textSpacerNoButtons = 2131296310;
@@ -2133,8 +2142,8 @@ namespace CampfireChat
 			// aapt resource value: 0x7f090035
 			public const int textSpacerNoTitle = 2131296309;
 			
-			// aapt resource value: 0x7f090070
-			public const int time = 2131296368;
+			// aapt resource value: 0x7f090071
+			public const int time = 2131296369;
 			
 			// aapt resource value: 0x7f09002e
 			public const int title = 2131296302;
@@ -2156,6 +2165,9 @@ namespace CampfireChat
 			
 			// aapt resource value: 0x7f090013
 			public const int useLogo = 2131296275;
+			
+			// aapt resource value: 0x7f090064
+			public const int username = 2131296356;
 			
 			// aapt resource value: 0x7f090022
 			public const int withText = 2131296290;
@@ -2298,70 +2310,73 @@ namespace CampfireChat
 			public const int MessageEntry = 2130903071;
 			
 			// aapt resource value: 0x7f030020
-			public const int NewChat = 2130903072;
+			public const int NameDialog = 2130903072;
 			
 			// aapt resource value: 0x7f030021
-			public const int notification_action = 2130903073;
+			public const int NewChat = 2130903073;
 			
 			// aapt resource value: 0x7f030022
-			public const int notification_action_tombstone = 2130903074;
+			public const int notification_action = 2130903074;
 			
 			// aapt resource value: 0x7f030023
-			public const int notification_media_action = 2130903075;
+			public const int notification_action_tombstone = 2130903075;
 			
 			// aapt resource value: 0x7f030024
-			public const int notification_media_cancel_action = 2130903076;
+			public const int notification_media_action = 2130903076;
 			
 			// aapt resource value: 0x7f030025
-			public const int notification_template_big_media = 2130903077;
+			public const int notification_media_cancel_action = 2130903077;
 			
 			// aapt resource value: 0x7f030026
-			public const int notification_template_big_media_custom = 2130903078;
+			public const int notification_template_big_media = 2130903078;
 			
 			// aapt resource value: 0x7f030027
-			public const int notification_template_big_media_narrow = 2130903079;
+			public const int notification_template_big_media_custom = 2130903079;
 			
 			// aapt resource value: 0x7f030028
-			public const int notification_template_big_media_narrow_custom = 2130903080;
+			public const int notification_template_big_media_narrow = 2130903080;
 			
 			// aapt resource value: 0x7f030029
-			public const int notification_template_custom_big = 2130903081;
+			public const int notification_template_big_media_narrow_custom = 2130903081;
 			
 			// aapt resource value: 0x7f03002a
-			public const int notification_template_icon_group = 2130903082;
+			public const int notification_template_custom_big = 2130903082;
 			
 			// aapt resource value: 0x7f03002b
-			public const int notification_template_lines_media = 2130903083;
+			public const int notification_template_icon_group = 2130903083;
 			
 			// aapt resource value: 0x7f03002c
-			public const int notification_template_media = 2130903084;
+			public const int notification_template_lines_media = 2130903084;
 			
 			// aapt resource value: 0x7f03002d
-			public const int notification_template_media_custom = 2130903085;
+			public const int notification_template_media = 2130903085;
 			
 			// aapt resource value: 0x7f03002e
-			public const int notification_template_part_chronometer = 2130903086;
+			public const int notification_template_media_custom = 2130903086;
 			
 			// aapt resource value: 0x7f03002f
-			public const int notification_template_part_time = 2130903087;
+			public const int notification_template_part_chronometer = 2130903087;
 			
 			// aapt resource value: 0x7f030030
-			public const int select_dialog_item_material = 2130903088;
+			public const int notification_template_part_time = 2130903088;
 			
 			// aapt resource value: 0x7f030031
-			public const int select_dialog_multichoice_material = 2130903089;
+			public const int select_dialog_item_material = 2130903089;
 			
 			// aapt resource value: 0x7f030032
-			public const int select_dialog_singlechoice_material = 2130903090;
+			public const int select_dialog_multichoice_material = 2130903090;
 			
 			// aapt resource value: 0x7f030033
-			public const int Settings = 2130903091;
+			public const int select_dialog_singlechoice_material = 2130903091;
 			
 			// aapt resource value: 0x7f030034
-			public const int support_simple_spinner_dropdown_item = 2130903092;
+			public const int Settings = 2130903092;
 			
 			// aapt resource value: 0x7f030035
-			public const int toolbar = 2130903093;
+			public const int support_simple_spinner_dropdown_item = 2130903093;
+			
+			// aapt resource value: 0x7f030036
+			public const int toolbar = 2130903094;
 			
 			static Layout()
 			{
@@ -2401,8 +2416,14 @@ namespace CampfireChat
 			// aapt resource value: 0x7f0a0022
 			public const int ApplicationName = 2131361826;
 			
+			// aapt resource value: 0x7f0a0026
+			public const int Confirm = 2131361830;
+			
 			// aapt resource value: 0x7f0a0021
 			public const int Hello = 2131361825;
+			
+			// aapt resource value: 0x7f0a0025
+			public const int InputName = 2131361829;
 			
 			// aapt resource value: 0x7f0a0023
 			public const int NewMessage = 2131361827;
@@ -2993,8 +3014,8 @@ namespace CampfireChat
 			// aapt resource value: 0x7f060088
 			public const int Base_Widget_AppCompat_Toolbar_Button_Navigation = 2131099784;
 			
-			// aapt resource value: 0x7f060163
-			public const int CampTheme = 2131100003;
+			// aapt resource value: 0x7f060164
+			public const int CampTheme = 2131100004;
 			
 			// aapt resource value: 0x7f060000
 			public const int CardView = 2131099648;
@@ -3088,6 +3109,9 @@ namespace CampfireChat
 			
 			// aapt resource value: 0x7f060042
 			public const int RtlUnderlay_Widget_AppCompat_ActionButton_Overflow = 2131099714;
+			
+			// aapt resource value: 0x7f060163
+			public const int SplashTheme = 2131100003;
 			
 			// aapt resource value: 0x7f0600d2
 			public const int TextAppearance_AppCompat = 2131099858;

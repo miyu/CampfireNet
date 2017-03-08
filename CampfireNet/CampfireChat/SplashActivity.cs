@@ -1,0 +1,60 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+
+using Android.App;
+using Android.Content;
+using Android.OS;
+using Android.Runtime;
+using Android.Views;
+using Android.Widget;
+using System.Threading.Tasks;
+using Android.Bluetooth;
+using CampfireNet;
+using CampfireNet.Identities;
+
+namespace CampfireChat {
+   [Activity(Theme = "@style/SplashTheme", MainLauncher = true, NoHistory = true, Icon = "@drawable/icon")]
+   public class SplashActivity : Activity {
+
+      protected override void OnResume() {
+         base.OnResume();
+         Task startupWork = new Task(() => { Startup(); });
+         startupWork.Start();
+      }
+
+      async void Startup() {
+         var nativeBluetoothAdapter = Helper.EnableBluetooth(this);
+         var androidBluetoothAdapter = new AndroidBluetoothAdapterFactory().Create(this, ApplicationContext, nativeBluetoothAdapter);
+
+         var prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
+
+         var userName = prefs.GetString("Name", null);
+         if (userName == null) {
+            Globals.CampfireNetClient = CampfireNetClientBuilder.CreateNew()
+                                             .WithBluetoothAdapter(androidBluetoothAdapter)
+                                             .Build();
+            Helper.UpdateIdentity(prefs, Globals.CampfireNetClient.Identity);
+         } else {
+            var rsa = Helper.InitRSA(prefs);
+            var identity = new Identity(new IdentityManager(), rsa, userName);
+            var trustChain = prefs.GetString("TC", null);
+            if (trustChain != null) {
+               identity.AddTrustChain(Helper.HexStringToByteArray(trustChain));
+            }
+            Globals.CampfireNetClient = CampfireNetClientBuilder.CreateNew()
+                                             .WithBluetoothAdapter(androidBluetoothAdapter)
+                                             .WithIdentity(identity).Build();
+         }
+
+         if (Globals.CampfireChatClient == null) {
+            Globals.CampfireChatClient = CampfireChatClientFactory.Create(Globals.CampfireNetClient);
+         }
+
+         StartActivity(new Intent(Application.Context, typeof(MainActivity)));
+      }
+
+      public override void OnBackPressed() { }
+   }
+}

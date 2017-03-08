@@ -107,6 +107,8 @@
     <Compile Include="SettingsActivity.cs" />
     <Compile Include="ChatActivity.cs" />
     <Compile Include="ChatAdapterUtils.cs" />
+    <Compile Include="SplashActivity.cs" />
+    <Compile Include="UsernameDialog.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -130,6 +132,9 @@
     <AndroidResource Include="Resources\layout\Chat.axml" />
     <AndroidResource Include="Resources\drawable\ic_send_white_48dp.png" />
     <AndroidResource Include="Resources\layout\MessageEntry.axml" />
+    <AndroidResource Include="Resources\layout\NameDialog.axml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\Main.axml">
@@ -203,6 +208,12 @@
       <Project>{2b952a46-062b-4238-933f-923bc8e77fc9}</Project>
       <Name>CampfireNet.Utilities</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\splash_screen.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\Splash.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

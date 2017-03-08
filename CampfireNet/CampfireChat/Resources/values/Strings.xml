@@ -3,4 +3,6 @@
     <string name="NewMessage">New Message</string>
     <string name="ApplicationName">CampfireChat</string>
     <string name="SearchHint">Search a friend...</string>
+    <string name="InputName">Input your name</string>
+    <string name="Confirm">Confirm</string>
 </resources>

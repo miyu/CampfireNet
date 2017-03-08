@@ -14,9 +14,8 @@ using AndroidTest.Droid;
 using Encoding = System.Text.Encoding;
 
 namespace CampfireChat {
-   [Activity(Label = "CampfireChat", MainLauncher = true, Icon = "@drawable/icon")]
+   [Activity(Label = "CampfireChat", Theme = "@style/CampTheme")]
    public class MainActivity : Activity {
-      private const int REQUEST_ENABLE_BT = 1;
 
       private RecyclerView chatlistRecyclerView;
       private RecyclerView.Adapter chatlistAdapter;
@@ -29,6 +28,11 @@ namespace CampfireChat {
 
          var toolbar = FindViewById<Android.Widget.Toolbar>(Resource.Id.Toolbar);
          SetActionBar(toolbar);
+         if(Globals.CampfireNetClient.Identity.Name == null) {
+            ShowDialog();
+            var prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
+            Helper.UpdateName(prefs, Globals.CampfireNetClient.Identity.Name);
+         }
       }
 
       protected override void OnStart() {
@@ -57,30 +61,6 @@ namespace CampfireChat {
       }
 
       public void Setup() {
-         var nativeBluetoothAdapter = BluetoothAdapter.DefaultAdapter;
-         if (!nativeBluetoothAdapter.IsEnabled) {
-            System.Console.WriteLine("Enabling bluetooth");
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ActionRequestEnable);
-            StartActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            return;
-         }
-
-         bool isFirstRun = false;
-         if (Globals.CampfireNetClient == null) {
-            isFirstRun = true;
-            var androidBluetoothAdapter = new AndroidBluetoothAdapterFactory().Create(this, ApplicationContext, nativeBluetoothAdapter);
-            Globals.CampfireNetClient = CampfireNetClientBuilder.CreateNew()
-                                             .WithDevelopmentNetworkClaims()
-                                             .WithBluetoothAdapter(androidBluetoothAdapter)
-                                             .Build();
-         }
-         var identity = Globals.CampfireNetClient.Identity;
-
-         Console.WriteLine("Constructing client");
-
-         if (Globals.CampfireChatClient == null) {
-            Globals.CampfireChatClient = CampfireChatClientFactory.Create(Globals.CampfireNetClient);
-         }
 
          Console.WriteLine("Adding data");
          if (Globals.JoinedRooms == null) {
@@ -115,9 +95,6 @@ namespace CampfireChat {
          ((ChatlistAdapter)chatlistAdapter).ItemClick += OnItemClick;
          chatlistRecyclerView.SetAdapter(chatlistAdapter);
 
-         if (isFirstRun) {
-            Globals.CampfireNetClient.RunAsync().Forget();
-         }
       }
 
       private void OnItemClick(object sender, byte[] chatId) {
@@ -127,7 +104,7 @@ namespace CampfireChat {
       }
 
       protected override void OnActivityResult(int requestCode, Result resultCode, Intent data) {
-         if (requestCode != REQUEST_ENABLE_BT)
+         if (requestCode != Helper.REQUEST_ENABLE_BT)
             return;
 
          if (resultCode != Result.Ok) {
@@ -169,6 +146,12 @@ namespace CampfireChat {
          }
 
          return entries;
+      }
+
+      public void ShowDialog() {
+         var transaction = FragmentManager.BeginTransaction();
+         var dialog = new UsernameDialog();
+         dialog.Show(transaction, "InputName");
       }
    }
 
