@@ -40,6 +40,7 @@ namespace CampfireChat {
 
          if (Globals.CampfireChatClient == null) {
             Globals.CampfireChatClient = CampfireChatClientFactory.Create(Globals.CampfireNetClient);
+            Globals.CampfireNetClient.RunAsync().Forget();
          }
 
          StartActivity(new Intent(Application.Context, typeof(MainActivity)));
