@@ -7,13 +7,15 @@
 	<string
 		name="SearchHint">Search a friend...</string>
 	<string
-		name="InputName">Input your name</string>
+		name="InputName">Input your name:</string>
 	<string
 		name="Confirm">Confirm</string>
-	<string
-		name="UsernamePrompt">Enter a name:</string>
    <string
-      name="TagName">Tag your friend</string>
+      name="TagName">Tag your friend:</string>
    <string
       name="Cancel">Cancel</string>
+   <string
+      name="InputGroup">Input group name:</string>
+   <string
+      name="Join">Join</string>
 </resources>

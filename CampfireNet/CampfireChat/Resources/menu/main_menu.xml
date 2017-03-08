@@ -11,4 +11,9 @@
 		android:icon="@drawable/ic_add_white_48dp"
 		android:showAsAction="ifRoom"
 		android:title="New Chat" />
+   <item
+      android:id="@+id/AddChatGroup"
+      android:icon="@drawable/ic_group_add_white_48dp"
+      android:showAsAction="ifRoom"
+      android:title="Join Group"/>
 </menu>

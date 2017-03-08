@@ -28,7 +28,7 @@ namespace CampfireChat {
          var prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
 
          if (Globals.CampfireNetClient.Identity.Name == null) {
-            ShowDialog();
+            ShowUsernameDialog();
             Console.WriteLine($"Updating with name {Globals.CampfireNetClient.Identity.Name}");
          }
       }
@@ -53,6 +53,9 @@ namespace CampfireChat {
             case Resource.Id.AddChatRoom:
                intent = new Intent(this, typeof(NewChatActivity));
                StartActivity(intent);
+               break;
+            case Resource.Id.AddChatGroup:
+               ShowGroupDialog();
                break;
          }
          return base.OnOptionsItemSelected(item);
@@ -121,10 +124,16 @@ namespace CampfireChat {
          return entries;
       }
 
-      public void ShowDialog() {
+      public void ShowUsernameDialog() {
          var transaction = FragmentManager.BeginTransaction();
          var dialog = new UsernameDialog();
          dialog.Show(transaction, "InputName");
+      }
+
+      public void ShowGroupDialog() {
+         var transaction = FragmentManager.BeginTransaction();
+         var dialog = new GroupDialog();
+         dialog.Show(transaction, "JoinGroup");
       }
    }
 
