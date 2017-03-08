@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>netstandard1.5</TargetFramework>
@@ -12,12 +12,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\CampfireNet.Identities\CampfireNet.Identities.csproj">
-      <Project>{0DB822BC-FAD9-496B-AC8E-F880B02A4590}</Project>
-      <Name>CampfireNet.Identities</Name>
     </ProjectReference>
     <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
-      <Project>{2B952A46-062B-4238-933F-923BC8E77FC9}</Project>
-      <Name>CampfireNet.Utilities</Name>
     </ProjectReference>
   </ItemGroup>
 
