@@ -14,7 +14,7 @@
        android:layout_marginRight="20dp"
        android:layout_marginTop="10dp"
        android:layout_marginBottom="10dp"
-       android:id="@+id/BecomeRoot"
+       android:id="@+id/TagName"
        android:layout_below="@id/Toolbar"
        android:clickable="true">
       <ImageView
@@ -24,7 +24,7 @@
           android:layout_marginBottom="5dip"
           android:layout_marginLeft="5dip"
           android:scaleType="centerCrop"
-          android:src="@drawable/ic_settings_input_antenna_white_48dp"
+          android:src="@drawable/ic_person_white_48dp"
           android:adjustViewBounds="true" />
       <TextView
           android:layout_width="fill_parent"
@@ -32,6 +32,6 @@
           android:layout_gravity="left|center_vertical"
           android:textSize="20sp"
           android:layout_marginLeft="10dip"
-          android:text="Create a Network" />
+          android:text="Tag the user" />
    </LinearLayout>
 </RelativeLayout>
