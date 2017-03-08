@@ -47,6 +47,18 @@ namespace CampfireChat {
          editor.Commit();
       }
 
+      public static void UpdateBool(ISharedPreferences prefs, string name, bool value) {
+         ISharedPreferencesEditor editor = prefs.Edit();
+         editor.PutBoolean(name, value);
+         editor.Commit();
+      }
+
+      public static void UpdateString(ISharedPreferences prefs, string name, string value) {
+         ISharedPreferencesEditor editor = prefs.Edit();
+         editor.PutString(name, value);
+         editor.Commit();
+      }
+
       public static void UpdateTrustChain(ISharedPreferences prefs, byte[] trustChain) {
          ISharedPreferencesEditor editor = prefs.Edit();
          editor.PutString("TC", ByteArrayToString(trustChain));

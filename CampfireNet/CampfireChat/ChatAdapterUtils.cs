@@ -65,7 +65,7 @@ namespace CampfireChat
 			if (ItemClick != null)
 			{
 				byte[] id = { 0, 1, 2, 3 };
-				ItemClick(this, id);
+            ItemClick(this, Helper.HexStringToByteArray(Entries[position].SenderHash));
 			}
 		}
 
@@ -92,12 +92,14 @@ namespace CampfireChat
 
 	public class MessageEntry
 	{
+      public string SenderHash { get; private set; }
 		public string Name { get; private set; }
 		public string Message { get; private set; }
 
 
-		public MessageEntry(string name, string message)
+		public MessageEntry(string sender, string name, string message)
 		{
+         SenderHash = sender;
 			Name = name;
 			Message = message;
 		}

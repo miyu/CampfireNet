@@ -19,12 +19,10 @@ namespace CampfireChat {
             .SetView(Resource.Layout.NameDialog)
             .SetTitle(Resource.String.TagName)
             .SetPositiveButton(Resource.String.Confirm, (sender, e) => {
-               var editText = Dialog.FindViewById<EditText>(Resource.Id.Username);
-               //set local friendly name
-               Globals.CampfireChatClient.LocalFriendlyName = editText.Text;
-
+               var editText = Dialog.FindViewById<EditText>(Resource.Id.Username).Text;
                var prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
-               Helper.UpdateName(prefs, Globals.CampfireNetClient.Identity.Name);
+               var userHash = savedInstanceState.GetString("UserHash");
+               Helper.UpdateString(prefs, userHash, editText);
                Dismiss();
             })
             .SetNegativeButton(Resource.String.Cancel, (sender, e) => {

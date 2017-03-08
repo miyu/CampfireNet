@@ -65,11 +65,11 @@ namespace CampfireChat {
             if (message.ContentType != ChatMessageContentType.Text)
                throw new NotImplementedException();
             //
-            chatAdapter.AddEntry(new MessageEntry(message.FriendlySenderName, Encoding.UTF8.GetString(message.ContentRaw)));
+            chatAdapter.AddEntry(new MessageEntry(message.BroadcastMessage.SourceId.ToString(), message.FriendlySenderName, Encoding.UTF8.GetString(message.ContentRaw)));
             uiHandler.ObtainMessage(UPDATE_VIEW, -1, 0).SendToTarget();
          });
          foreach (var message in viewModel.InitialMessages) {
-            chatAdapter.AddEntry(new MessageEntry(message.FriendlySenderName, Encoding.UTF8.GetString(message.ContentRaw)));
+            chatAdapter.AddEntry(new MessageEntry(message.BroadcastMessage.SourceId.ToString(), message.FriendlySenderName, Encoding.UTF8.GetString(message.ContentRaw)));
          }
 
          var sendButton = FindViewById<Button>(Resource.Id.SendMessage);
