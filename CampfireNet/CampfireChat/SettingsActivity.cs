@@ -10,7 +10,7 @@ using System.IO;
 using System.Security.Cryptography;
 
 namespace CampfireChat {
-   [Activity(Label = "Settings")]
+   [Activity(Label = "Settings", ParentActivity = typeof(MainActivity))]
    public class SettingsActivity : Activity {
       const int PICKFILE_RESULT_CODE = 1;
       private ISharedPreferences prefs;
@@ -22,22 +22,21 @@ namespace CampfireChat {
          SetActionBar(toolbar);
          ActionBar.SetDisplayHomeAsUpEnabled(true);
 
-         prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
+         var prefs = Application.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
 
+         var identity = Globals.CampfireNetClient.Identity;
          var generateRoot = FindViewById<LinearLayout>(Resource.Id.BecomeRoot);
+
          generateRoot.Click += (sender, e) => {
-            var userName = prefs.GetString("Name", null);
-            var rsa = Helper.InitRSA(prefs);
-            Identity identity = new Identity(new IdentityManager(), rsa, userName);
             var path = System.Environment.GetFolderPath(System.Environment.SpecialFolder.Personal);
             path = Path.Combine(path, $"trust_chain_{IdentityManager.GetIdentityString(identity.PublicIdentityHash)}.tc");
-
             if (!File.Exists(path) && identity.TrustChain == null) {
                identity.GenerateRootChain();
-
+               byte[] trustChain = TrustChainUtil.SerializeTrustChain(identity.TrustChain);
+               Helper.UpdateTrustChain(prefs, trustChain);
                using (var stream = new FileStream(path, FileMode.Create))
                using (var writer = new BinaryWriter(stream)) {
-                  writer.Write(TrustChainUtil.SerializeTrustChain(identity.TrustChain));
+                  writer.Write(trustChain);
                }
             } else {
                Toast.MakeText(ApplicationContext, "Trust chain already exists.", ToastLength.Short).Show();

@@ -2,4 +2,5 @@
 <resources>
   <color name="background_color">#ecf0f1</color>
   <color name="status_bar_color">#0a6bab</color>
+  <color name="primary_color">#3498db</color>
 </resources>
