@@ -1,6 +1,18 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<style
+		name="SplashTheme"
+		parent="@android:style/Theme.Material.Light.DarkActionBar">
+		<item
+			name="android:windowNoTitle">true</item>
+		<item
+			name="android:windowActionBar">false</item>
+		<item
+			name="android:windowFullscreen">true</item>
+		<item
+			name="android:windowBackground">@drawable/splash_screen</item>
+	</style>
+	<style
 		name="CampTheme"
 		parent="@android:style/Theme.Material.Light.DarkActionBar">
 		<item
@@ -8,7 +20,7 @@
 		<item
 			name="android:windowActionBar">false</item>
 		<item
-			name="android:colorPrimary">#3498db</item>
+			name="android:colorPrimary">@color/primary_color</item>
 		<item
 			name="android:windowBackground">@color/background_color</item>
 		<item

@@ -4,6 +4,7 @@ using CampfireNet.IO.Transport;
 using CampfireNet.Security;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.Merkle;
+using System.Security.Cryptography;
 
 namespace CampfireNet {
    public class CampfireNetClientBuilder {
@@ -25,10 +26,14 @@ namespace CampfireNet {
          return this;
       }
 
-      public CampfireNetClient Build() {
-         if (identity == null) throw new InvalidStateException($"{nameof(identity)} Null");
-         if (bluetoothAdapter == null) throw new InvalidStateException($"{nameof(bluetoothAdapter)} Null");
+      public CampfireNetClientBuilder WithIdentity(Identity identity) {
+         this.identity = identity;
+         return this;
+      }
 
+      public CampfireNetClient Build() {
+         if (bluetoothAdapter == null) throw new InvalidStateException($"{nameof(bluetoothAdapter)} Null");
+         if (identity == null) identity = new Identity(new IdentityManager(), null);
          var broadcastMessageSerializer = new BroadcastMessageSerializer();
          var objectStore = new InMemoryCampfireNetObjectStore();
          var clientMerkleTreeFactory = new ClientMerkleTreeFactory(broadcastMessageSerializer, objectStore);

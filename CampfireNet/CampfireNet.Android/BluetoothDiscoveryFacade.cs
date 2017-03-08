@@ -23,7 +23,7 @@ namespace AndroidTest.Droid {
 
       public async Task<List<BluetoothDevice>> DiscoverPeersAsync() {
          if (bluetoothAdapter.IsDiscovering) {
-//            Console.WriteLine("Canceled existing discovery");
+            Console.WriteLine("Canceled existing discovery");
             bluetoothAdapter.CancelDiscovery();
          }
 
@@ -48,10 +48,10 @@ namespace AndroidTest.Droid {
          applicationContext.UnregisterReceiver(discoveryContext.Receiver);
 
          if (bluetoothAdapter.IsDiscovering) {
-//            Console.WriteLine("Warning: Still IsDiscovering");
+            Console.WriteLine("Warning: Still IsDiscovering");
          }
          return peers;
-      } 
+      }
 
       private void EnableDiscovery() {
          Intent discoverableIntent = new Intent(BluetoothAdapter.ActionRequestDiscoverable);
@@ -193,9 +193,9 @@ namespace AndroidTest.Droid {
                var device = pendingServiceDiscoveryDevices.First();
                pendingServiceDiscoveryDevices.RemoveOrThrow(device);
 
-//               Console.WriteLine($"Fetching UUIDs of device {device.Address} {device.Name ?? "[no name]"}");
+               Console.WriteLine($"Fetching UUIDs of device {device.Address} {device.Name ?? "[no name]"}");
                var result = device.FetchUuidsWithSdp();
-//               Console.WriteLine("Fetch returned " + result);
+               Console.WriteLine("Fetch returned " + result);
                return true;
             }
             return false;

@@ -2,21 +2,16 @@
 using System;
 using System.Collections.Generic;
 using Android.App;
-using Android.Bluetooth;
 using Android.Content;
 using Android.OS;
 using Android.Support.V7.Widget;
 using Android.Views;
-using CampfireNet;
 using CampfireNet.Identities;
-using CampfireNet.Utilities;
-using AndroidTest.Droid;
 using Encoding = System.Text.Encoding;
 
 namespace CampfireChat {
-   [Activity(Label = "CampfireChat", MainLauncher = true, Icon = "@drawable/icon")]
+   [Activity(Label = "CampfireChat", Theme = "@style/CampTheme")]
    public class MainActivity : Activity {
-      private const int REQUEST_ENABLE_BT = 1;
 
       private RecyclerView chatlistRecyclerView;
       private RecyclerView.Adapter chatlistAdapter;
@@ -29,6 +24,13 @@ namespace CampfireChat {
 
          var toolbar = FindViewById<Android.Widget.Toolbar>(Resource.Id.Toolbar);
          SetActionBar(toolbar);
+
+         var prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
+
+         if (Globals.CampfireNetClient.Identity.Name == null) {
+            ShowDialog();
+            Console.WriteLine($"Updating with name {Globals.CampfireNetClient.Identity.Name}");
+         }
       }
 
       protected override void OnStart() {
@@ -57,31 +59,6 @@ namespace CampfireChat {
       }
 
       public void Setup() {
-         var nativeBluetoothAdapter = BluetoothAdapter.DefaultAdapter;
-         if (!nativeBluetoothAdapter.IsEnabled) {
-            System.Console.WriteLine("Enabling bluetooth");
-            Intent enableBtIntent = new Intent(BluetoothAdapter.ActionRequestEnable);
-            StartActivityForResult(enableBtIntent, REQUEST_ENABLE_BT);
-            return;
-         }
-
-         bool isFirstRun = false;
-         if (Globals.CampfireNetClient == null) {
-            isFirstRun = true;
-            var androidBluetoothAdapter = new AndroidBluetoothAdapterFactory().Create(this, ApplicationContext, nativeBluetoothAdapter);
-            Globals.CampfireNetClient = CampfireNetClientBuilder.CreateNew()
-                                             .WithDevelopmentNetworkClaims()
-                                             .WithBluetoothAdapter(androidBluetoothAdapter)
-                                             .Build();
-         }
-         var identity = Globals.CampfireNetClient.Identity;
-
-         Console.WriteLine("Constructing client");
-
-         if (Globals.CampfireChatClient == null) {
-            Globals.CampfireChatClient = CampfireChatClientFactory.Create(Globals.CampfireNetClient);
-         }
-
          Console.WriteLine("Adding data");
          if (Globals.JoinedRooms == null) {
             Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(Identity.BROADCAST_ID)).FriendlyName = "Broadcast 1";
@@ -115,9 +92,6 @@ namespace CampfireChat {
          ((ChatlistAdapter)chatlistAdapter).ItemClick += OnItemClick;
          chatlistRecyclerView.SetAdapter(chatlistAdapter);
 
-         if (isFirstRun) {
-            Globals.CampfireNetClient.RunAsync().Forget();
-         }
       }
 
       private void OnItemClick(object sender, byte[] chatId) {
@@ -127,38 +101,14 @@ namespace CampfireChat {
       }
 
       protected override void OnActivityResult(int requestCode, Result resultCode, Intent data) {
-         if (requestCode != REQUEST_ENABLE_BT)
+         if (requestCode != Helper.REQUEST_ENABLE_BT)
             return;
 
          if (resultCode != Result.Ok) {
-            System.Console.WriteLine("BT Setup failed!");
+            Console.WriteLine("BT Setup failed!");
          }
 
          Setup();
-      }
-
-      public List<ChatEntry> CreateTestData() {
-         string[] testData = { "Preview of a long message that goes beyond the lines",
-            "Preview of a really really long message that really goes beyond the lines and is sure to overflow",
-            "text here", "more longish text here", "Love", "Air", "Shoes", "Hair", "Perfume",
-            "Obfuscation", "Clock", "Game", "Scroll", "Lion", "Chrome", "Tresure", "Charm" };
-
-         var testNames = new string[5][];
-         testNames[0] = new string[] { "Name1Test" };
-         testNames[1] = new string[] { "Name2Test1", "Name2Test2" };
-         testNames[2] = new string[] { "Name3Test1", "Name3Test2", "Name3Test3" };
-         testNames[3] = new string[] { "Name4Test1", "Name4Test2", "Name4Test3", "Name4Test4" };
-         testNames[4] = new string[] { "Name5Test1", "Name5Test2", "Name5Test3", "Name5Test4", "Name5Test5" };
-
-         var entries = new List<ChatEntry>();
-
-         //			for (var i = 0; i < testData.Length; i++) {
-         //			   var names = i < testNames.Length ? testNames[i] : new string[] { "default" };
-         //
-         //			   entries.Add(new ChatEntry());
-         //			}
-
-         return entries;
       }
 
       private List<ChatEntry> GetKnownRooms() {
@@ -169,6 +119,12 @@ namespace CampfireChat {
          }
 
          return entries;
+      }
+
+      public void ShowDialog() {
+         var transaction = FragmentManager.BeginTransaction();
+         var dialog = new UsernameDialog();
+         dialog.Show(transaction, "InputName");
       }
    }
 

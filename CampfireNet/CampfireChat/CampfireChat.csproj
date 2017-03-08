@@ -36,13 +36,7 @@
     <AndroidLinkMode>None</AndroidLinkMode>
     <EmbedAssembliesIntoApk>False</EmbedAssembliesIntoApk>
     <PlatformTarget>AnyCPU</PlatformTarget>
-    <BundleAssemblies>False</BundleAssemblies>
-    <AndroidCreatePackagePerAbi>False</AndroidCreatePackagePerAbi>
     <AndroidSupportedAbis>armeabi;armeabi-v7a;x86;arm64-v8a</AndroidSupportedAbis>
-    <AotAssemblies>False</AotAssemblies>
-    <EnableLLVM>False</EnableLLVM>
-    <AndroidEnableMultiDex>False</AndroidEnableMultiDex>
-    <EnableProguard>False</EnableProguard>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>PdbOnly</DebugType>
@@ -102,11 +96,15 @@
     <Compile Include="Helper.cs" />
     <Compile Include="NewChatActivity.cs" />
     <Compile Include="MainActivity.cs" />
+    <Compile Include="PersonActivity.cs" />
     <Compile Include="Resources\Resource.Designer.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SettingsActivity.cs" />
     <Compile Include="ChatActivity.cs" />
     <Compile Include="ChatAdapterUtils.cs" />
+    <Compile Include="SplashActivity.cs" />
+    <Compile Include="TagDialog.cs" />
+    <Compile Include="UsernameDialog.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
@@ -130,6 +128,10 @@
     <AndroidResource Include="Resources\layout\Chat.axml" />
     <AndroidResource Include="Resources\drawable\ic_send_white_48dp.png" />
     <AndroidResource Include="Resources\layout\MessageEntry.axml" />
+    <AndroidResource Include="Resources\layout\NameDialog.axml">
+      <SubType>Designer</SubType>
+    </AndroidResource>
+    <AndroidResource Include="Resources\drawable\ic_delete_white_48dp.png" />
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\layout\Main.axml">
@@ -200,9 +202,21 @@
       <Name>CampfireNet.Identities</Name>
     </ProjectReference>
     <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj">
-      <Project>{2b952a46-062b-4238-933f-923bc8e77fc9}</Project>
+      <Project>{2B952A46-062B-4238-933F-923BC8E77FC9}</Project>
       <Name>CampfireNet.Utilities</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\splash_screen.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\Splash.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\ic_star_white_48dp.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\ic_star_border_white_48dp.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
