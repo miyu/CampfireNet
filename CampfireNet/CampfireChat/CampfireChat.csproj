@@ -93,6 +93,7 @@
     <Compile Include="ChatlistAdapterUtils.cs" />
     <Compile Include="ContactlistAdapterUtils.cs" />
     <Compile Include="Globals.cs" />
+    <Compile Include="GroupDialog.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="NewChatActivity.cs" />
     <Compile Include="MainActivity.cs" />
@@ -128,7 +129,7 @@
     <AndroidResource Include="Resources\layout\Chat.axml" />
     <AndroidResource Include="Resources\drawable\ic_send_white_48dp.png" />
     <AndroidResource Include="Resources\layout\MessageEntry.axml" />
-    <AndroidResource Include="Resources\layout\NameDialog.axml">
+    <AndroidResource Include="Resources\layout\Dialog.axml">
       <SubType>Designer</SubType>
     </AndroidResource>
     <AndroidResource Include="Resources\layout\Person.axml">
@@ -223,6 +224,9 @@
   </ItemGroup>
   <ItemGroup>
     <AndroidResource Include="Resources\menu\person_menu.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <AndroidResource Include="Resources\drawable\ic_group_add_white_48dp.png" />
   </ItemGroup>
   <Import Project="$(MSBuildExtensionsPath)\Xamarin\Android\Xamarin.Android.CSharp.targets" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
