@@ -6,6 +6,7 @@ using Android.Content;
 using Android.OS;
 using Android.Support.V7.Widget;
 using Android.Views;
+using AndroidTest.Droid;
 using CampfireNet.Identities;
 using Encoding = System.Text.Encoding;
 
@@ -14,8 +15,10 @@ namespace CampfireChat {
    public class MainActivity : Activity {
 
       private RecyclerView chatlistRecyclerView;
-      private RecyclerView.Adapter chatlistAdapter;
+      private ChatlistAdapter chatlistAdapter;
       private RecyclerView.LayoutManager chatlistLayoutManager;
+
+      private Handler uiHandler;
 
       protected override void OnCreate(Bundle savedInstanceState) {
          base.OnCreate(savedInstanceState);
@@ -27,10 +30,14 @@ namespace CampfireChat {
 
          var prefs = Application.Context.GetSharedPreferences("CampfireChat", FileCreationMode.Private);
 
-         if (Globals.CampfireNetClient.Identity.Name == null) {
+         if (Globals.CampfireChatClient.LocalFriendlyName == null) {
             ShowUsernameDialog();
             Console.WriteLine($"Updating with name {Globals.CampfireNetClient.Identity.Name}");
          }
+
+         uiHandler = new LambdaHandler(msg => {
+            chatlistAdapter.AddEntry(chatlistAdapter.ItemCount, (ChatEntry)msg.Obj);
+         });
       }
 
       protected override void OnStart() {
@@ -64,7 +71,7 @@ namespace CampfireChat {
       public void Setup() {
          Console.WriteLine("Adding data");
          if (Globals.JoinedRooms == null) {
-            Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(Identity.BROADCAST_ID)).FriendlyName = "Broadcast 1";
+            Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(Identity.BROADCAST_ID)).FriendlyName = "Broadcast";
             Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(CryptoUtil.GetHash(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("General"))))).FriendlyName = "General";
             Globals.CampfireChatClient.ChatRoomTable.GetOrCreate(IdentityHash.GetFlyweight(CryptoUtil.GetHash(CryptoUtil.GetHash(Encoding.UTF8.GetBytes("Test"))))).FriendlyName = "Test";
 
@@ -92,7 +99,7 @@ namespace CampfireChat {
          chatlistRecyclerView.SetLayoutManager(chatlistLayoutManager);
 
          chatlistAdapter = new ChatlistAdapter(testEntries);
-         ((ChatlistAdapter)chatlistAdapter).ItemClick += OnItemClick;
+         chatlistAdapter.ItemClick += OnItemClick;
          chatlistRecyclerView.SetAdapter(chatlistAdapter);
 
       }
@@ -132,7 +139,7 @@ namespace CampfireChat {
 
       public void ShowGroupDialog() {
          var transaction = FragmentManager.BeginTransaction();
-         var dialog = new GroupDialog();
+         var dialog = new GroupDialog(uiHandler);
          dialog.Show(transaction, "JoinGroup");
       }
    }
