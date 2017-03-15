@@ -93,7 +93,6 @@
     <Compile Include="ChatlistAdapterUtils.cs" />
     <Compile Include="ContactlistAdapterUtils.cs" />
     <Compile Include="Globals.cs" />
-    <Compile Include="GroupDialog.cs" />
     <Compile Include="Helper.cs" />
     <Compile Include="NewChatActivity.cs" />
     <Compile Include="MainActivity.cs" />
