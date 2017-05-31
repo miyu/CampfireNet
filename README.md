@@ -9,6 +9,9 @@ CampfireNet is entirely written in C# using .NET 4.6.2 / netstandard1.5 / Xamari
 
 These are command-line tools necessary for both Windows and Mac, even if you decide to run our code through an IDE.
 
+## Have fun with that:
+We developed CampfireNet before the release of VS2017 and official .NET Core support, so getting everything compiling and debuggable both on macOS (VS for Mac) and .NET Core on Windows involved folder imports in projects.
+
 # Codebase
 After cloning CampfireNet, open CampfireNet.sln. If you¡¯ve followed the above instructions, you should be able to build all projects targeting your platform and/or Android. The Android-deployed project is CampfireChat while the windows-deployed project is CampfireNet.Windows. Simulators for MacOS and Windows exist at CampfireNet.Simulator.
 Note that on Windows, Bluetooth stacks vary - we depend on 32Feet.NET for Bluetooth support. We have not yet implemented MacOS or iOS Bluetooth support.
