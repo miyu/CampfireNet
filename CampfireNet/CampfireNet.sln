@@ -1,24 +1,24 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
-VisualStudioVersion = 15.0.26228.4
+VisualStudioVersion = 15.0.27130.2027
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AndroidTest.Droid", "Droid\AndroidTest.Droid.csproj", "{25F45252-8991-4985-A7F9-4866BA8E09F2}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CampfireNet.Core", "CampfireNet.Core\CampfireNet.Core.csproj", "{74987653-09DA-4274-BEC8-759F95BC9836}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CampfireNet.Core", "CampfireNet.Core\CampfireNet.Core.csproj", "{74987653-09DA-4274-BEC8-759F95BC9836}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CampfireNet.Utilities", "CampfireNet.Utilities\CampfireNet.Utilities.csproj", "{2B952A46-062B-4238-933F-923BC8E77FC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CampfireNet.Utilities", "CampfireNet.Utilities\CampfireNet.Utilities.csproj", "{2B952A46-062B-4238-933F-923BC8E77FC9}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2DA4F66E-3BC4-48FC-B8CA-F7B2E2F397F2}"
 	ProjectSection(SolutionItems) = preProject
 		Scratch.txt = Scratch.txt
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CampfireNet.Identities", "CampfireNet.Identities\CampfireNet.Identities.csproj", "{0DB822BC-FAD9-496B-AC8E-F880B02A4590}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CampfireNet.Identities", "CampfireNet.Identities\CampfireNet.Identities.csproj", "{0DB822BC-FAD9-496B-AC8E-F880B02A4590}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CampfireNet.Android", "CampfireNet.Android\CampfireNet.Android.csproj", "{F8783A31-77C7-4C52-9E13-698FE20DC4A3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CampfireChat.Core", "CampfireChat.Core\CampfireChat.Core.csproj", "{08295E02-DE64-41DF-B647-C6A8716CE816}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CampfireChat.Core", "CampfireChat.Core\CampfireChat.Core.csproj", "{08295E02-DE64-41DF-B647-C6A8716CE816}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CampfireChat", "CampfireChat\CampfireChat.csproj", "{B418C3D4-ACDC-4CF1-9EBC-670F88A6959C}"
 EndProject
@@ -37,6 +37,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CampfireNet.Simulator.Windows", "CampfireNet.Simulator.Windows\CampfireNet.Simulator.Windows.csproj", "{921AEE4E-D627-4571-8C62-7DB0FD656185}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CampfireNet.Windows", "CampfireNet.Windows\CampfireNet.Windows.csproj", "{7BE4ABF4-AECE-4273-96D8-8B3FBC0EB643}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "CSE561", "CSE561\CSE561.csproj", "{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -374,9 +376,32 @@ Global
 		{7BE4ABF4-AECE-4273-96D8-8B3FBC0EB643}.Release|x64.Build.0 = Release|Any CPU
 		{7BE4ABF4-AECE-4273-96D8-8B3FBC0EB643}.Release|x86.ActiveCfg = Release|Any CPU
 		{7BE4ABF4-AECE-4273-96D8-8B3FBC0EB643}.Release|x86.Build.0 = Release|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Debug|iPhone.ActiveCfg = Debug|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Debug|iPhone.Build.0 = Debug|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Debug|iPhoneSimulator.ActiveCfg = Debug|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Debug|iPhoneSimulator.Build.0 = Debug|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Debug|x64.Build.0 = Debug|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Debug|x86.Build.0 = Debug|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Release|iPhone.ActiveCfg = Release|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Release|iPhone.Build.0 = Release|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Release|iPhoneSimulator.ActiveCfg = Release|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Release|iPhoneSimulator.Build.0 = Release|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Release|x64.ActiveCfg = Release|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Release|x64.Build.0 = Release|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Release|x86.ActiveCfg = Release|Any CPU
+		{1DB50B45-E34D-4FE7-BA72-08CA0F56A34A}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {12F9EE43-E3BA-433A-BF2A-06FF04852570}
 	EndGlobalSection
 	GlobalSection(MonoDevelopProperties) = preSolution
 		Policies = $0

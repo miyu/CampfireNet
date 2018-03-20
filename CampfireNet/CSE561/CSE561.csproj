@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+
+  <PropertyGroup>
+    <TargetFramework>net462</TargetFramework>
+    <ApplicationIcon />
+    <OutputType>exe</OutputType>
+    <OutputTypeEx>exe</OutputTypeEx>
+    <RuntimeIdentifier>win7-x64</RuntimeIdentifier>
+    <StartupObject />
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MonoGame.Framework.DesktopGL" Version="3.5.1.1679" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\CampfireNet.Identities\CampfireNet.Identities.csproj" />
+    <ProjectReference Include="..\CampfireNet.Utilities\CampfireNet.Utilities.csproj" />
+    <ProjectReference Include="..\CampfireNet.Core\CampfireNet.Core.csproj" />
+  </ItemGroup>
+
+</Project>
