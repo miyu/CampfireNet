@@ -453,8 +453,8 @@ namespace CampfireNet.Simulator {
             agent.BluetoothAdapter.Permit(dt);
          }
 
-         int columns = 1 + (configuration.FieldWidth - 1) / SimulationBluetoothConstants.RANGE;
-         int rows = 1 + (configuration.FieldHeight - 1) / SimulationBluetoothConstants.RANGE;
+         int columns = (int)Math.Ceiling((float)configuration.FieldWidth / SimulationBluetoothConstants.RANGE);
+         int rows = (int)Math.Ceiling((float)configuration.FieldHeight / SimulationBluetoothConstants.RANGE);
          var bins = Enumerable.Range(0, columns * rows).Select(i => new List<DeviceAgent>()).ToArray();
          foreach (var agent in agents) {
             var binX = ((int)agent.Position.X) / SimulationBluetoothConstants.RANGE;
@@ -549,6 +549,7 @@ namespace CampfireNet.Simulator {
          if (Keyboard.GetState().IsKeyDown(Keys.A)) {
             epoch++;
             epochAgentIndex = (int)(new Random(epochAgentIndex + 5).Next(0, agents.Length));
+            agents[epochAgentIndex].Value = epoch;
             agents[epochAgentIndex].Client.BroadcastAsync(BitConverter.GetBytes(epoch)).Forget();
          }
 

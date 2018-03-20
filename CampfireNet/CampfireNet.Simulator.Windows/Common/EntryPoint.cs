@@ -31,8 +31,8 @@ namespace CampfireNet.Simulator {
             AgentCount = 2,
             DisplayWidth = displayWidth,
             DisplayHeight = displayHeight,
-            FieldWidth = 160,
-            FieldHeight = 90,
+            FieldWidth = 1280 / 2,
+            FieldHeight = 720 / 2,
             AgentRadius = 10
          };
       }
@@ -60,9 +60,6 @@ namespace CampfireNet.Simulator {
                Velocity = Vector2.Transform(new Vector2(10, 0), Matrix.CreateRotationZ((float)(random.NextDouble() * Math.PI * 2)))
             };
          }
-
-         agents[0].Position = new Vector2(300, 300);
-         agents[1].Position = new Vector2(310, 300);
 
          var agentsPerRow = (4 * (int)Math.Sqrt(agents.Length)) / 3;
          var hSPacing = 60;
@@ -92,10 +89,11 @@ namespace CampfireNet.Simulator {
             var broadcastMessageSerializer = new BroadcastMessageSerializer();
             var merkleTreeFactory = new ClientMerkleTreeFactory(broadcastMessageSerializer, new InMemoryCampfireNetObjectStore());
             var identity = agent.CampfireNetIdentity = (Identity)new Identity(new IdentityManager(), $"Agent_{i}");
-            if (i == 0 || i == 1) {
+            var nroots = 1;
+            if (i < nroots) {
                agent.CampfireNetIdentity.GenerateRootChain();
             } else {
-               var rootAgent = agents[i % 2];
+               var rootAgent = agents[i % nroots];
                agent.CampfireNetIdentity.AddTrustChain(rootAgent.CampfireNetIdentity.GenerateNewChain(identity.PublicIdentity, Permission.All, Permission.None, identity.Name));
             }
 
@@ -111,6 +109,10 @@ namespace CampfireNet.Simulator {
                }
             });
          }
+
+
+         agents[0].Position = new Vector2(200, 250);
+         agents[1].Position = new Vector2(260, 220);
 
          return agents;
       }
