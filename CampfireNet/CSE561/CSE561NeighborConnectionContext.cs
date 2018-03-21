@@ -81,6 +81,7 @@ namespace CampfireNet {
       public IdentityManager IdentityManager => identity.IdentityManager;
 
       public event MessageReceivedEventHandler BroadcastReceived;
+      public event MessageReceivedEventHandler UndecryptableMessageReceived;
 
       public void Start(Action shutdownCallback) {
          Task.WhenAll(
@@ -349,6 +350,14 @@ namespace CampfireNet {
                            DecryptedPayload = decryptedPayload,
                            Dto = message
                         }));
+                     } else {
+                        UndecryptableMessageReceived?.Invoke(new MessageReceivedEventArgs(neighbor, new BroadcastMessage {
+                           SourceId = IdentityHash.GetFlyweight(message.SourceIdHash),
+                           DestinationId = IdentityHash.GetFlyweight(message.DestinationIdHash),
+                           DecryptedPayload = null,
+                           Dto = message
+                        }));
+
                      }
                   }
                }

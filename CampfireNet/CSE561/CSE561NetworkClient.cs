@@ -10,7 +10,9 @@ using CampfireNet.IO;
 using CampfireNet.IO.Transport;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.Channels;
+using CampfireNet.Utilities.Collections;
 using CampfireNet.Utilities.Merkle;
+using CSE561;
 
 namespace CampfireNet {
    public class CSE561CampfireNetClient {
@@ -18,19 +20,25 @@ namespace CampfireNet {
       private readonly IBluetoothAdapter bluetoothAdapter;
       private readonly BroadcastMessageSerializer broadcastMessageSerializer;
       private readonly ClientMerkleTreeFactory merkleTreeFactory;
+      private readonly CSE561Overnet overnet;
       private readonly MerkleTree<BroadcastMessageDto> localMerkleTree;
       private readonly ConcurrentDictionary<Guid, MerkleTree<BroadcastMessageDto>> localToRemoteMerkleTrees = new ConcurrentDictionary<Guid, MerkleTree<BroadcastMessageDto>>();
+      private static readonly ConcurrentDictionary<IdentityHash, Guid> ihLookup = new ConcurrentDictionary<IdentityHash, Guid>();
+      private readonly ConcurrentSet<string> proxied = new ConcurrentSet<string>();
 
-      public CSE561CampfireNetClient(Identity identity, IBluetoothAdapter bluetoothAdapter, BroadcastMessageSerializer broadcastMessageSerializer, ClientMerkleTreeFactory merkleTreeFactory) {
+      public CSE561CampfireNetClient(Identity identity, IBluetoothAdapter bluetoothAdapter, BroadcastMessageSerializer broadcastMessageSerializer, ClientMerkleTreeFactory merkleTreeFactory, CSE561Overnet overnet) {
          this.identity = identity;
          this.bluetoothAdapter = bluetoothAdapter;
          this.broadcastMessageSerializer = broadcastMessageSerializer;
          this.merkleTreeFactory = merkleTreeFactory;
+         this.overnet = overnet;
          this.localMerkleTree = merkleTreeFactory.CreateForLocal();
+         ihLookup[IdentityHash.GetFlyweight(identity.PublicIdentityHash)] = bluetoothAdapter.AdapterId;
       }
 
       public event MessageReceivedEventHandler MessageSent;
       public event MessageReceivedEventHandler MessageReceived;
+      public event MessageReceivedEventHandler UndecryptableMessageReceived;
       public Guid AdapterId => bluetoothAdapter.AdapterId;
       public Identity Identity => identity;
       public IdentityManager IdentityManager => identity.IdentityManager;
@@ -53,7 +61,7 @@ namespace CampfireNet {
          }
       }
 
-      public async Task UnicastAsync(IdentityHash destinationId, byte[] payload) {
+      public async Task<BroadcastMessageDto> UnicastAsync(IdentityHash destinationId, byte[] payload) {
          var trustChainNode = identity.IdentityManager.LookupIdentity(destinationId.Bytes.ToArray());
 
          var messageDto = identity.EncodePacket(payload, trustChainNode.ThisId);
@@ -70,6 +78,8 @@ namespace CampfireNet {
                }
             ));
          }
+         RouteUnicast(messageDto);
+         return messageDto;
       }
 
       public async Task MulticastAsync(IdentityHash destinationId, byte[] payload) {
@@ -106,7 +116,12 @@ namespace CampfireNet {
          var rateLimit = ChannelFactory.Timer(1000); // 5000, 5000);
          var connectedNeighborContextsByAdapterId = new ConcurrentDictionary<Guid, CSE561NeighborConnectionContext>();
          while (true) {
-            Debug("Starting discovery round!");
+            overnet.UpdateConnectivities(
+               AdapterId,
+               localToRemoteMerkleTrees.ToDictionary(
+                  kvp => kvp.Key,
+                  kvp => 1.0));
+//            Debug("Starting discovery round!");
             var discoveryStartTime = DateTime.Now;
             var neighbors = await bluetoothAdapter.DiscoverAsync().ConfigureAwait(false);
             var discoveryDurationSeconds = Math.Max(10, 3 * (DateTime.Now - discoveryStartTime).TotalSeconds);
@@ -114,7 +129,7 @@ namespace CampfireNet {
                var neighborsToConnectTo = new List<IBluetoothNeighbor>();
                foreach (var neighbor in neighbors) {
                   if (neighbor.IsConnected) {
-                     Debug("Connection Candidate: {0} already connected.", neighbor.AdapterId);
+//                     Debug("Connection Candidate: {0} already connected.", neighbor.AdapterId);
                      continue;
                   }
 
@@ -144,6 +159,7 @@ namespace CampfireNet {
                                var connectionContext = new CSE561NeighborConnectionContext(identity, bluetoothAdapter, neighbor, broadcastMessageSerializer, localForRemoteMerkleTree, remoteMerkleTree);
                                connectedNeighborContextsByAdapterId.AddOrThrow(neighbor.AdapterId, connectionContext);
                                connectionContext.BroadcastReceived += HandleBroadcastReceived;
+                               connectionContext.UndecryptableMessageReceived += HandleUndecryptableMessageReceived;
                                connectionContext.Start(() => {
                                   Debug("Connection Context Torn Down: {0}", neighbor.AdapterId);
 
@@ -158,7 +174,7 @@ namespace CampfireNet {
                Debug("Discovery threw!");
                Debug(e.ToString());
             }
-            Debug("Ending discovery round!");
+//            Debug("Ending discovery round!");
             await rateLimit.ReadAsync().ConfigureAwait(false);
          }
       }
@@ -171,10 +187,30 @@ namespace CampfireNet {
          MessageReceived?.Invoke(args);
       }
 
+      private void HandleUndecryptableMessageReceived(MessageReceivedEventArgs args) {
+         UndecryptableMessageReceived?.Invoke(args);
+         RouteUnicast(args.Message.Dto);
+      }
+
+      private void RouteUnicast(BroadcastMessageDto mdto) {
+         var sig = Helpers.X(mdto.Signature);
+         if (!proxied.TryAdd(sig)) return;
+         var raid = ihLookup[IdentityHash.GetFlyweight(mdto.DestinationIdHash)];
+         var nexts = overnet.ComputeRoutesAndCosts(AdapterId, raid);
+         foreach (var x in nexts.Take(3)) {
+            localToRemoteMerkleTrees[x.Item1].TryInsertAsync(mdto);
+            Console.WriteLine($"L=>R from {AdapterId} to {raid}");
+         }
+      }
       private void Debug(string s, params object[] args) {
 #if CN_DEBUG
          Console.WriteLine(s, args);
 #endif
       }
+   }
+
+   public static class Helpers  {
+      public static string X(IdentityHash h) => X(h.Bytes);
+      public static string X(IReadOnlyList<byte> arg) => string.Join("", arg.Map(x => x.ToString("X").PadLeft(2, '0')));
    }
 }

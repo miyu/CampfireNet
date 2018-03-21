@@ -11,6 +11,7 @@ using CampfireNet.IO.Transport;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.AsyncPrimatives;
 using CampfireNet.Utilities.Channels;
+using CSE561;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
@@ -388,6 +389,7 @@ namespace CampfireNet.Simulator {
 
    public class SimulatorGame : Game {
       private readonly SimulatorConfiguration configuration;
+      private readonly CSE561Overnet overnet;
       private readonly DeviceAgent[] agents;
       private readonly GraphicsDeviceManager graphicsDeviceManager;
 
@@ -398,8 +400,9 @@ namespace CampfireNet.Simulator {
       private int epochAgentIndex = 0;
       private int epoch = 0;
 
-      public SimulatorGame(SimulatorConfiguration configuration, DeviceAgent[] agents) {
+      public SimulatorGame(SimulatorConfiguration configuration, CSE561Overnet overnet, DeviceAgent[] agents) {
          this.configuration = configuration;
+         this.overnet = overnet;
          this.agents = agents;
 
          graphicsDeviceManager = new GraphicsDeviceManager(this) {
@@ -407,6 +410,17 @@ namespace CampfireNet.Simulator {
             PreferredBackBufferHeight = configuration.DisplayHeight,
             PreferMultiSampling = true
          };
+
+         for (var index = 0; index < agents.Length; index++) {
+            var agent = agents[index];
+            agent.Client.UndecryptableMessageReceived += (e) => {
+               if (Helpers.X(e.Message.Dto.Signature) == overnet.CaredSig) {
+                  agent.Value = epoch - 1;
+               } else {
+                  agent.Value = epoch - 10;
+               }
+            };
+         }
       }
 
       protected override void LoadContent() {
@@ -547,10 +561,21 @@ namespace CampfireNet.Simulator {
 //         }
 
          if (Keyboard.GetState().IsKeyDown(Keys.A)) {
-            epoch++;
+            epoch += 50;
             epochAgentIndex = (int)(new Random(epochAgentIndex + 5).Next(0, agents.Length));
+            foreach (var agent in agents) {
+               agent.Value = -1;
+            }
+            agents[0].Value = epoch - 2;
             agents[epochAgentIndex].Value = epoch;
-            agents[epochAgentIndex].Client.BroadcastAsync(BitConverter.GetBytes(epoch)).Forget();
+            var mdto = agents[epochAgentIndex].Client.UnicastAsync(
+               IdentityHash.GetFlyweight(
+                  agents[0].CampfireNetIdentity.PublicIdentityHash
+               ),
+               BitConverter.GetBytes(epoch)).Result;
+            var sig = Helpers.X(mdto.Signature);
+            overnet.CaredSig = sig;
+            //agents[epochAgentIndex].Client.BroadcastAsync(BitConverter.GetBytes(epoch)).Forget();
          }
 
          if (Keyboard.GetState().IsKeyDown(Keys.Z)) {

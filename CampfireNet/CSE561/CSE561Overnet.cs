@@ -12,6 +12,8 @@ namespace CSE561 {
       private readonly ConcurrentDictionary<Guid, CohortNode> nodes = new ConcurrentDictionary<Guid, CohortNode>();
       private readonly object synchronization = new object();
 
+      public string CaredSig { get; set; }
+
       public void UpdateConnectivities(Guid localId, Dictionary<Guid, double> updatedPeers) {
          var localNode = nodes.GetOrAdd(localId, x => new CohortNode(x));
          foreach (var peerNode in localNode.Peers.Keys.ToArray()) {

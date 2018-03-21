@@ -4,6 +4,7 @@ using CampfireNet.IO;
 using CampfireNet.Utilities.Merkle;
 using System.Collections.Generic;
 using CampfireNet.Identities;
+using CSE561;
 using Microsoft.Xna.Framework;
 
 namespace CampfireNet.Simulator {
@@ -43,10 +44,11 @@ namespace CampfireNet.Simulator {
          //			ThreadPool.SetMaxThreads(8, 8);
          //			var configuration = SimulatorConfiguration.Build2P(1920, 1080);
          var configuration = SimulatorConfiguration.Build(1, 1920, 1080);
-         var agents = ConstructAgents(configuration);
-         new SimulatorGame(configuration, agents).Run();
+         var overnet = new CSE561Overnet();
+         var agents = ConstructAgents(configuration, overnet);
+         new SimulatorGame(configuration, overnet, agents).Run();
       }
-      private static DeviceAgent[] ConstructAgents(SimulatorConfiguration configuration) {
+      private static DeviceAgent[] ConstructAgents(SimulatorConfiguration configuration, CSE561Overnet overnet) {
          var random = new Random(2);
 
          var agents = new DeviceAgent[configuration.AgentCount];
@@ -94,10 +96,15 @@ namespace CampfireNet.Simulator {
                agent.CampfireNetIdentity.GenerateRootChain();
             } else {
                var rootAgent = agents[i % nroots];
-               agent.CampfireNetIdentity.AddTrustChain(rootAgent.CampfireNetIdentity.GenerateNewChain(identity.PublicIdentity, Permission.All, Permission.None, identity.Name));
+               agent.CampfireNetIdentity.AddTrustChain(
+                  rootAgent.CampfireNetIdentity.GenerateNewChain(
+                     identity.PublicIdentity, 
+                     Permission.All,
+                     Permission.None, 
+                     identity.Name));
             }
 
-            var client = agent.Client = new CSE561CampfireNetClient(identity, bluetoothAdapter, broadcastMessageSerializer, merkleTreeFactory);
+            var client = agent.Client = new CSE561CampfireNetClient(identity, bluetoothAdapter, broadcastMessageSerializer, merkleTreeFactory, overnet);
             client.MessageReceived += e => {
                var epoch = BitConverter.ToInt32(e.Message.DecryptedPayload, 0);
                //               Console.WriteLine($"{client.AdapterId:n} recv {epoch}");
