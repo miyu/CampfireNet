@@ -3,6 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using CampfireNet.Utilities;
 using CampfireNet.Utilities.Collections;
@@ -57,6 +58,45 @@ namespace CSE561 {
             }
          }
          return optimalCost;
+      }
+
+      private ConcurrentDictionary<string, ConcurrentDictionary<Guid, Context>> winners = new ConcurrentDictionary<string, ConcurrentDictionary<Guid, Context>>();
+
+      public void InitWinDict(string sig) {
+         winners[sig] = new ConcurrentDictionary<Guid, Context>();
+      }
+
+      public bool TryWin(string sig, Guid g) {
+         if (!winners.TryGetValue(sig, out var dict)) return false;
+         if (!dict.TryGetValue(g, out var con)) {
+            return false;
+         }
+         if (Interlocked.CompareExchange(ref con.val, 1, 0) != 0) {
+            return false;
+         }
+         foreach (var og in con.guids) {
+            dict.TryRemove(og, out var _);
+         }
+         Console.WriteLine("Winner");
+         return true;
+      }
+
+      public void KillWinDIct(string sig) {
+         winners.TryRemove(sig, out var _);
+      }
+
+      public void HandleNexts(string sig, ConcurrentSet<Guid> hashSet) {
+         if (!winners.TryGetValue(sig, out var dict)) return;
+         var con = new Context { sig = sig, val = 0, guids = hashSet };
+         foreach (var g in hashSet) {
+            dict[g] = con;
+         }
+      }
+
+      public class Context {
+         public string sig;
+         public int val;
+         public ConcurrentSet<Guid> guids;
       }
 
       public class CohortNode {

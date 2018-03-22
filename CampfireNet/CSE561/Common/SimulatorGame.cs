@@ -415,9 +415,17 @@ namespace CampfireNet.Simulator {
             var agent = agents[index];
             agent.Client.UndecryptableMessageReceived += (e) => {
                if (Helpers.X(e.Message.Dto.Signature) == overnet.CaredSig) {
-                  agent.Value = epoch - 1;
+                  agent.Value = Math.Max(agent.Value, epoch - 1);
                } else {
-                  agent.Value = epoch - 10;
+                  agent.Value = Math.Max(agent.Value, epoch / 4);
+               }
+            };
+            agent.Client.Lose += (e) => {
+               if (Helpers.X(e.Message.Dto.Signature) == overnet.CaredSig) {
+                  agent.Value = Math.Max(agent.Value, epoch - 2);
+                  if (agent.Value == epoch - 1) agent.Value = epoch - 2;
+               } else {
+                  agent.Value = Math.Max(agent.Value, epoch / 4);
                }
             };
          }
@@ -620,11 +628,11 @@ namespace CampfireNet.Simulator {
          for (var i = 0; i < agents.Length; i++) {
             var lum = (epoch - agents[i].Value) * 240 / epoch;
             var color = new Color(lum, lum, lum);
-            if (epoch == agents[i].Value && agents[i].Value > 0) color = Color.Red;
-            if (epoch == agents[i].Value + 1 && agents[i].Value > 0) color = Color.Lime;
-            if (epoch == agents[i].Value + 2 && agents[i].Value > 0) color = Color.MediumAquamarine;
+            if (epoch == agents[i].Value && agents[i].Value > 0) color = Color.Lime;
+            if (epoch == agents[i].Value + 1 && agents[i].Value > 0) color = Color.Orange;
+            if (epoch == agents[i].Value + 2 && agents[i].Value > 0) color = Color.Red;
             if (epoch == agents[i].Value + 3 && agents[i].Value > 0) color = Color.Magenta;
-            if (epoch == agents[i].Value + 4 && agents[i].Value > 0) color = Color.Orange;
+            if (epoch == agents[i].Value + 4 && agents[i].Value > 0) color = Color.Cyan;
             DrawCenteredCircleWorld(agents[i].Position, configuration.AgentRadius, color);
          }
          //spriteBatch.DrawLine(new Vector2(0, 50), new Vector2(100, 50), Color.Red);

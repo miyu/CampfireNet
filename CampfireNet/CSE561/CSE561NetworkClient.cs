@@ -39,6 +39,7 @@ namespace CampfireNet {
       public event MessageReceivedEventHandler MessageSent;
       public event MessageReceivedEventHandler MessageReceived;
       public event MessageReceivedEventHandler UndecryptableMessageReceived;
+      public event MessageReceivedEventHandler Lose;
       public Guid AdapterId => bluetoothAdapter.AdapterId;
       public Identity Identity => identity;
       public IdentityManager IdentityManager => identity.IdentityManager;
@@ -68,7 +69,7 @@ namespace CampfireNet {
          var localInsertionResult = await localMerkleTree.TryInsertAsync(messageDto).ConfigureAwait(false);
          if (localInsertionResult.Item1) {
             // "Decrypt the message"
-            MessageSent?.Invoke(new MessageReceivedEventArgs(
+            var mrea = new MessageReceivedEventArgs(
                null,
                new BroadcastMessage {
                   SourceId = IdentityHash.GetFlyweight(identity.PublicIdentityHash),
@@ -76,9 +77,10 @@ namespace CampfireNet {
                   DecryptedPayload = payload,
                   Dto = messageDto
                }
-            ));
+            );
+            MessageSent?.Invoke(mrea);
+            RouteUnicast(messageDto, true, mrea);
          }
-         RouteUnicast(messageDto);
          return messageDto;
       }
 
@@ -185,21 +187,40 @@ namespace CampfireNet {
       /// <param name="args"></param>
       private void HandleBroadcastReceived(MessageReceivedEventArgs args) {
          MessageReceived?.Invoke(args);
+         if (IdentityHash.GetFlyweight(args.Message.DestinationId.Bytes.ToArray()) == IdentityHash.GetFlyweight(identity.PublicIdentityHash)) {
+            var sig = Helpers.X(args.Message.Dto.Signature);
+            overnet.KillWinDIct(sig);
+         }
       }
 
       private void HandleUndecryptableMessageReceived(MessageReceivedEventArgs args) {
          UndecryptableMessageReceived?.Invoke(args);
-         RouteUnicast(args.Message.Dto);
+         RouteUnicast(args.Message.Dto, false, args);
       }
 
-      private void RouteUnicast(BroadcastMessageDto mdto) {
+      private void RouteUnicast(BroadcastMessageDto mdto, bool autowin, MessageReceivedEventArgs mrea) {
          var sig = Helpers.X(mdto.Signature);
+         bool enableExor = true;
+         if (autowin) {
+            overnet.InitWinDict(sig);
+         }
          if (!proxied.TryAdd(sig)) return;
+         if (!overnet.TryWin(sig, AdapterId) && !autowin && enableExor) {
+            Lose?.Invoke(mrea);
+            return;
+         }
          var raid = ihLookup[IdentityHash.GetFlyweight(mdto.DestinationIdHash)];
-         var nexts = overnet.ComputeRoutesAndCosts(AdapterId, raid);
-         foreach (var x in nexts.Take(3)) {
-            localToRemoteMerkleTrees[x.Item1].TryInsertAsync(mdto);
-            Console.WriteLine($"L=>R from {AdapterId} to {raid}");
+         if (enableExor) {
+            var nexts = overnet.ComputeRoutesAndCosts(AdapterId, raid).Take(3).ToArray();
+            overnet.HandleNexts(sig, new ConcurrentSet<Guid>(nexts.Select(x => x.Item1)));
+            foreach (var x in nexts) {
+               localToRemoteMerkleTrees[x.Item1].TryInsertAsync(mdto);
+               //Console.WriteLine($"L=>R from {AdapterId} to {raid}");
+            }
+         } else {
+            foreach (var x in localToRemoteMerkleTrees) {
+               x.Value.TryInsertAsync(mdto);
+            }
          }
       }
       private void Debug(string s, params object[] args) {
